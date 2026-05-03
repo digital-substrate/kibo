@@ -1,0 +1,15 @@
+# Maven
+target/
+.mvn/
+
+# IntelliJ / IDE
+.idea/
+*.iml
+out/
+
+# OS
+.DS_Store
+
+# Claude Code — "have but don't commit" pattern
+CLAUDE.md
+.claude/
