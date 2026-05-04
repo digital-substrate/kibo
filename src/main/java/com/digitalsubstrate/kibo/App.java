@@ -1,5 +1,3 @@
-// Copyright (c) Digital Substrate 2026, All rights reserved.
-
 package com.digitalsubstrate.kibo;
 
 import com.beust.jcommander.JCommander;
