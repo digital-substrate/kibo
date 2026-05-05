@@ -13,7 +13,6 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <mainClass>com.digitalsubstrate.kibo.App</mainClass>
-        <antlr.version>4.12.0</antlr.version>
     </properties>
 
     <dependencies>
@@ -25,8 +24,8 @@
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>
-            <artifactId>antlr4</artifactId>
-            <version>4.12.0</version>
+            <artifactId>ST4</artifactId>
+            <version>4.3.4</version>
         </dependency>
         <dependency>
             <groupId>com.beust</groupId>
@@ -36,19 +35,6 @@
     </dependencies>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <version>${antlr.version}</version>
-                <executions>
-                    <execution>
-                        <id>antlr</id>
-                        <goals>
-                            <goal>antlr4</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -62,18 +48,6 @@
                     </archive>
                 </configuration>
             </plugin>
-            <!--
-              Produces a self-contained fat jar (kibo + runtime deps merged).
-              outputDirectory is target/ so the fat jar overwrites the thin
-              jar produced by maven-jar-plugin (same name, appendAssemblyId
-              is false). Result: one runnable target/kibo-X.Y.Z.jar that
-              `java -jar` can launch directly, with no external classpath.
-
-              Before the kibo extraction (2026-04-25), outputDirectory was
-              ../tools so the fat jar landed in viper/tools/ for the DevKit
-              ZIP pipeline. That coupling no longer applies — the deploy
-              script now copies the jar from target/ explicitly.
-            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
