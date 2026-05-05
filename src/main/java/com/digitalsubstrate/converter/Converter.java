@@ -12,10 +12,6 @@ import java.util.HashMap;
 public final class Converter {
     private final DSMStructureDependency structureDependency;
     private final HashMap<TypeName, DSMStructure> structuresByTypeName = new HashMap<>();
-    private final HashMap<TypeName, TemplateConcept> templateConceptByTypeName = new HashMap<>();
-    private final HashMap<TypeName, TemplateStructure> templateStructureByTypeName = new HashMap<>();
-
-    private final HashMap<TypeName, ArrayList<TemplateAttachment>> attachmentByConcept = new HashMap<>();
 
     private final HashMap<String, String> cppPrimitiveTypes = new HashMap<>();
     private final HashMap<String, String> viperPrimitiveValues = new HashMap<>();
@@ -23,6 +19,7 @@ public final class Converter {
     private final LiteralConverter literalConverter;
     private final TypeConverter typeConverter;
     private final FunctionRegistrar functionRegistrar;
+    private final EntityConverter entityConverter;
 
     public final String generated;
     public final DSMDefinitions definitions;
@@ -40,6 +37,7 @@ public final class Converter {
         this.literalConverter = new LiteralConverter(structuresByTypeName);
         this.typeConverter = new TypeConverter(cppPrimitiveTypes, viperPrimitiveValues, structuresByTypeName);
         this.functionRegistrar = new FunctionRegistrar(definitions, typeConverter);
+        this.entityConverter = new EntityConverter(definitions, structureDependency, typeConverter, literalConverter, functionRegistrar);
 
         populateMaps();
         registerPrimitives();
@@ -49,19 +47,19 @@ public final class Converter {
     public TemplateDefinitions convert() throws Exception {
         final var result = new TemplateDefinitions(generated, namespace);
 
-        result.sortedStructures.addAll(convertStructures());
-        result.enumerations.addAll(convertEnumerations());
+        result.sortedStructures.addAll(entityConverter.convertStructures());
+        result.enumerations.addAll(entityConverter.convertEnumerations());
 
-        final var attachments = convertAttachments(definitions.attachments);
-        final var concepts = convertConcepts();
+        final var attachments = entityConverter.convertAttachments(definitions.attachments);
+        final var concepts = entityConverter.convertConcepts();
 
         // Fill template concept isa and members
         for (var concept : concepts) {
             if (concept.getDsmConcept().parent != null) {
-                final var parent = templateConceptByTypeName.get(concept.getDsmConcept().parent.typeName);
+                final var parent = entityConverter.templateConceptByTypeName.get(concept.getDsmConcept().parent.typeName);
                 concept.setParent(parent);
             }
-            final var children = collectConceptChildren(concept.getDsmConcept());
+            final var children = entityConverter.collectConceptChildren(concept.getDsmConcept());
             concept.setChildren(children);
         }
 
@@ -69,7 +67,7 @@ public final class Converter {
         final var attachmentFunctionPools = convertAttachmentFunctionPool();
 
         result.concepts.addAll(concepts);
-        result.clubs.addAll(convertClubs());
+        result.clubs.addAll(entityConverter.convertClubs());
 
         result.attachments.addAll(attachments);
 
@@ -141,208 +139,6 @@ public final class Converter {
 
             definitions.nameSpaces.add(templateNameSpace);
         }
-    }
-
-    // Enumeration
-    private ArrayList<TemplateEnumeration> convertEnumerations() {
-        final var result = new ArrayList<TemplateEnumeration>();
-        for (var enumeration : definitions.enumerations)
-            result.add(convertEnumeration(enumeration));
-
-        return result;
-    }
-
-    private TemplateEnumeration convertEnumeration(DSMEnumeration enumeration) {
-        final var type = enumeration.typeName.representation();
-        final var typeSuffix = typeConverter.typeSuffix(enumeration.typeName);
-
-        return new TemplateEnumeration(enumeration, type, typeSuffix);
-    }
-
-    // Structure
-    private ArrayList<TemplateStructure> convertStructures() throws Exception {
-        final var structures = structureDependency.sorted();
-
-        final var result = new ArrayList<TemplateStructure>();
-        for (var structure : structures) {
-            final var templateStructure = convertStructure(structure);
-            templateStructureByTypeName.put(structure.typeName, templateStructure);
-            result.add(templateStructure);
-        }
-
-        return result;
-    }
-
-    private TemplateStructure convertStructure(DSMStructure structure) throws Exception {
-        final var type = structure.typeName.representation();
-        final var typeSuffix = typeConverter.typeSuffix(structure.typeName);
-        final var isMovable = typeConverter.isStructureMovable(structure);
-        TemplateStructure result = new TemplateStructure(structure, type, typeSuffix, isMovable);
-        result.getFields().addAll(convertStructureFields(structure.typeName.nameSpace, structure.fields));
-
-        return result;
-    }
-
-    private ArrayList<TemplateStructureField> convertStructureFields(NameSpace nameSpace, ArrayList<DSMStructureField> fields) throws Exception {
-        final var result = new ArrayList<TemplateStructureField>();
-        for (var field : fields)
-            result.add(convertField(nameSpace, field));
-
-        return result;
-    }
-
-    // Structure Field
-    private TemplateStructureField convertField(NameSpace nameSpace, DSMStructureField field) throws Exception {
-        final var type = typeConverter.convertType(field.type);
-        final var typeInNamespace = typeConverter.convertTypeInNamespace(nameSpace, field.type);
-        final var passBy = typeConverter.passByQualifier(field.type);
-        final var isMovable = typeConverter.isTypeMovable(field.type);
-        final var defaultValue = literalConverter.convertRootDefaultValue(field.defaultValue, field.type);
-        final var typeSuffix = typeConverter.typeSuffix(field.type);
-        final var isAny = typeConverter.isTypeAny(field.type);
-        final var viperValue = typeConverter.viperValue(field.type);
-        final var pythonType = typeConverter.templatePythonType(field.type);
-        final var templateField = typeConverter.createTemplateField(field.type);
-
-        return new TemplateStructureField(
-                field, type, typeInNamespace, passBy, isMovable, defaultValue, typeSuffix,
-                isAny,
-                viperValue, pythonType, templateField);
-    }
-
-    // Concept members
-    private ArrayList<TemplateConcept> collectConceptChildren(DSMConcept concept) {
-        final var result = new ArrayList<TemplateConcept>();
-        for (var c : definitions.concepts) {
-            if (c.parent != null && c.parent.typeName.equals(concept.typeName)) {
-                final var templateConcept = templateConceptByTypeName.get(c.typeName);
-                assert templateConcept != null;
-                result.add(templateConcept);
-            }
-        }
-        result.sort(Comparator.comparing(TemplateConcept::getType));
-
-        return result;
-    }
-
-    private ArrayList<TemplateConcept> convertConcepts() throws Exception {
-        final var result = new ArrayList<TemplateConcept>();
-        for (var concept : definitions.concepts) {
-            functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(concept.typeReference));
-            final var templateConcept = convertConcept(concept);
-            templateConceptByTypeName.put(concept.typeName, templateConcept);
-            result.add(templateConcept);
-        }
-
-        return result;
-    }
-
-    private TemplateConcept convertConcept(DSMConcept concept) {
-        final var type = typeConverter.typeForKey(concept.typeName);
-        final var typeSuffix = typeConverter.typeSuffixForKey(concept.typeName);
-        final var attachments = attachmentByConcept.get(concept.typeName);
-        if (attachments != null)
-            attachments.sort(Comparator.comparing(TemplateAttachment::getIdentifier));
-
-        return new TemplateConcept(concept, type, typeSuffix, attachments);
-    }
-
-    // Club
-    private ArrayList<TemplateClub> convertClubs() throws Exception {
-        final var result = new ArrayList<TemplateClub>();
-        for (var club : definitions.clubs)
-            result.add(convertClub(club));
-
-        return result;
-    }
-
-    private TemplateClub convertClub(DSMClub club) throws Exception {
-        final var type = typeConverter.typeForKey(club.typeName);
-        final var typeSuffix = typeConverter.typeSuffixForKey(club.typeName);
-
-        ArrayList<TemplateConcept> members = new ArrayList<>();
-        for (var member : club.members) {
-            functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(club.typeReference));
-            final var templateConcept = templateConceptByTypeName.get(member.typeName);
-            assert templateConcept != null;
-            members.add(templateConcept);
-        }
-        members.sort(Comparator.comparing(TemplateConcept::getName));
-
-        return new TemplateClub(club, type, typeSuffix, members);
-    }
-
-    // Attachment
-    private ArrayList<TemplateAttachment> convertAttachments(ArrayList<DSMAttachment> attachments) throws Exception {
-        final var result = new ArrayList<TemplateAttachment>();
-        for (var attachment : attachments)
-            result.add(convertAttachment(attachment));
-
-        return result;
-    }
-
-    private TemplateAttachment convertAttachment(DSMAttachment attachment) throws Exception {
-        final var isAmbiguous = isAttachmentAmbiguousInNamespace(attachment);
-        final var keyType = convertAttachmentKeyType(attachment.typeName.nameSpace, attachment.keyType);
-        final var documentType = convertAttachmentDocumentType(attachment.typeName.nameSpace, attachment.documentType);
-        final var result = new TemplateAttachment(isAmbiguous, attachment, keyType, documentType);
-
-        if (attachment.keyType.domain == DSMTypeReferenceDomain.CONCEPT) {
-            attachmentByConcept.computeIfAbsent(attachment.keyType.typeName, k -> new ArrayList<>());
-            attachmentByConcept.get(attachment.keyType.typeName).add(result);
-        }
-
-        return result;
-    }
-
-    private TemplateAttachedKeyType convertAttachmentKeyType(NameSpace nameSpace, DSMTypeReference dsmKeyType) throws Exception {
-        functionRegistrar.registerFunctionForContainer(new DSMTypeSet(dsmKeyType));
-        final var type = typeConverter.convertType(dsmKeyType);
-        final var typeInNamespace = typeConverter.convertTypeInNamespace(nameSpace, dsmKeyType);
-        final var typeSuffix = typeConverter.typeSuffix(dsmKeyType);
-        final var viperValue = typeConverter.viperValue(dsmKeyType);
-        final var pythonType = typeConverter.templatePythonType(dsmKeyType);
-
-        return new TemplateAttachedKeyType(dsmKeyType.typeName, type, typeInNamespace, typeSuffix, viperValue, pythonType);
-    }
-
-    private TemplateAttachedDocumentType convertAttachmentDocumentType(NameSpace nameSpace, DSMType dsmDocumentType) throws Exception {
-        functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(dsmDocumentType));
-
-        final var type = typeConverter.convertType(dsmDocumentType);
-        final var typeInNameSpace = typeConverter.convertTypeInNamespace(nameSpace, dsmDocumentType);
-        final var typeSuffix = typeConverter.typeSuffix(dsmDocumentType);
-        final var viperValue = typeConverter.viperValue(dsmDocumentType);
-        final var pythonType = typeConverter.templatePythonType(dsmDocumentType);
-        final var templateStructure = findTemplateStructure(dsmDocumentType);
-        final var templateField = typeConverter.createTemplateField(dsmDocumentType);
-        final var useBlobId = typeConverter.useBlobId(dsmDocumentType);
-
-        return new TemplateAttachedDocumentType(type, typeInNameSpace, typeSuffix, viperValue, pythonType, templateStructure, templateField, useBlobId);
-    }
-
-    private boolean isAttachmentAmbiguousInNamespace(DSMAttachment attachment) {
-        var count = 0;
-        for (var a : definitions.attachments) {
-            final var sameNamespace = a.typeName.nameSpace.equals(attachment.typeName.nameSpace);
-            if (!sameNamespace) continue;
-
-            final var sameName = a.typeName.name.equals(attachment.typeName.name);
-            final var sameKeyName = a.keyType.typeName.name.equals(attachment.keyType.typeName.name);
-            if (sameName && sameKeyName)
-                count += 1;
-        }
-
-        return count > 1;
-    }
-
-
-    private TemplateStructure findTemplateStructure(DSMType type) {
-        if (type instanceof DSMTypeReference typeReference)
-            if (typeReference.domain == DSMTypeReferenceDomain.STRUCTURE)
-                return templateStructureByTypeName.get(typeReference.typeName);
-
-        return null;
     }
 
     // Type Functions
