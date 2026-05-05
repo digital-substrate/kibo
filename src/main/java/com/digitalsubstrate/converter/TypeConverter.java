@@ -1,5 +1,8 @@
 package com.digitalsubstrate.converter;
 
+import com.digitalsubstrate.template.TemplateField;
+import com.digitalsubstrate.template.TemplateFieldType;
+import com.digitalsubstrate.template.TemplatePythonType;
 import com.digitalsubstrate.viper.NameSpace;
 import com.digitalsubstrate.viper.TypeName;
 import com.digitalsubstrate.viper.dsm.*;
@@ -10,10 +13,14 @@ import java.util.HashMap;
 final class TypeConverter {
     private final HashMap<String, String> cppPrimitiveTypes;
     private final HashMap<String, String> viperPrimitiveValues;
+    private final HashMap<TypeName, DSMStructure> structuresByTypeName;
 
-    TypeConverter(HashMap<String, String> cppPrimitiveTypes, HashMap<String, String> viperPrimitiveValues) {
+    TypeConverter(HashMap<String, String> cppPrimitiveTypes,
+                  HashMap<String, String> viperPrimitiveValues,
+                  HashMap<TypeName, DSMStructure> structuresByTypeName) {
         this.cppPrimitiveTypes = cppPrimitiveTypes;
         this.viperPrimitiveValues = viperPrimitiveValues;
+        this.structuresByTypeName = structuresByTypeName;
     }
 
     boolean isTypeAny(DSMType type) {
@@ -295,5 +302,311 @@ final class TypeConverter {
 
     boolean isBlob(TypeName typeName) {
         return typeName.name.equals(DSMLexicon.Blob);
+    }
+
+    String viperValue(DSMType type) throws Exception {
+        if (type instanceof DSMTypeKey typeId)
+            return String.format(viperValue(typeId.elementType));
+
+        if (type instanceof DSMTypeVec)
+            return "ValueVec";
+
+        if (type instanceof DSMTypeMat)
+            return "ValueMat";
+
+        if (type instanceof DSMTypeTuple)
+            return "ValueTuple";
+
+        if (type instanceof DSMTypeOptional)
+            return "ValueOptional";
+
+        if (type instanceof DSMTypeVector)
+            return "ValueVector";
+
+        if (type instanceof DSMTypeSet)
+            return "ValueSet";
+
+        if (type instanceof DSMTypeXArray)
+            return "ValueXArray";
+
+        if (type instanceof DSMTypeMap)
+            return "ValueMap";
+
+        if (type instanceof DSMTypeVariant)
+            return "ValueVariant";
+
+        if (type instanceof DSMTypeReference typeReference) {
+            return switch (typeReference.domain) {
+                case PRIMITIVE -> viperPrimitiveValue(typeReference.typeName.name);
+                case CONCEPT, CLUB, ANY_CONCEPT -> "ValueKey";
+                case ENUMERATION -> "ValueEnumeration";
+                case STRUCTURE -> "ValueStructure";
+                case ANY -> "ValueAny";
+            };
+        }
+
+        throw new ConvertException(String.format("viperValue: type '%s' is not handled.", type.getClass().getName()));
+    }
+
+    TemplateField createTemplateField(DSMType type) throws Exception {
+        var ctype = TemplateFieldType.BOX;
+        var keyType = "<None>";
+        var keyTypeSuffix = "<None>";
+        var elementType = "<None>";
+        var elementTypeSuffix = "<None>";
+        var elementTypeViperValue = "<None>";
+        TemplatePythonType pythonKeyType = null;
+        TemplatePythonType pythonElementType = null;
+        var passBy = "<None>";
+
+        if (type instanceof DSMTypeSet typeSet) {
+            ctype = TemplateFieldType.SET;
+            elementType = convertType(typeSet.elementType);
+            elementTypeSuffix = typeSuffix(typeSet.elementType);
+            elementTypeViperValue = viperValue(typeSet.elementType);
+            pythonElementType = templatePythonType(typeSet.elementType);
+            passBy = passByQualifier(typeSet.elementType);
+        }
+
+        if (type instanceof DSMTypeMap typeMap) {
+            ctype = TemplateFieldType.MAP;
+            keyType = convertType(typeMap.keyType);
+            keyTypeSuffix = typeSuffix(typeMap.keyType);
+            elementType = convertType(typeMap.elementType);
+            elementTypeSuffix = typeSuffix(typeMap.elementType);
+            elementTypeViperValue = viperValue(typeMap.elementType);
+            pythonKeyType = templatePythonType(typeMap.keyType);
+            pythonElementType = templatePythonType(typeMap.elementType);
+            passBy = passByQualifier(typeMap.elementType);
+        }
+
+        if (type instanceof DSMTypeXArray typeXArray) {
+            ctype = TemplateFieldType.XARRAY;
+            elementType = convertType(typeXArray.elementType);
+            elementTypeSuffix = typeSuffix(typeXArray.elementType);
+            elementTypeViperValue = viperValue(typeXArray.elementType);
+            pythonElementType = templatePythonType(typeXArray.elementType);
+            passBy = passByQualifier(typeXArray.elementType);
+        }
+
+        return new TemplateField(ctype, keyType, keyTypeSuffix, elementType, elementTypeSuffix, elementTypeViperValue, pythonKeyType, pythonElementType, passBy);
+    }
+
+    TemplatePythonType templatePythonType(DSMType type) throws Exception {
+        final var pythonType = pythonType(type);
+        final var typeSuffix = typeSuffix(type);
+
+        return new TemplatePythonType(pythonType, typeSuffix);
+    }
+
+    private String pythonType(DSMType type) throws Exception {
+        if (type instanceof DSMTypeKey typeKey) {
+            return pythonType(typeKey.elementType);
+        }
+
+        if (type instanceof DSMTypeVec typeVec)
+            return String.format("Vec_%s_%d", pythonType(typeVec.elementType), typeVec.size);
+
+        if (type instanceof DSMTypeMat typeMat)
+            return String.format("Mat_%s_%d_%d", pythonType(typeMat.elementType), typeMat.columns, typeMat.rows);
+
+        if (type instanceof DSMTypeTuple typeTuple) {
+            var memberSuffixes = new ArrayList<String>();
+            for (var memberType : typeTuple.types)
+                memberSuffixes.add(pythonType(memberType));
+
+            return "Tuple_" + String.join("_", memberSuffixes);
+        }
+
+        if (type instanceof DSMTypeOptional typeOptional)
+            return String.format("Optional_%s", pythonType(typeOptional.elementType));
+
+        if (type instanceof DSMTypeVector typeVector)
+            return String.format("Vector_%s", pythonType(typeVector.elementType));
+
+        if (type instanceof DSMTypeMap typeMap)
+            return String.format("Map_%s_to_%s", pythonType(typeMap.keyType), pythonType(typeMap.elementType));
+
+        if (type instanceof DSMTypeSet typeSet)
+            return String.format("Set_%s", pythonType(typeSet.elementType));
+
+        if (type instanceof DSMTypeXArray typeXArray)
+            return String.format("XArray_%s", pythonType(typeXArray.elementType));
+
+        if (type instanceof DSMTypeVariant typeVariant) {
+            var memberSuffixes = new ArrayList<String>();
+            for (var memberType : typeVariant.types)
+                memberSuffixes.add(pythonType(memberType));
+
+            return "Variant_" + String.join("_", memberSuffixes);
+        }
+
+        if (type instanceof DSMTypeReference typeReference) {
+            switch (typeReference.domain) {
+                case PRIMITIVE -> {
+                    return typeReference.typeName.name;
+                }
+                case ENUMERATION, STRUCTURE -> {
+                    return typeReference.typeName.nameSpace.name + "_" + typeReference.typeName.name;
+                }
+                case CONCEPT, CLUB -> {
+                    return typeReference.typeName.nameSpace.name + "_" + typeReference.typeName.name + "Key";
+                }
+                case ANY_CONCEPT -> {
+                    return "AnyConceptKey";
+                }
+                case ANY -> {
+                    return "Any";
+                }
+            }
+        }
+
+        throw new ConvertException(String.format("pythonType: Type '%s' not handled.", type.representation()));
+    }
+
+    boolean useBlobId(DSMType type) throws Exception {
+        if (type instanceof DSMTypeKey)
+            return false;
+
+        if (type instanceof DSMTypeVec)
+            return false;
+
+        if (type instanceof DSMTypeMat)
+            return false;
+
+        if (type instanceof DSMTypeTuple typeTuple) {
+            for (var memberType : typeTuple.types)
+                if (useBlobId(memberType))
+                    return true;
+
+            return false;
+        }
+
+        if (type instanceof DSMTypeOptional typeOptional)
+            return useBlobId(typeOptional.elementType);
+
+        if (type instanceof DSMTypeVector typeVector)
+            return useBlobId(typeVector.elementType);
+
+        if (type instanceof DSMTypeSet typeSet)
+            return useBlobId(typeSet.elementType);
+
+        if (type instanceof DSMTypeMap typeMap) {
+            if (useBlobId(typeMap.keyType))
+                return true;
+
+            return useBlobId(typeMap.elementType);
+        }
+
+        if (type instanceof DSMTypeVariant typeVariant) {
+            for (var memberType : typeVariant.types)
+                if (useBlobId(memberType))
+                    return true;
+
+            return false;
+        }
+
+        if (type instanceof DSMTypeXArray typeXArray)
+            return useBlobId(typeXArray.elementType);
+
+        if (type instanceof DSMTypeReference typeReference) {
+            switch (typeReference.domain) {
+                case ANY -> {
+                    return true;
+                }
+                case PRIMITIVE -> {
+                    return typeReference.typeName.name.equals(DSMLexicon.BlobId);
+                }
+                case ENUMERATION, CONCEPT, CLUB, ANY_CONCEPT -> {
+                    return false;
+                }
+                case STRUCTURE -> {
+                    final var structure = structuresByTypeName.get(typeReference.typeName);
+                    for (var field : structure.fields)
+                        if (useBlobId(field.type))
+                            return true;
+
+                    return false;
+                }
+            }
+        }
+
+        throw new ConvertException(String.format("useBlobId: type '%s' is not handled.", type.getClass().getName()));
+    }
+
+    boolean isStructureMovable(DSMStructure structure) {
+        for (var field : structure.fields)
+            if (isTypeMovable(field.type))
+                return true;
+
+        return false;
+    }
+
+    private boolean isTypeTupleMovable(DSMTypeTuple typeTuple) {
+        for (var type : typeTuple.types)
+            if (isTypeMovable(type))
+                return true;
+
+        return false;
+    }
+
+    private boolean isTypeVariantMovable(DSMTypeVariant typeVariant) {
+        for (var type : typeVariant.types)
+            if (isTypeMovable(type))
+                return true;
+
+        return false;
+    }
+
+    boolean isTypeMovable(DSMType type) {
+        if (type instanceof DSMTypeKey)
+            return false;
+
+        if (type instanceof DSMTypeVec)
+            return false;
+
+        if (type instanceof DSMTypeMat)
+            return false;
+
+        if (type instanceof DSMTypeOptional dsmTypeOptional)
+            return isTypeMovable(dsmTypeOptional.elementType);
+
+        if (type instanceof DSMTypeTuple typeTuple)
+            return isTypeTupleMovable(typeTuple);
+
+        if (type instanceof DSMTypeVector)
+            return true;
+
+        if (type instanceof DSMTypeSet)
+            return true;
+
+        if (type instanceof DSMTypeMap)
+            return true;
+
+        if (type instanceof DSMTypeVariant typeVariant)
+            return isTypeVariantMovable(typeVariant);
+
+        if (type instanceof DSMTypeXArray)
+            return true;
+
+        if (type instanceof DSMTypeReference typeReference) {
+            switch (typeReference.domain) {
+                case ANY, CONCEPT, CLUB, ANY_CONCEPT -> {
+                    return true;
+                }
+                case PRIMITIVE -> {
+                    return isBlob(typeReference.typeName) || isString(typeReference.typeName);
+                }
+                case ENUMERATION -> {
+                    return false;
+                }
+                case STRUCTURE -> {
+                    final var structure = structuresByTypeName.get(typeReference.typeName);
+                    return isStructureMovable(structure);
+                }
+            }
+        }
+
+        return false;
     }
 }

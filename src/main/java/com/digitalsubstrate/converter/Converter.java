@@ -50,7 +50,7 @@ public final class Converter {
         this.inspector = new DSMDefinitionsInspector(definitions);
         this.structureDependency = new DSMStructureDependency(this.inspector);
         this.literalConverter = new LiteralConverter(structuresByTypeName);
-        this.typeConverter = new TypeConverter(cppPrimitiveTypes, viperPrimitiveValues);
+        this.typeConverter = new TypeConverter(cppPrimitiveTypes, viperPrimitiveValues, structuresByTypeName);
 
         populateMaps();
         registerPrimitives();
@@ -187,7 +187,7 @@ public final class Converter {
     private TemplateStructure convertStructure(DSMStructure structure) throws Exception {
         final var type = structure.typeName.representation();
         final var typeSuffix = typeConverter.typeSuffix(structure.typeName);
-        final var isMovable = isStructureMovable(structure);
+        final var isMovable = typeConverter.isStructureMovable(structure);
         TemplateStructure result = new TemplateStructure(structure, type, typeSuffix, isMovable);
         result.getFields().addAll(convertStructureFields(structure.typeName.nameSpace, structure.fields));
 
@@ -207,13 +207,13 @@ public final class Converter {
         final var type = typeConverter.convertType(field.type);
         final var typeInNamespace = typeConverter.convertTypeInNamespace(nameSpace, field.type);
         final var passBy = typeConverter.passByQualifier(field.type);
-        final var isMovable = isTypeMovable(field.type);
+        final var isMovable = typeConverter.isTypeMovable(field.type);
         final var defaultValue = literalConverter.convertRootDefaultValue(field.defaultValue, field.type);
         final var typeSuffix = typeConverter.typeSuffix(field.type);
         final var isAny = typeConverter.isTypeAny(field.type);
-        final var viperValue = viperValue(field.type);
-        final var pythonType = templatePythonType(field.type);
-        final var templateField = createTemplateField(field.type);
+        final var viperValue = typeConverter.viperValue(field.type);
+        final var pythonType = typeConverter.templatePythonType(field.type);
+        final var templateField = typeConverter.createTemplateField(field.type);
 
         return new TemplateStructureField(
                 field, type, typeInNamespace, passBy, isMovable, defaultValue, typeSuffix,
@@ -311,8 +311,8 @@ public final class Converter {
         final var type = typeConverter.convertType(dsmKeyType);
         final var typeInNamespace = typeConverter.convertTypeInNamespace(nameSpace, dsmKeyType);
         final var typeSuffix = typeConverter.typeSuffix(dsmKeyType);
-        final var viperValue = viperValue(dsmKeyType);
-        final var pythonType = templatePythonType(dsmKeyType);
+        final var viperValue = typeConverter.viperValue(dsmKeyType);
+        final var pythonType = typeConverter.templatePythonType(dsmKeyType);
 
         return new TemplateAttachedKeyType(dsmKeyType.typeName, type, typeInNamespace, typeSuffix, viperValue, pythonType);
     }
@@ -323,11 +323,11 @@ public final class Converter {
         final var type = typeConverter.convertType(dsmDocumentType);
         final var typeInNameSpace = typeConverter.convertTypeInNamespace(nameSpace, dsmDocumentType);
         final var typeSuffix = typeConverter.typeSuffix(dsmDocumentType);
-        final var viperValue = viperValue(dsmDocumentType);
-        final var pythonType = templatePythonType(dsmDocumentType);
+        final var viperValue = typeConverter.viperValue(dsmDocumentType);
+        final var pythonType = typeConverter.templatePythonType(dsmDocumentType);
         final var templateStructure = findTemplateStructure(dsmDocumentType);
-        final var templateField = createTemplateField(dsmDocumentType);
-        final var useBlobId = useBlobId(dsmDocumentType);
+        final var templateField = typeConverter.createTemplateField(dsmDocumentType);
+        final var useBlobId = typeConverter.useBlobId(dsmDocumentType);
 
         return new TemplateAttachedDocumentType(type, typeInNameSpace, typeSuffix, viperValue, pythonType, templateStructure, templateField, useBlobId);
     }
@@ -364,8 +364,8 @@ public final class Converter {
             final var typeSuffix = typeConverter.typeSuffix(vec);
             final var elementTypeSuffix = typeConverter.typeSuffix(vec.elementType);
             final var dsmType = vec.representation();
-            final var pythonType = templatePythonType(vec);
-            final var pythonElementType = templatePythonType(vec.elementType);
+            final var pythonType = typeConverter.templatePythonType(vec);
+            final var pythonElementType = typeConverter.templatePythonType(vec.elementType);
 
             definitions.vecFunctions.add(new TemplateVecFunction(
                     type, vec.size, typeSuffix, elementTypeSuffix,
@@ -378,8 +378,8 @@ public final class Converter {
             final var typeSuffix = typeConverter.typeSuffix(mat);
             final var elementTypeSuffix = typeConverter.typeSuffix(mat.elementType);
             final var dsmType = mat.representation();
-            final var pythonType = templatePythonType(mat);
-            final var pythonElementType = templatePythonType(mat.elementType);
+            final var pythonType = typeConverter.templatePythonType(mat);
+            final var pythonElementType = typeConverter.templatePythonType(mat.elementType);
 
             definitions.matFunctions.add(new TemplateMatFunction(
                     type, mat.columns, mat.rows, typeSuffix, elementTypeSuffix,
@@ -392,14 +392,14 @@ public final class Converter {
             final var typeSuffix = typeConverter.typeSuffix(tuple);
             final var members = new ArrayList<TemplateType>();
             final var dsmType = tuple.representation();
-            final var pythonType = templatePythonType(tuple);
+            final var pythonType = typeConverter.templatePythonType(tuple);
             final var pythonMembers = new ArrayList<TemplatePythonType>();
 
             for (var memberType : tuple.types) {
                 final var mType = typeConverter.convertType(memberType);
                 final var mTypeSuffix = typeConverter.typeSuffix(memberType);
                 members.add(new TemplateType(mType, mTypeSuffix));
-                pythonMembers.add(templatePythonType(memberType));
+                pythonMembers.add(typeConverter.templatePythonType(memberType));
             }
 
             definitions.tupleFunctions.add(new TemplateTupleFunction(
@@ -414,8 +414,8 @@ public final class Converter {
             final var elementType = typeConverter.convertType(optional.elementType);
             final var elementTypeSuffix = typeConverter.typeSuffix(optional.elementType);
             final var dsmType = optional.representation();
-            final var pythonType = templatePythonType(optional);
-            final var pythonElementType = templatePythonType(optional.elementType);
+            final var pythonType = typeConverter.templatePythonType(optional);
+            final var pythonElementType = typeConverter.templatePythonType(optional.elementType);
 
             definitions.optionalFunctions.add(new TemplateOptionalFunction(
                     type, typeSuffix, elementType, elementTypeSuffix,
@@ -428,8 +428,8 @@ public final class Converter {
             final var typeSuffix = typeConverter.typeSuffix(vector);
             final var elementTypeSuffix = typeConverter.typeSuffix(vector.elementType);
             final var dsmType = vector.representation();
-            final var pythonType = templatePythonType(vector);
-            final var pythonElementType = templatePythonType(vector.elementType);
+            final var pythonType = typeConverter.templatePythonType(vector);
+            final var pythonElementType = typeConverter.templatePythonType(vector.elementType);
 
             definitions.vectorFunctions.add(new TemplateVectorFunction(
                     type, typeSuffix, elementTypeSuffix,
@@ -442,8 +442,8 @@ public final class Converter {
             final var typeSuffix = typeConverter.typeSuffix(set);
             final var elementTypeSuffix = typeConverter.typeSuffix(set.elementType);
             final var dsmType = set.representation();
-            final var pythonType = templatePythonType(set);
-            final var pythonElementType = templatePythonType(set.elementType);
+            final var pythonType = typeConverter.templatePythonType(set);
+            final var pythonElementType = typeConverter.templatePythonType(set.elementType);
 
             definitions.setFunctions.add(new TemplateSetFunction(
                     type, typeSuffix, elementTypeSuffix,
@@ -457,9 +457,9 @@ public final class Converter {
             final var keyTypeSuffix = typeConverter.typeSuffix(map.keyType);
             final var elementTypeSuffix = typeConverter.typeSuffix(map.elementType);
             final var dsmType = map.representation();
-            final var pythonType = templatePythonType(map);
-            final var pythonKeyType = templatePythonType(map.keyType);
-            final var pythonElementType = templatePythonType(map.elementType);
+            final var pythonType = typeConverter.templatePythonType(map);
+            final var pythonKeyType = typeConverter.templatePythonType(map.keyType);
+            final var pythonElementType = typeConverter.templatePythonType(map.elementType);
 
             definitions.mapFunctions.add(new TemplateMapFunction(
                     type, typeSuffix, keyTypeSuffix, elementTypeSuffix,
@@ -473,8 +473,8 @@ public final class Converter {
             final var elementType = typeConverter.convertType(xarray.elementType);
             final var elementTypeSuffix = typeConverter.typeSuffix(xarray.elementType);
             final var dsmType = xarray.representation();
-            final var pythonType = templatePythonType(xarray);
-            final var pythonElementType = templatePythonType(xarray.elementType);
+            final var pythonType = typeConverter.templatePythonType(xarray);
+            final var pythonElementType = typeConverter.templatePythonType(xarray.elementType);
 
             definitions.xarrayFunctions.add(new TemplateXArrayFunction(type, typeSuffix, elementType, elementTypeSuffix,
                     dsmType,
@@ -486,14 +486,14 @@ public final class Converter {
             final var typeSuffix = typeConverter.typeSuffix(variant);
             final var members = new ArrayList<TemplateType>();
             final var dsmType = variant.representation();
-            final var pythonType = templatePythonType(variant);
+            final var pythonType = typeConverter.templatePythonType(variant);
             final var pythonMembers = new ArrayList<TemplatePythonType>();
 
             for (var memberType : variant.types) {
                 final var mType = typeConverter.convertType(memberType);
                 final var mTypeSuffix = typeConverter.typeSuffix(memberType);
                 members.add(new TemplateType(mType, mTypeSuffix));
-                pythonMembers.add(templatePythonType(memberType));
+                pythonMembers.add(typeConverter.templatePythonType(memberType));
             }
 
             definitions.variantFunctions.add(new TemplateVariantFunction(
@@ -625,8 +625,8 @@ public final class Converter {
         final var parameters = convertFunctionParameters(function.prototype.parameters);
         final var type = typeConverter.convertType(function.prototype.returnType);
         final var typeSuffix = typeConverter.typeSuffix(function.prototype.returnType);
-        final var returnViperValue = viperValue(function.prototype.returnType);
-        final var returnPythonType = templatePythonType(function.prototype.returnType);
+        final var returnViperValue = typeConverter.viperValue(function.prototype.returnType);
+        final var returnPythonType = typeConverter.templatePythonType(function.prototype.returnType);
         registerFunctionForContainer(function.prototype.returnType);
 
         return new TemplateFunction(
@@ -655,8 +655,8 @@ public final class Converter {
         final var parameters = convertFunctionParameters(function.prototype.parameters);
         final var type = typeConverter.convertType(function.prototype.returnType);
         final var typeSuffix = typeConverter.typeSuffix(function.prototype.returnType);
-        final var returnViperValue = viperValue(function.prototype.returnType);
-        final var templatePythonType = templatePythonType(function.prototype.returnType);
+        final var returnViperValue = typeConverter.viperValue(function.prototype.returnType);
+        final var templatePythonType = typeConverter.templatePythonType(function.prototype.returnType);
         registerFunctionForContainer(function.prototype.returnType);
 
         return new TemplateAttachmentFunction(
@@ -679,317 +679,12 @@ public final class Converter {
         final var type = typeConverter.convertType(parameter.type);
         final var passBy = typeConverter.passByQualifier(parameter.type);
         final var typeSuffix = typeConverter.typeSuffix(parameter.type);
-        final var viperValue = viperValue(parameter.type);
-        final var templatePythonType = templatePythonType(parameter.type);
+        final var viperValue = typeConverter.viperValue(parameter.type);
+        final var templatePythonType = typeConverter.templatePythonType(parameter.type);
 
         return new TemplateFunctionParameter(parameter, type, passBy, typeSuffix, viperValue, templatePythonType);
     }
 
-    String viperValue(DSMType type) throws Exception {
-        if (type instanceof DSMTypeKey typeId)
-            return String.format(viperValue(typeId.elementType));
-
-        if (type instanceof DSMTypeVec)
-            return "ValueVec";
-
-        if (type instanceof DSMTypeMat)
-            return "ValueMat";
-
-        if (type instanceof DSMTypeTuple)
-            return "ValueTuple";
-
-        if (type instanceof DSMTypeOptional)
-            return "ValueOptional";
-
-        if (type instanceof DSMTypeVector)
-            return "ValueVector";
-
-        if (type instanceof DSMTypeSet)
-            return "ValueSet";
-
-        if (type instanceof DSMTypeXArray)
-            return "ValueXArray";
-
-        if (type instanceof DSMTypeMap)
-            return "ValueMap";
-
-        if (type instanceof DSMTypeVariant)
-            return "ValueVariant";
-
-        if (type instanceof DSMTypeReference typeReference) {
-            return switch (typeReference.domain) {
-                case PRIMITIVE -> typeConverter.viperPrimitiveValue(typeReference.typeName.name);
-                case CONCEPT, CLUB, ANY_CONCEPT -> "ValueKey";
-                case ENUMERATION -> "ValueEnumeration";
-                case STRUCTURE -> "ValueStructure";
-                case ANY -> "ValueAny";
-            };
-        }
-
-        throw new ConvertException(String.format("viperValue: type '%s' is not handled.", type.getClass().getName()));
-    }
-
-    TemplateField createTemplateField(DSMType type) throws Exception {
-        var ctype = TemplateFieldType.BOX;
-        var keyType = "<None>";
-        var keyTypeSuffix = "<None>";
-        var elementType = "<None>";
-        var elementTypeSuffix = "<None>";
-        var elementTypeViperValue = "<None>";
-        TemplatePythonType pythonKeyType = null;
-        TemplatePythonType pythonElementType = null;
-        var passBy = "<None>";
-
-        if (type instanceof DSMTypeSet typeSet) {
-            ctype = TemplateFieldType.SET;
-            elementType = typeConverter.convertType(typeSet.elementType);
-            elementTypeSuffix = typeConverter.typeSuffix(typeSet.elementType);
-            elementTypeViperValue = viperValue(typeSet.elementType);
-            pythonElementType = templatePythonType(typeSet.elementType);
-            passBy = typeConverter.passByQualifier(typeSet.elementType);
-        }
-
-        if (type instanceof DSMTypeMap typeMap) {
-            ctype = TemplateFieldType.MAP;
-            keyType = typeConverter.convertType(typeMap.keyType);
-            keyTypeSuffix = typeConverter.typeSuffix(typeMap.keyType);
-            elementType = typeConverter.convertType(typeMap.elementType);
-            elementTypeSuffix = typeConverter.typeSuffix(typeMap.elementType);
-            elementTypeViperValue = viperValue(typeMap.elementType);
-            pythonKeyType = templatePythonType(typeMap.keyType);
-            pythonElementType = templatePythonType(typeMap.elementType);
-            passBy = typeConverter.passByQualifier(typeMap.elementType);
-        }
-
-        if (type instanceof DSMTypeXArray typeXArray) {
-            ctype = TemplateFieldType.XARRAY;
-            elementType = typeConverter.convertType(typeXArray.elementType);
-            elementTypeSuffix = typeConverter.typeSuffix(typeXArray.elementType);
-            elementTypeViperValue = viperValue(typeXArray.elementType);
-            pythonElementType = templatePythonType(typeXArray.elementType);
-            passBy = typeConverter.passByQualifier(typeXArray.elementType);
-        }
-
-        return new TemplateField(ctype, keyType, keyTypeSuffix, elementType, elementTypeSuffix, elementTypeViperValue, pythonKeyType, pythonElementType, passBy);
-    }
-
-    private TemplatePythonType templatePythonType(DSMType type) throws Exception {
-        final var pythonType = pythonType(type);
-        final var typeSuffix = typeConverter.typeSuffix(type);
-
-        return new TemplatePythonType(pythonType, typeSuffix);
-    }
-
-    private String pythonType(DSMType type) throws Exception {
-        if (type instanceof DSMTypeKey typeKey) {
-            return pythonType(typeKey.elementType);
-        }
-
-        if (type instanceof DSMTypeVec typeVec)
-            return String.format("Vec_%s_%d", pythonType(typeVec.elementType), typeVec.size);
-
-        if (type instanceof DSMTypeMat typeMat)
-            return String.format("Mat_%s_%d_%d", pythonType(typeMat.elementType), typeMat.columns, typeMat.rows);
-
-        if (type instanceof DSMTypeTuple typeTuple) {
-            var memberSuffixes = new ArrayList<String>();
-            for (var memberType : typeTuple.types)
-                memberSuffixes.add(pythonType(memberType));
-
-            return "Tuple_" + String.join("_", memberSuffixes);
-        }
-
-        if (type instanceof DSMTypeOptional typeOptional)
-            return String.format("Optional_%s", pythonType(typeOptional.elementType));
-
-        if (type instanceof DSMTypeVector typeVector)
-            return String.format("Vector_%s", pythonType(typeVector.elementType));
-
-        if (type instanceof DSMTypeMap typeMap)
-            return String.format("Map_%s_to_%s", pythonType(typeMap.keyType), pythonType(typeMap.elementType));
-
-        if (type instanceof DSMTypeSet typeSet)
-            return String.format("Set_%s", pythonType(typeSet.elementType));
-
-        if (type instanceof DSMTypeXArray typeXArray)
-            return String.format("XArray_%s", pythonType(typeXArray.elementType));
-
-        if (type instanceof DSMTypeVariant typeVariant) {
-            var memberSuffixes = new ArrayList<String>();
-            for (var memberType : typeVariant.types)
-                memberSuffixes.add(pythonType(memberType));
-
-            return "Variant_" + String.join("_", memberSuffixes);
-        }
-
-        if (type instanceof DSMTypeReference typeReference) {
-            switch (typeReference.domain) {
-                case PRIMITIVE -> {
-                    return typeReference.typeName.name;
-                }
-                case ENUMERATION, STRUCTURE -> {
-                    return typeReference.typeName.nameSpace.name + "_" + typeReference.typeName.name;
-                }
-                case CONCEPT, CLUB -> {
-                    return typeReference.typeName.nameSpace.name + "_" + typeReference.typeName.name + "Key";
-                }
-                case ANY_CONCEPT -> {
-                    return "AnyConceptKey";
-                }
-                case ANY -> {
-                    return "Any";
-                }
-            }
-        }
-
-        throw new ConvertException(String.format("pythonType: Type '%s' not handled.", type.representation()));
-    }
-
-    boolean useBlobId(DSMType type) throws Exception {
-        if (type instanceof DSMTypeKey)
-            return false;
-
-        if (type instanceof DSMTypeVec)
-            return false;
-
-        if (type instanceof DSMTypeMat)
-            return false;
-
-        if (type instanceof DSMTypeTuple typeTuple) {
-            for (var memberType : typeTuple.types)
-                if (useBlobId(memberType))
-                    return true;
-
-            return false;
-        }
-
-        if (type instanceof DSMTypeOptional typeOptional)
-            return useBlobId(typeOptional.elementType);
-
-        if (type instanceof DSMTypeVector typeVector)
-            return useBlobId(typeVector.elementType);
-
-        if (type instanceof DSMTypeSet typeSet)
-            return useBlobId(typeSet.elementType);
-
-        if (type instanceof DSMTypeMap typeMap) {
-            if (useBlobId(typeMap.keyType))
-                return true;
-
-            return useBlobId(typeMap.elementType);
-        }
-
-        if (type instanceof DSMTypeVariant typeVariant) {
-            for (var memberType : typeVariant.types)
-                if (useBlobId(memberType))
-                    return true;
-
-            return false;
-        }
-
-        if (type instanceof DSMTypeXArray typeXArray)
-            return useBlobId(typeXArray.elementType);
-
-        if (type instanceof DSMTypeReference typeReference) {
-            switch (typeReference.domain) {
-                case ANY -> {
-                    return true;
-                }
-                case PRIMITIVE -> {
-                    return typeReference.typeName.name.equals(DSMLexicon.BlobId);
-                }
-                case ENUMERATION, CONCEPT, CLUB, ANY_CONCEPT -> {
-                    return false;
-                }
-                case STRUCTURE -> {
-                    final var structure = structuresByTypeName.get(typeReference.typeName);
-                    for (var field : structure.fields)
-                        if (useBlobId(field.type))
-                            return true;
-
-                    return false;
-                }
-            }
-        }
-
-        throw new ConvertException(String.format("useBlobId: type '%s' is not handled.", type.getClass().getName()));
-    }
-
-    boolean isStructureMovable(DSMStructure structure) {
-        for (var field : structure.fields)
-            if (isTypeMovable(field.type))
-                return true;
-
-        return false;
-    }
-
-    boolean isTypeTupleMovable(DSMTypeTuple typeTuple) {
-        for (var type : typeTuple.types)
-            if (isTypeMovable(type))
-                return true;
-
-        return false;
-    }
-
-    boolean isTypeVariantMovable(DSMTypeVariant typeVariant) {
-        for (var type : typeVariant.types)
-            if (isTypeMovable(type))
-                return true;
-
-        return false;
-    }
-
-    boolean isTypeMovable(DSMType type) {
-        if (type instanceof DSMTypeKey)
-            return false;
-
-        if (type instanceof DSMTypeVec)
-            return false;
-
-        if (type instanceof DSMTypeMat)
-            return false;
-
-        if (type instanceof DSMTypeOptional dsmTypeOptional)
-            return isTypeMovable(dsmTypeOptional.elementType);
-
-        if (type instanceof DSMTypeTuple typeTuple)
-            return isTypeTupleMovable(typeTuple);
-
-        if (type instanceof DSMTypeVector)
-            return true;
-
-        if (type instanceof DSMTypeSet)
-            return true;
-
-        if (type instanceof DSMTypeMap)
-            return true;
-
-        if (type instanceof DSMTypeVariant typeVariant)
-            return isTypeVariantMovable(typeVariant);
-
-        if (type instanceof DSMTypeXArray)
-            return true;
-
-        if (type instanceof DSMTypeReference typeReference) {
-            switch (typeReference.domain) {
-                case ANY, CONCEPT, CLUB, ANY_CONCEPT -> {
-                    return true;
-                }
-                case PRIMITIVE -> {
-                    return typeConverter.isBlob(typeReference.typeName) || typeConverter.isString(typeReference.typeName);
-                }
-                case ENUMERATION -> {
-                    return false;
-                }
-                case STRUCTURE -> {
-                    final var structure = structuresByTypeName.get(typeReference.typeName);
-                    return isStructureMovable(structure);
-                }
-            }
-        }
-
-        return false;
-    }
 }
 
 
