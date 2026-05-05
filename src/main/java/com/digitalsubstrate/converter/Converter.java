@@ -20,21 +20,9 @@ public final class Converter {
     private final HashMap<String, String> cppPrimitiveTypes = new HashMap<>();
     private final HashMap<String, String> viperPrimitiveValues = new HashMap<>();
 
-    private final HashMap<String, DSMTypeVec> vecFunctions = new HashMap<>();
-    private final HashMap<String, DSMTypeMat> matFunctions = new HashMap<>();
-
-    private final HashMap<String, DSMTypeTuple> tupleFunctions = new HashMap<>();
-
-    private final HashMap<String, DSMTypeOptional> optionalFunctions = new HashMap<>();
-    private final HashMap<String, DSMTypeVector> vectorFunctions = new HashMap<>();
-    private final HashMap<String, DSMTypeSet> setFunctions = new HashMap<>();
-    private final HashMap<String, DSMTypeMap> mapFunctions = new HashMap<>();
-    private final HashMap<String, DSMTypeXArray> xarrayFunctions = new HashMap<>();
-
-    private final HashMap<String, DSMTypeVariant> variantFunctions = new HashMap<>();
-
     private final LiteralConverter literalConverter;
     private final TypeConverter typeConverter;
+    private final FunctionRegistrar functionRegistrar;
 
     public final String generated;
     public final DSMDefinitions definitions;
@@ -51,6 +39,7 @@ public final class Converter {
         this.structureDependency = new DSMStructureDependency(this.inspector);
         this.literalConverter = new LiteralConverter(structuresByTypeName);
         this.typeConverter = new TypeConverter(cppPrimitiveTypes, viperPrimitiveValues, structuresByTypeName);
+        this.functionRegistrar = new FunctionRegistrar(definitions, typeConverter);
 
         populateMaps();
         registerPrimitives();
@@ -87,8 +76,8 @@ public final class Converter {
         result.functionPools.addAll(functionPools);
         result.attachmentFunctionPools.addAll(attachmentFunctionPools);
 
-        registerFunctionForContainer(new DSMTypeOptional(DSMTypeReference.AnyConcept));
-        registerFunctionForStructures();
+        functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(DSMTypeReference.AnyConcept));
+        functionRegistrar.registerFunctionForStructures();
         convertFunction(result);
 
         result.structures.addAll(result.sortedStructures);
@@ -239,7 +228,7 @@ public final class Converter {
     private ArrayList<TemplateConcept> convertConcepts() throws Exception {
         final var result = new ArrayList<TemplateConcept>();
         for (var concept : definitions.concepts) {
-            registerFunctionForContainer(new DSMTypeOptional(concept.typeReference));
+            functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(concept.typeReference));
             final var templateConcept = convertConcept(concept);
             templateConceptByTypeName.put(concept.typeName, templateConcept);
             result.add(templateConcept);
@@ -273,7 +262,7 @@ public final class Converter {
 
         ArrayList<TemplateConcept> members = new ArrayList<>();
         for (var member : club.members) {
-            registerFunctionForContainer(new DSMTypeOptional(club.typeReference));
+            functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(club.typeReference));
             final var templateConcept = templateConceptByTypeName.get(member.typeName);
             assert templateConcept != null;
             members.add(templateConcept);
@@ -307,7 +296,7 @@ public final class Converter {
     }
 
     private TemplateAttachedKeyType convertAttachmentKeyType(NameSpace nameSpace, DSMTypeReference dsmKeyType) throws Exception {
-        registerFunctionForContainer(new DSMTypeSet(dsmKeyType));
+        functionRegistrar.registerFunctionForContainer(new DSMTypeSet(dsmKeyType));
         final var type = typeConverter.convertType(dsmKeyType);
         final var typeInNamespace = typeConverter.convertTypeInNamespace(nameSpace, dsmKeyType);
         final var typeSuffix = typeConverter.typeSuffix(dsmKeyType);
@@ -318,7 +307,7 @@ public final class Converter {
     }
 
     private TemplateAttachedDocumentType convertAttachmentDocumentType(NameSpace nameSpace, DSMType dsmDocumentType) throws Exception {
-        registerFunctionForContainer(new DSMTypeOptional(dsmDocumentType));
+        functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(dsmDocumentType));
 
         final var type = typeConverter.convertType(dsmDocumentType);
         final var typeInNameSpace = typeConverter.convertTypeInNamespace(nameSpace, dsmDocumentType);
@@ -359,7 +348,7 @@ public final class Converter {
     // Type Functions
     private void convertFunction(TemplateDefinitions definitions) throws Exception {
 
-        for (var vec : vecFunctions.values()) {
+        for (var vec : functionRegistrar.vecFunctions.values()) {
             final var type = typeConverter.convertType(vec);
             final var typeSuffix = typeConverter.typeSuffix(vec);
             final var elementTypeSuffix = typeConverter.typeSuffix(vec.elementType);
@@ -373,7 +362,7 @@ public final class Converter {
                     pythonType, pythonElementType));
         }
 
-        for (var mat : matFunctions.values()) {
+        for (var mat : functionRegistrar.matFunctions.values()) {
             final var type = typeConverter.convertType(mat);
             final var typeSuffix = typeConverter.typeSuffix(mat);
             final var elementTypeSuffix = typeConverter.typeSuffix(mat.elementType);
@@ -387,7 +376,7 @@ public final class Converter {
                     pythonType, pythonElementType));
         }
 
-        for (var tuple : tupleFunctions.values()) {
+        for (var tuple : functionRegistrar.tupleFunctions.values()) {
             final var type = typeConverter.convertType(tuple);
             final var typeSuffix = typeConverter.typeSuffix(tuple);
             final var members = new ArrayList<TemplateType>();
@@ -408,7 +397,7 @@ public final class Converter {
                     pythonType, pythonMembers));
         }
 
-        for (var optional : optionalFunctions.values()) {
+        for (var optional : functionRegistrar.optionalFunctions.values()) {
             final var type = typeConverter.convertType(optional);
             final var typeSuffix = typeConverter.typeSuffix(optional);
             final var elementType = typeConverter.convertType(optional.elementType);
@@ -423,7 +412,7 @@ public final class Converter {
                     pythonType, pythonElementType));
         }
 
-        for (var vector : vectorFunctions.values()) {
+        for (var vector : functionRegistrar.vectorFunctions.values()) {
             final var type = typeConverter.convertType(vector);
             final var typeSuffix = typeConverter.typeSuffix(vector);
             final var elementTypeSuffix = typeConverter.typeSuffix(vector.elementType);
@@ -437,7 +426,7 @@ public final class Converter {
                     pythonType, pythonElementType));
         }
 
-        for (var set : setFunctions.values()) {
+        for (var set : functionRegistrar.setFunctions.values()) {
             final var type = typeConverter.convertType(set);
             final var typeSuffix = typeConverter.typeSuffix(set);
             final var elementTypeSuffix = typeConverter.typeSuffix(set.elementType);
@@ -451,7 +440,7 @@ public final class Converter {
                     pythonType, pythonElementType));
         }
 
-        for (var map : mapFunctions.values()) {
+        for (var map : functionRegistrar.mapFunctions.values()) {
             final var type = typeConverter.convertType(map);
             final var typeSuffix = typeConverter.typeSuffix(map);
             final var keyTypeSuffix = typeConverter.typeSuffix(map.keyType);
@@ -467,7 +456,7 @@ public final class Converter {
                     pythonType, pythonKeyType, pythonElementType));
         }
 
-        for (var xarray : xarrayFunctions.values()) {
+        for (var xarray : functionRegistrar.xarrayFunctions.values()) {
             final var type = typeConverter.convertType(xarray);
             final var typeSuffix = typeConverter.typeSuffix(xarray);
             final var elementType = typeConverter.convertType(xarray.elementType);
@@ -481,7 +470,7 @@ public final class Converter {
                     pythonType, pythonElementType));
         }
 
-        for (var variant : variantFunctions.values()) {
+        for (var variant : functionRegistrar.variantFunctions.values()) {
             final var type = typeConverter.convertType(variant);
             final var typeSuffix = typeConverter.typeSuffix(variant);
             final var members = new ArrayList<TemplateType>();
@@ -500,70 +489,6 @@ public final class Converter {
                     type, typeSuffix, members,
                     dsmType,
                     pythonType, pythonMembers));
-        }
-    }
-
-    private void registerFunctionForStructures() throws Exception {
-        for (var structure : definitions.structures)
-            registerFunctionForStructure(structure);
-    }
-
-    private void registerFunctionForStructure(DSMStructure structure) throws Exception {
-        for (var field : structure.fields)
-            registerFunctionForContainer(field.type);
-    }
-
-    public void registerFunctionForContainer(DSMType type) throws Exception {
-
-        if (type instanceof DSMTypeVec typeVec) {
-            final var key = typeConverter.typeSuffix(typeVec);
-            vecFunctions.put(key, typeVec);
-            registerFunctionForContainer(typeVec.elementType);
-
-        } else if (type instanceof DSMTypeMat typeMat) {
-            final var key = typeConverter.typeSuffix(typeMat);
-            matFunctions.put(key, typeMat);
-            registerFunctionForContainer(typeMat.elementType);
-
-        } else if (type instanceof DSMTypeTuple typeTuple) {
-            final var key = typeConverter.typeSuffix(typeTuple);
-            tupleFunctions.put(key, typeTuple);
-            for (var memberType : typeTuple.types)
-                registerFunctionForContainer(memberType);
-
-        } else if (type instanceof DSMTypeOptional typeOptional) {
-            final var key = typeConverter.typeSuffix(typeOptional);
-            optionalFunctions.put(key, typeOptional);
-            registerFunctionForContainer(typeOptional.elementType);
-
-        } else if (type instanceof DSMTypeVector typeVector) {
-            final var key = typeConverter.typeSuffix(typeVector);
-            vectorFunctions.put(key, typeVector);
-            registerFunctionForContainer(typeVector.elementType);
-
-        } else if (type instanceof DSMTypeSet typeSet) {
-            final var key = typeConverter.typeSuffix(typeSet);
-            setFunctions.put(key, typeSet);
-            registerFunctionForContainer(typeSet.elementType);
-
-        } else if (type instanceof DSMTypeMap typeMap) {
-            final var key = typeConverter.typeSuffix(typeMap);
-            mapFunctions.put(key, typeMap);
-            registerFunctionForContainer(typeMap.keyType);
-            registerFunctionForContainer(typeMap.elementType);
-            registerFunctionForContainer(new DSMTypeSet(typeMap.keyType));
-
-        } else if (type instanceof DSMTypeXArray typeXArray) {
-            final var key = typeConverter.typeSuffix(typeXArray);
-            xarrayFunctions.put(key, typeXArray);
-            registerFunctionForContainer(typeXArray.elementType);
-            registerFunctionForContainer(new DSMTypeVector(typeXArray.elementType));
-
-        } else if (type instanceof DSMTypeVariant typeVariant) {
-            final var key = typeConverter.typeSuffix(typeVariant);
-            variantFunctions.put(key, typeVariant);
-            for (var memberType : typeVariant.types)
-                registerFunctionForContainer(memberType);
         }
     }
 
@@ -627,7 +552,7 @@ public final class Converter {
         final var typeSuffix = typeConverter.typeSuffix(function.prototype.returnType);
         final var returnViperValue = typeConverter.viperValue(function.prototype.returnType);
         final var returnPythonType = typeConverter.templatePythonType(function.prototype.returnType);
-        registerFunctionForContainer(function.prototype.returnType);
+        functionRegistrar.registerFunctionForContainer(function.prototype.returnType);
 
         return new TemplateFunction(
                 function, type, typeSuffix, parameters,
@@ -657,7 +582,7 @@ public final class Converter {
         final var typeSuffix = typeConverter.typeSuffix(function.prototype.returnType);
         final var returnViperValue = typeConverter.viperValue(function.prototype.returnType);
         final var templatePythonType = typeConverter.templatePythonType(function.prototype.returnType);
-        registerFunctionForContainer(function.prototype.returnType);
+        functionRegistrar.registerFunctionForContainer(function.prototype.returnType);
 
         return new TemplateAttachmentFunction(
                 function, type, typeSuffix, parameters,
@@ -668,7 +593,7 @@ public final class Converter {
     ArrayList<TemplateFunctionParameter> convertFunctionParameters(ArrayList<DSMFunctionPrototypeParameter> parameters) throws Exception {
         final var result = new ArrayList<TemplateFunctionParameter>();
         for (var parameter : parameters) {
-            registerFunctionForContainer(parameter.type);
+            functionRegistrar.registerFunctionForContainer(parameter.type);
             result.add(convertFunctionParameter(parameter));
         }
 
