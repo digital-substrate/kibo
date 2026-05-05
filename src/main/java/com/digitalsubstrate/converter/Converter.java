@@ -20,7 +20,6 @@ public final class Converter {
     private final TypeConverter typeConverter;
     private final FunctionRegistrar functionRegistrar;
     private final EntityConverter entityConverter;
-    private final FunctionConverter functionConverter;
 
     public final String generated;
     public final DSMDefinitions definitions;
@@ -39,7 +38,6 @@ public final class Converter {
         this.typeConverter = new TypeConverter(cppPrimitiveTypes, viperPrimitiveValues, structuresByTypeName);
         this.functionRegistrar = new FunctionRegistrar(definitions, typeConverter);
         this.entityConverter = new EntityConverter(definitions, structureDependency, typeConverter, literalConverter, functionRegistrar);
-        this.functionConverter = new FunctionConverter(definitions, typeConverter, functionRegistrar);
 
         populateMaps();
         registerPrimitives();
@@ -65,8 +63,8 @@ public final class Converter {
             concept.setChildren(children);
         }
 
-        final var functionPools = functionConverter.convertFunctionPool();
-        final var attachmentFunctionPools = functionConverter.convertAttachmentFunctionPool();
+        final var functionPools = entityConverter.convertFunctionPool();
+        final var attachmentFunctionPools = entityConverter.convertAttachmentFunctionPool();
 
         result.concepts.addAll(concepts);
         result.clubs.addAll(entityConverter.convertClubs());
@@ -78,7 +76,7 @@ public final class Converter {
 
         functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(DSMTypeReference.AnyConcept));
         functionRegistrar.registerFunctionForStructures();
-        functionConverter.emitContainerFunctions(result);
+        functionRegistrar.emitContainerFunctions(result);
 
         result.structures.addAll(result.sortedStructures);
         result.structures.sort(Comparator.comparing(TemplateStructure::getType));

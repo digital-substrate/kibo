@@ -226,4 +226,82 @@ final class EntityConverter {
 
         return null;
     }
+
+    ArrayList<TemplateFunctionPool> convertFunctionPool() throws Exception {
+        final var result = new ArrayList<TemplateFunctionPool>();
+        for (var pool : definitions.functionPools)
+            result.add(convertFunctionPool(pool));
+
+        return result;
+    }
+
+    private TemplateFunctionPool convertFunctionPool(DSMFunctionPool pool) throws Exception {
+        final var functions = new ArrayList<TemplateFunction>();
+        for (var function : pool.functions)
+            functions.add(convertFunction(function));
+
+        return new TemplateFunctionPool(functions, pool);
+    }
+
+    private TemplateFunction convertFunction(DSMFunction function) throws Exception {
+        final var parameters = convertFunctionParameters(function.prototype.parameters);
+        final var type = typeConverter.convertType(function.prototype.returnType);
+        final var typeSuffix = typeConverter.typeSuffix(function.prototype.returnType);
+        final var returnViperValue = typeConverter.viperValue(function.prototype.returnType);
+        final var returnPythonType = typeConverter.templatePythonType(function.prototype.returnType);
+        functionRegistrar.registerFunctionForContainer(function.prototype.returnType);
+
+        return new TemplateFunction(
+                function, type, typeSuffix, parameters,
+                returnViperValue, returnPythonType);
+    }
+
+    ArrayList<TemplateAttachmentFunctionPool> convertAttachmentFunctionPool() throws Exception {
+        final var result = new ArrayList<TemplateAttachmentFunctionPool>();
+        for (var pool : definitions.attachmentFunctionPools)
+            result.add(convertAttachmentFunctionPool(pool));
+
+        return result;
+    }
+
+    private TemplateAttachmentFunctionPool convertAttachmentFunctionPool(DSMAttachmentFunctionPool pool) throws Exception {
+        final var functions = new ArrayList<TemplateAttachmentFunction>();
+        for (var function : pool.functions)
+            functions.add(convertAttachmentFunction(function));
+
+        return new TemplateAttachmentFunctionPool(functions, pool);
+    }
+
+    private TemplateAttachmentFunction convertAttachmentFunction(DSMAttachmentFunction function) throws Exception {
+        final var parameters = convertFunctionParameters(function.prototype.parameters);
+        final var type = typeConverter.convertType(function.prototype.returnType);
+        final var typeSuffix = typeConverter.typeSuffix(function.prototype.returnType);
+        final var returnViperValue = typeConverter.viperValue(function.prototype.returnType);
+        final var templatePythonType = typeConverter.templatePythonType(function.prototype.returnType);
+        functionRegistrar.registerFunctionForContainer(function.prototype.returnType);
+
+        return new TemplateAttachmentFunction(
+                function, type, typeSuffix, parameters,
+                returnViperValue, templatePythonType);
+    }
+
+    private ArrayList<TemplateFunctionParameter> convertFunctionParameters(ArrayList<DSMFunctionPrototypeParameter> parameters) throws Exception {
+        final var result = new ArrayList<TemplateFunctionParameter>();
+        for (var parameter : parameters) {
+            functionRegistrar.registerFunctionForContainer(parameter.type);
+            result.add(convertFunctionParameter(parameter));
+        }
+
+        return result;
+    }
+
+    private TemplateFunctionParameter convertFunctionParameter(DSMFunctionPrototypeParameter parameter) throws Exception {
+        final var type = typeConverter.convertType(parameter.type);
+        final var passBy = typeConverter.passByQualifier(parameter.type);
+        final var typeSuffix = typeConverter.typeSuffix(parameter.type);
+        final var viperValue = typeConverter.viperValue(parameter.type);
+        final var templatePythonType = typeConverter.templatePythonType(parameter.type);
+
+        return new TemplateFunctionParameter(parameter, type, passBy, typeSuffix, viperValue, templatePythonType);
+    }
 }
