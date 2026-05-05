@@ -1,11 +1,9 @@
 package com.digitalsubstrate.converter;
 
 import com.digitalsubstrate.template.*;
-import com.digitalsubstrate.viper.NameSpace;
 import com.digitalsubstrate.viper.TypeName;
 import com.digitalsubstrate.viper.dsm.*;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 
