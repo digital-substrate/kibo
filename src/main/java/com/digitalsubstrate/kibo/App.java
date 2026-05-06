@@ -3,12 +3,14 @@ package com.digitalsubstrate.kibo;
 import com.beust.jcommander.JCommander;
 import com.digitalsubstrate.viper.dsm.DSMDefinitions;
 import com.digitalsubstrate.viper.dsm.DSMDefinitionsDecoder;
+import com.digitalsubstrate.viper.dsm.DSMDefinitionsJsonDecoder;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 
 public final class App {
 
@@ -31,15 +33,22 @@ public final class App {
         return null;
     }
 
-    public static DSMDefinitions fatalDecodeDefinitions(byte[] data) {
+    public static DSMDefinitions fatalDecodeDefinitions(byte[] data, Path source) {
         try {
-            final var result = new DSMDefinitionsDecoder(data);
-            return result.decode();
+            if (isJsonInput(source)) {
+                return new DSMDefinitionsJsonDecoder(data).decode();
+            }
+            return new DSMDefinitionsDecoder(data).decode();
         } catch (Exception e) {
-            System.err.println("failed to decode DSM definitions");
+            System.err.println("failed to decode DSM definitions: " + e.getMessage());
             System.exit(1);
         }
         return null;
+    }
+
+    static boolean isJsonInput(Path source) {
+        final var name = source.getFileName().toString().toLowerCase(Locale.ROOT);
+        return name.endsWith(".json");
     }
 
     public static void generateLog(Options options) {
@@ -108,7 +117,7 @@ public final class App {
         fatalPathExists(options.definitions);
 
         final var data = fatalReadBinaryFile(options.definitions.toString());
-        final var definitions = fatalDecodeDefinitions(data);
+        final var definitions = fatalDecodeDefinitions(data, options.definitions);
 
         switch (options.converter) {
             case "cpp" -> generateCpp(generated, definitions, options);
