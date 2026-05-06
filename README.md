@@ -1,14 +1,19 @@
 # kibo
 
 Code generator for the dsviper ecosystem. Kibo is a thin bridge between
-[DSM](https://devkit.digitalsubstrate.io) and
-[StringTemplate](https://www.stringtemplate.org/): it reads a `.dsmb`
-binary representation of DSM definitions, exposes a Template Model to
-`.stg` files, and lets StringTemplate render the output.
+[DSM](https://github.com/digital-substrate/dsm) and
+[StringTemplate](https://www.stringtemplate.org/): it reads a DSM
+definitions file, exposes a Template Model to `.stg` files, and lets
+StringTemplate render the output.
 
 ```
-Kibo = bridge(.dsmb)  →  StringTemplate model  →  generated code
+Kibo = bridge(.dsm.json | .dsmb)  →  StringTemplate model  →  generated code
 ```
+
+Kibo accepts the DSM definitions in two formats: the canonical JSON
+wire format specified by the [dsm](https://github.com/digital-substrate/dsm)
+language repo, and the legacy `.dsmb` binary format. Dispatch is by
+file extension on `-d`.
 
 Kibo does not know what is being generated. It only applies a
 templated feature (a `.stg` file) to a model. Targets can be anything
@@ -28,7 +33,7 @@ Produces `target/kibo-X.Y.Z.jar`.
 java -jar target/kibo-X.Y.Z.jar \
     -c [cpp | python] \
     -n [namespace] \
-    -d [definitions.dsmb] \
+    -d [definitions.dsm.json | definitions.dsmb] \
     -t [template_directory_or_file] \
     -o [output_directory]
 ```
