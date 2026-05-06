@@ -23,7 +23,7 @@ class Options {
     @Parameter(names = {"--converter", "-c"}, description = "Specify the converter: cpp|python.", required = true)
     String converter;
 
-    @Parameter(names = {"--dsm", "-d"}, description = "DSM Definitions *.dsmb.", required = true)
+    @Parameter(names = {"--dsm", "-d"}, description = "DSM Definitions *.dsm.json.", required = true)
     Path definitions;
 
     @Parameter(names = {"--template", "-t"}, description = "Template directory or file.", required = true)

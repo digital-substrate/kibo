@@ -6,15 +6,13 @@ DSM definitions file, exposes a Template Model to `.stg` files, and
 lets StringTemplate render the output.
 
 ```
-Kibo = bridge(.dsm.json | .dsmb)  →  StringTemplate model  →  generated code
+Kibo = bridge(.dsm.json)  →  StringTemplate model  →  generated code
 ```
 
 Kibo is an **implementation of the consumer side** of the DSM language
 contract specified at
 [github.com/digital-substrate/dsm](https://github.com/digital-substrate/dsm).
-It accepts the canonical JSON wire format described by that spec, and
-also the legacy `.dsmb` binary format. Dispatch is by file extension
-on `-d`.
+It accepts the canonical JSON wire format described by that spec.
 
 Kibo does not know what is being generated. It only applies a
 templated feature (a `.stg` file) to a model. Targets can be anything
@@ -34,7 +32,7 @@ Produces `target/kibo-X.Y.Z.jar`.
 java -jar target/kibo-X.Y.Z.jar \
     -c [cpp | python] \
     -n [namespace] \
-    -d [definitions.dsm.json | definitions.dsmb] \
+    -d [definitions.dsm.json] \
     -t [template_directory_or_file] \
     -o [output_directory]
 ```
