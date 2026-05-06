@@ -82,7 +82,7 @@ public final class App {
     public static void main(String[] argv) throws Exception {
 
         final var APP = "kibo";
-        final var VERSION = "1.2.8";
+        final var VERSION = "1.2.9";
         final var GENERATOR = APP + "-" + VERSION + ".jar";
         final var options = new Options();
         final var jCommander = JCommander.newBuilder().addObject(options).build();
