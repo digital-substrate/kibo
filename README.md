@@ -18,6 +18,12 @@ Kibo does not know what is being generated. It only applies a
 templated feature (a `.stg` file) to a model. Targets can be anything
 StringTemplate can render: C++, Python, Graphviz, SQL, …
 
+## Documentation
+
+Full documentation: https://docs.digitalsubstrate.io/kibo/
+
+Part of the [DevKit ecosystem](https://docs.digitalsubstrate.io/).
+
 ## Build
 
 ```bash
