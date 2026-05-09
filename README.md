@@ -1,6 +1,6 @@
 # kibo
 
-Code generator for the dsviper ecosystem. Kibo is a thin bridge between
+Code generator for the DSM language ecosystem. Kibo is a thin bridge between
 DSM and [StringTemplate](https://www.stringtemplate.org/): it reads a
 DSM definitions file, exposes a Template Model to `.stg` files, and
 lets StringTemplate render the output.
@@ -45,11 +45,11 @@ java -jar target/kibo-X.Y.Z.jar \
 
 For details, see the user-facing documentation:
 
-- `devkit-doc/source/tools/kibo.md` — Kibo CLI and its role.
-- `devkit-doc/source/tools/templates.md` — templated features as an
+- `devkit-doc/source/kibo/usage.md` — Kibo CLI and its role.
+- `devkit-doc/source/kibo/templates.md` — templated features as an
   ecosystem.
-- `devkit-doc/source/tools/template_model.md` — how the Template Model
-  is built from `.dsmb`.
+- `devkit-doc/source/kibo/template_model.md` — how the Template Model
+  is built from `.dsm.json`.
 
 ## Public contract
 
