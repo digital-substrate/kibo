@@ -9,6 +9,10 @@ Kibo carries its own version line (declared in `pom.xml`), independent from
 the DSM language contract it consumes and from any runtime targeted by the
 templates it renders.
 
+## [Unreleased]
+
+_No changes yet. Bug fixes for the next 1.2.x patch release will be listed here._
+
 ## [1.2.10] - 2026-06-17
 
 Maintenance baseline. This changelog begins at the current released
