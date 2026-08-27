@@ -144,9 +144,10 @@ final class EntityConverter {
         final var type = typeConverter.typeForKey(club.typeName);
         final var typeSuffix = typeConverter.typeSuffixForKey(club.typeName);
 
+        functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(club.typeReference));
+
         ArrayList<TemplateConcept> members = new ArrayList<>();
         for (var member : club.members) {
-            functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(club.typeReference));
             final var templateConcept = templateConceptByTypeName.get(member.typeName);
             assert templateConcept != null;
             members.add(templateConcept);
