@@ -9,7 +9,11 @@ Kibo carries its own version line (declared in `pom.xml`), independent from
 the DSM language contract it consumes and from any runtime targeted by the
 templates it renders.
 
-## [Unreleased]
+## [1.2.11] - 2026-08-28
+
+Anticipated container types become a per-target decision, and a CLI that could
+not print its own version. The DSM language, the Template Model and the Python
+and TypeScript surfaces are unchanged.
 
 ### Changed
 
