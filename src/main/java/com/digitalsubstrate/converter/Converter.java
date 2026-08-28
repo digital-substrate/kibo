@@ -25,7 +25,10 @@ public final class Converter {
     public final String namespace;
     public boolean hasTypeAny;
 
-    public Converter(String generated, DSMDefinitions definitions, String namespace) {
+    private final Binding binding;
+
+    public Converter(String generated, DSMDefinitions definitions, String namespace, Binding binding) {
+        this.binding = binding;
         this.generated = generated;
         this.definitions = definitions;
         this.namespace = namespace;
@@ -34,8 +37,8 @@ public final class Converter {
         this.structureDependency = new DSMStructureDependency(this.inspector);
         this.literalConverter = new LiteralConverter(structuresByTypeName);
         this.typeConverter = new TypeConverter(cppPrimitiveTypes, viperPrimitiveValues, structuresByTypeName);
-        this.functionRegistrar = new FunctionRegistrar(definitions, typeConverter);
-        this.entityConverter = new EntityConverter(definitions, structureDependency, typeConverter, literalConverter, functionRegistrar);
+        this.functionRegistrar = new FunctionRegistrar(definitions, typeConverter, binding);
+        this.entityConverter = new EntityConverter(definitions, structureDependency, typeConverter, literalConverter, functionRegistrar, binding);
 
         populateMaps();
         registerPrimitives();
@@ -72,7 +75,9 @@ public final class Converter {
         result.functionPools.addAll(functionPools);
         result.attachmentFunctionPools.addAll(attachmentFunctionPools);
 
-        functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(DSMTypeReference.AnyConcept));
+        if (binding.needsDerivedContainerProxies())
+            functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(DSMTypeReference.AnyConcept));
+
         functionRegistrar.registerFunctionForStructures();
         functionRegistrar.emitContainerFunctions(result);
 

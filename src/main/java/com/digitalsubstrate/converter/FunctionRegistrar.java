@@ -19,10 +19,12 @@ final class FunctionRegistrar {
 
     private final DSMDefinitions definitions;
     private final TypeConverter typeConverter;
+    private final Binding binding;
 
-    FunctionRegistrar(DSMDefinitions definitions, TypeConverter typeConverter) {
+    FunctionRegistrar(DSMDefinitions definitions, TypeConverter typeConverter, Binding binding) {
         this.definitions = definitions;
         this.typeConverter = typeConverter;
+        this.binding = binding;
     }
 
     void registerFunctionForStructures() throws Exception {
@@ -79,7 +81,8 @@ final class FunctionRegistrar {
             final var key = typeConverter.typeSuffix(typeXArray);
             xarrayFunctions.put(key, typeXArray);
             registerFunctionForContainer(typeXArray.elementType);
-            registerFunctionForContainer(new DSMTypeVector(typeXArray.elementType));
+            if (binding.needsDerivedContainerProxies())
+                registerFunctionForContainer(new DSMTypeVector(typeXArray.elementType));
 
         } else if (type instanceof DSMTypeVariant typeVariant) {
             final var key = typeConverter.typeSuffix(typeVariant);

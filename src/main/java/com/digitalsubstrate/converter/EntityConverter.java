@@ -19,17 +19,20 @@ final class EntityConverter {
     private final TypeConverter typeConverter;
     private final LiteralConverter literalConverter;
     private final FunctionRegistrar functionRegistrar;
+    private final Binding binding;
 
     EntityConverter(DSMDefinitions definitions,
                     DSMStructureDependency structureDependency,
                     TypeConverter typeConverter,
                     LiteralConverter literalConverter,
-                    FunctionRegistrar functionRegistrar) {
+                    FunctionRegistrar functionRegistrar,
+                    Binding binding) {
         this.definitions = definitions;
         this.structureDependency = structureDependency;
         this.typeConverter = typeConverter;
         this.literalConverter = literalConverter;
         this.functionRegistrar = functionRegistrar;
+        this.binding = binding;
     }
 
     ArrayList<TemplateEnumeration> convertEnumerations() {
@@ -113,7 +116,8 @@ final class EntityConverter {
     ArrayList<TemplateConcept> convertConcepts() throws Exception {
         final var result = new ArrayList<TemplateConcept>();
         for (var concept : definitions.concepts) {
-            functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(concept.typeReference));
+            if (binding.needsDerivedContainerProxies())
+                functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(concept.typeReference));
             final var templateConcept = convertConcept(concept);
             templateConceptByTypeName.put(concept.typeName, templateConcept);
             result.add(templateConcept);
@@ -144,7 +148,8 @@ final class EntityConverter {
         final var type = typeConverter.typeForKey(club.typeName);
         final var typeSuffix = typeConverter.typeSuffixForKey(club.typeName);
 
-        functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(club.typeReference));
+        if (binding.needsDerivedContainerProxies())
+            functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(club.typeReference));
 
         ArrayList<TemplateConcept> members = new ArrayList<>();
         for (var member : club.members) {
@@ -180,7 +185,8 @@ final class EntityConverter {
     }
 
     private TemplateAttachedKeyType convertAttachmentKeyType(NameSpace nameSpace, DSMTypeReference dsmKeyType) throws Exception {
-        functionRegistrar.registerFunctionForContainer(new DSMTypeSet(dsmKeyType));
+        if (binding.needsDerivedContainerProxies())
+            functionRegistrar.registerFunctionForContainer(new DSMTypeSet(dsmKeyType));
         final var type = typeConverter.convertType(dsmKeyType);
         final var typeInNamespace = typeConverter.convertTypeInNamespace(nameSpace, dsmKeyType);
         final var typeSuffix = typeConverter.typeSuffix(dsmKeyType);
@@ -191,7 +197,8 @@ final class EntityConverter {
     }
 
     private TemplateAttachedDocumentType convertAttachmentDocumentType(NameSpace nameSpace, DSMType dsmDocumentType) throws Exception {
-        functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(dsmDocumentType));
+        functionRegistrar.registerFunctionForContainer(
+                binding.needsDerivedContainerProxies() ? new DSMTypeOptional(dsmDocumentType) : dsmDocumentType);
 
         final var type = typeConverter.convertType(dsmDocumentType);
         final var typeInNameSpace = typeConverter.convertTypeInNamespace(nameSpace, dsmDocumentType);
