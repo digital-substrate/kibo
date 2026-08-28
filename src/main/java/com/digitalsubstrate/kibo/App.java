@@ -91,8 +91,6 @@ public final class App {
         jCommander.setAcceptUnknownOptions(false);
         jCommander.parse(argv);
 
-        final var generated = "Generated from " + options.definitions.toString() + " by " + GENERATOR;
-
         if (options.help) {
             jCommander.usage();
             System.exit(0);
@@ -102,6 +100,8 @@ public final class App {
             System.out.println(VERSION);
             System.exit(0);
         }
+
+        final var generated = "Generated from " + options.definitions.toString() + " by " + GENERATOR;
 
         fatalAvailableGenerator(options.converter);
         fatalPathExists(options.definitions);
