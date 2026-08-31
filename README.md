@@ -26,11 +26,13 @@ Part of the [DevKit ecosystem](https://docs.digitalsubstrate.io/).
 
 ## Build
 
+Requires a JDK 17 (a JRE is not enough).
+
 ```bash
-mvn package
+mvn clean package
 ```
 
-Produces `target/kibo-X.Y.Z.jar`.
+Produces `target/kibo-X.Y.Z.jar`, an executable jar bundling its dependencies.
 
 ## Synopsis
 
