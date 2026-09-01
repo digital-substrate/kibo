@@ -9,6 +9,34 @@ Kibo carries its own version line (declared in `pom.xml`), independent from
 the DSM language contract it consumes and from any runtime targeted by the
 templates it renders.
 
+## [Unreleased]
+
+Build tooling only. The DSM language, the Template Model and the generated
+surfaces are unchanged.
+
+### Added
+
+- **The repository carries the Maven Wrapper.** Building kibo required a Maven
+  on the machine, which in practice meant the one bundled inside IntelliJ. The
+  wrapper pins Maven in `.mvn/wrapper/maven-wrapper.properties` and downloads it
+  on first use, so a JDK 17 is now the only prerequisite: `./mvnw clean package`
+  (`.\mvnw.cmd` on Windows). No IDE is involved, and every machine builds with
+  the same Maven.
+
+### Changed
+
+- **The executable jar is now assembled by the shade plugin.** The jar plugin
+  and the assembly plugin both wrote to `target/kibo-X.Y.Z.jar`, so the assembly
+  overwrote the main artifact and Maven warned on every build. Shade replaces
+  the main artifact in place, which is what the single-jar deliverable was
+  always meant to be. The output path and name are unchanged.
+
+  The rebuilt manifest also declares `Multi-Release: true`. The jar has always
+  carried Jackson's per-release class overrides under `META-INF/versions/`, but
+  without that attribute the runtime ignored them. Dependency module descriptors
+  are now excluded, and the dependencies' `NOTICE` files are concatenated rather
+  than one silently winning.
+
 ## [1.2.11] - 2026-08-28
 
 Anticipated container types become a per-target decision, and a CLI that could

@@ -1,6 +1,10 @@
 # Maven
 target/
-.mvn/
+
+# The wrapper is versioned: mvnw, mvnw.cmd and .mvn/wrapper/ are the build
+# entry point and must be present in a fresh clone. Only a binary wrapper jar
+# is kept out — the wrapper is generated script-only and needs none.
+.mvn/wrapper/*.jar
 
 # IntelliJ / IDE
 .idea/

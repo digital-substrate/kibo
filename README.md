@@ -26,13 +26,21 @@ Part of the [DevKit ecosystem](https://docs.digitalsubstrate.io/).
 
 ## Build
 
-Requires a JDK 17 (a JRE is not enough).
+Requires a JDK 17 (a JRE is not enough). Maven itself is not a prerequisite:
+the repository carries the Maven Wrapper, which downloads and caches the
+pinned Maven version on first use. No IDE is involved.
 
 ```bash
-mvn clean package
+./mvnw clean package     # macOS, Linux
+.\mvnw.cmd clean package # Windows
 ```
 
 Produces `target/kibo-X.Y.Z.jar`, an executable jar bundling its dependencies.
+That is the artifact to ship; `target/original-kibo-X.Y.Z.jar` alongside it is
+the pre-bundling jar kept by the shade plugin and carries no dependencies.
+
+The Maven version is pinned in `.mvn/wrapper/maven-wrapper.properties`; change
+it there rather than relying on whatever `mvn` a given machine happens to have.
 
 ## Synopsis
 
