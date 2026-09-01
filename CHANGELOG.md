@@ -34,8 +34,10 @@ surfaces are unchanged.
   The rebuilt manifest also declares `Multi-Release: true`. The jar has always
   carried Jackson's per-release class overrides under `META-INF/versions/`, but
   without that attribute the runtime ignored them. Dependency module descriptors
-  are now excluded, and the dependencies' `NOTICE` files are concatenated rather
-  than one silently winning.
+  are now excluded, and the dependencies' `NOTICE` and `LICENSE` files are
+  concatenated rather than one silently winning; the dependencies' own manifests
+  are dropped, since the jar's manifest is written from the POM. Nothing is left
+  for the build to report as an overlapping resource, so `package` is now silent.
 
 ## [1.2.11] - 2026-08-28
 
