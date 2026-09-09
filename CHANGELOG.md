@@ -58,6 +58,20 @@ where a function returns `void`.
   are dropped, since the jar's manifest is written from the POM. Nothing is left
   for the build to report as an overlapping resource, so `package` is now silent.
 
+### Added
+
+- **A concept and a club carry their DSM name.** `getDsmType()` returns what the model
+  calls the entity. The only DSM spelling the Template Model carried was on the container
+  functions, so a template with an entity to name — in a comment, a docstring, a message —
+  had to borrow `getType()`, which is the C++ key type and appends a `Key` the DSM does
+  not. That is why a generated docstring read `key<Test::ConceptAKey>`, counting the key
+  twice.
+
+  Purely additive: nothing is renamed or removed, and no existing template changes
+  behaviour. The Python templates use it for the key docstring; the rest of that
+  correction belongs to the 1.3 line, where it is not a defect but a change of
+  convention.
+
 ### Fixed
 
 - **A `void` return rendered as a proxy class in TypeScript.** `void` is a

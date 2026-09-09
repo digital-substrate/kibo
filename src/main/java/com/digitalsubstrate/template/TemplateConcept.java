@@ -120,6 +120,15 @@ public final class TemplateConcept {
     }
 
     // Type
+    /**
+     * The DSM name of this concept — what the model calls it. Not the same as
+     * {@link #getType()}, which is the C++ key type and carries a {@code Key} suffix the
+     * DSM does not.
+     */
+    public String getDsmType() {
+        return dsmConcept.typeName.representation();
+    }
+
     public String getType() {
         return type;
     }
