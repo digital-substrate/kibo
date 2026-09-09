@@ -49,10 +49,14 @@ public final class AppUtils {
         }
 
         final var templates = new STGroupFile(template.toString());
+        final var diagnostics = new RenderDiagnostics(template);
+        templates.setListener(diagnostics);
         templates.registerRenderer(String.class, new TemplateStringRenderer());
         final ST main = templates.getInstanceOf("main");
         main.add("m", obj);
-        return main.render();
+        final var code = main.render();
+        diagnostics.summarize();
+        return code;
     }
 
     public static void renderAndSave(String file_prefix, TemplateDefinitions templateDefinitions, Path template, Path output, boolean debug) throws Exception {

@@ -11,11 +11,29 @@ templates it renders.
 
 ## [Unreleased]
 
-A TypeScript surface fix, and build tooling. The DSM language and the Template
-Model are unchanged; the generated surfaces change only where a function
-returns `void`.
+A TypeScript surface fix, template render diagnostics, and build tooling. The DSM
+language and the Template Model are unchanged; the generated surfaces change only
+where a function returns `void`.
 
 ### Added
+
+- **A render reports the expressions it could not resolve.** A template that reads
+  an accessor the Template Model does not carry rendered the empty string: the
+  render succeeded, the output was silently short, and nothing reached stderr. A
+  template written against an older model therefore kept producing files, minus the
+  parts that no longer resolved — and a model change was impossible to migrate
+  against, because nothing said what had stopped working.
+
+  Every render now installs a listener and prints each distinct diagnostic once,
+  with how many times it fired, naming the template and the expression. They are
+  warnings: the file is still written and kibo still exits zero, since whether the
+  output is acceptable is the operator's call. Clean renders print nothing.
+
+  Turned on across the codegen test fixtures and two application models, it reported
+  five distinct diagnostics on the first run, two of them defects in the first-party
+  templates: an xarray `remove` function registered under a truncated prototype name,
+  and a conditional include guarded by an accessor the model does not carry. Both
+  live in `kibo-template-viper` and are tracked there.
 
 - **The repository carries the Maven Wrapper.** Building kibo required a Maven
   on the machine, which in practice meant the one bundled inside IntelliJ. The
