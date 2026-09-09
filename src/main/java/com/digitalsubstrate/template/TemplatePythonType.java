@@ -20,6 +20,7 @@ public final class TemplatePythonType {
                  DSMLexicon.Float, DSMLexicon.Double,
                  DSMLexicon.BlobId, DSMLexicon.CommitId, DSMLexicon.UUId,
                  DSMLexicon.String, DSMLexicon.Blob,
+                 DSMLexicon.Void,
                  "Any" -> {
                 return false;
             }

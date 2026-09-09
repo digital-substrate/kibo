@@ -11,8 +11,9 @@ templates it renders.
 
 ## [Unreleased]
 
-Build tooling only. The DSM language, the Template Model and the generated
-surfaces are unchanged.
+A TypeScript surface fix, and build tooling. The DSM language and the Template
+Model are unchanged; the generated surfaces change only where a function
+returns `void`.
 
 ### Added
 
@@ -38,6 +39,25 @@ surfaces are unchanged.
   concatenated rather than one silently winning; the dependencies' own manifests
   are dropped, since the jar's manifest is written from the POM. Nothing is left
   for the build to report as an overlapping resource, so `package` is now silent.
+
+### Fixed
+
+- **A `void` return rendered as a proxy class in TypeScript.** `void` is a
+  registered DSM primitive, but it was missing from the passthrough list that
+  `TemplatePythonType.getUseProxy()` answers, so the predicate reported `true`
+  for it. A target that resolves a primitive spelling by testing that predicate
+  and then looking the DSM name up in its own table never reached its `void`
+  entry: the predicate sent it down the proxy branch, where the DSM name is
+  emitted as though it were a generated class. The TypeScript templates render
+  a function pool's void function as `reset(): d.void`, which does not compile.
+
+  `void` now answers `false`, so the table is consulted and the entry it already
+  carried is used. The Python surface is unaffected — it resolves primitive
+  spellings through a separate accessor whose mapping has always had a `void`
+  arm.
+
+  No test model declares a function pool with a `void` return, which is why the
+  generated output never showed this.
 
 ## [1.2.11] - 2026-08-28
 
