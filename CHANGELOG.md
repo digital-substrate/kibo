@@ -9,7 +9,7 @@ Kibo carries its own version line (declared in `pom.xml`), independent from
 the DSM language contract it consumes and from any runtime targeted by the
 templates it renders.
 
-## [Unreleased]
+## [1.2.12] - 2026-09-10
 
 A TypeScript surface fix, template render diagnostics, and build tooling. The DSM
 language and the Template Model are unchanged; the generated surfaces change only
@@ -42,6 +42,18 @@ where a function returns `void`.
   (`.\mvnw.cmd` on Windows). No IDE is involved, and every machine builds with
   the same Maven.
 
+- **A concept and a club carry their DSM name.** `getDsmType()` returns what the model
+  calls the entity. The only DSM spelling the Template Model carried was on the container
+  functions, so a template with an entity to name — in a comment, a docstring, a message —
+  had to borrow `getType()`, which is the C++ key type and appends a `Key` the DSM does
+  not. That is why a generated docstring read `key<Test::ConceptAKey>`, counting the key
+  twice.
+
+  Purely additive: nothing is renamed or removed, and no existing template changes
+  behaviour. The Python templates use it for the key docstring; the rest of that
+  correction belongs to the 1.3 line, where it is not a defect but a change of
+  convention.
+
 ### Changed
 
 - **The executable jar is now assembled by the shade plugin.** The jar plugin
@@ -57,20 +69,6 @@ where a function returns `void`.
   concatenated rather than one silently winning; the dependencies' own manifests
   are dropped, since the jar's manifest is written from the POM. Nothing is left
   for the build to report as an overlapping resource, so `package` is now silent.
-
-### Added
-
-- **A concept and a club carry their DSM name.** `getDsmType()` returns what the model
-  calls the entity. The only DSM spelling the Template Model carried was on the container
-  functions, so a template with an entity to name — in a comment, a docstring, a message —
-  had to borrow `getType()`, which is the C++ key type and appends a `Key` the DSM does
-  not. That is why a generated docstring read `key<Test::ConceptAKey>`, counting the key
-  twice.
-
-  Purely additive: nothing is renamed or removed, and no existing template changes
-  behaviour. The Python templates use it for the key docstring; the rest of that
-  correction belongs to the 1.3 line, where it is not a defect but a change of
-  convention.
 
 ### Fixed
 
