@@ -1,7 +1,5 @@
 package com.digitalsubstrate.template;
 
-import java.util.ArrayList;
-
 public final class TemplateVecFunction {
 
     private final String type;
@@ -9,19 +7,22 @@ public final class TemplateVecFunction {
     private final String typeSuffix;
     private final String elementTypeSuffix;
     private final String dsmType;
-    private final TemplatePythonType pythonType;
-    private final TemplatePythonType pythonElementType;
+    private final TemplateBindingType bindingType;
+    private final TemplateBindingType bindingElementType;
+    private final String bindingSequenceType;
 
     public TemplateVecFunction(String type, long size, String typeSuffix, String elementTypeSuffix,
                                String dsmType,
-                               TemplatePythonType pythonType, TemplatePythonType pythonElementType) {
+                               TemplateBindingType bindingType, TemplateBindingType bindingElementType,
+                               String bindingSequenceType) {
         this.type = type;
         this.size = size;
         this.typeSuffix = typeSuffix;
         this.elementTypeSuffix = elementTypeSuffix;
         this.dsmType = dsmType;
-        this.pythonType = pythonType;
-        this.pythonElementType = pythonElementType;
+        this.bindingType = bindingType;
+        this.bindingElementType = bindingElementType;
+        this.bindingSequenceType = bindingSequenceType;
     }
 
     // DSM
@@ -55,19 +56,17 @@ public final class TemplateVecFunction {
         return "ValueVec";
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
-        return pythonType;
+    // Binding
+    public TemplateBindingType getBindingType() {
+        return bindingType;
     }
 
-    public TemplatePythonType getPythonElementType() {
-        return pythonElementType;
+    public TemplateBindingType getBindingElementType() {
+        return bindingElementType;
     }
 
-    public String getPythonTupleType() {
-        var result = new ArrayList<String>();
-        for (var i = 0; i < size; i++)
-            result.add(pythonElementType.getType());
-        return String.format("tuple[%s]", String.join(", ", result));
+    /** How the target writes this fixed-size sequence. */
+    public String getBindingSequenceType() {
+        return bindingSequenceType;
     }
 }

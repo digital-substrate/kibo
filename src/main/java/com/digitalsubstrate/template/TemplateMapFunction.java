@@ -7,21 +7,21 @@ public final class TemplateMapFunction {
     private final String keyTypeSuffix;
     private final String elementTypeSuffix;
     private final String dsmType;
-    private final TemplatePythonType pythonType;
-    private final TemplatePythonType pythonKeyType;
-    private final TemplatePythonType pythonElementType;
+    private final TemplateBindingType bindingType;
+    private final TemplateBindingType bindingKeyType;
+    private final TemplateBindingType bindingElementType;
 
     public TemplateMapFunction(String type, String typeSuffix, String keyTypeSuffix, String elementTypeSuffix,
                                String dsmType,
-                               TemplatePythonType pythonType, TemplatePythonType pythonKeyType, TemplatePythonType pythonElementType) {
+                               TemplateBindingType bindingType, TemplateBindingType bindingKeyType, TemplateBindingType bindingElementType) {
         this.type = type;
         this.typeSuffix = typeSuffix;
         this.keyTypeSuffix = keyTypeSuffix;
         this.elementTypeSuffix = elementTypeSuffix;
         this.dsmType = dsmType;
-        this.pythonType = pythonType;
-        this.pythonKeyType = pythonKeyType;
-        this.pythonElementType = pythonElementType;
+        this.bindingType = bindingType;
+        this.bindingKeyType = bindingKeyType;
+        this.bindingElementType = bindingElementType;
     }
 
     // DSM
@@ -55,16 +55,16 @@ public final class TemplateMapFunction {
         return "ValueMap";
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
-        return pythonType;
+    // Binding
+    public TemplateBindingType getBindingType() {
+        return bindingType;
     }
 
-    public TemplatePythonType getPythonKeyType() {
-        return pythonKeyType;
+    public TemplateBindingType getBindingKeyType() {
+        return bindingKeyType;
     }
 
-    public TemplatePythonType getPythonElementType() {
-        return pythonElementType;
+    public TemplateBindingType getBindingElementType() {
+        return bindingElementType;
     }
 }

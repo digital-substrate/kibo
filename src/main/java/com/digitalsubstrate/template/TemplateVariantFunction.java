@@ -8,18 +8,16 @@ public final class TemplateVariantFunction {
     private final String typeSuffix;
     private final ArrayList<TemplateType> members;
     private final String dsmType;
-    private final TemplatePythonType pythonType;
-    private final ArrayList<TemplatePythonType> pythonMembers;
+    private final TemplateBindingType bindingType;
 
     public TemplateVariantFunction(String type, String typeSuffix, ArrayList<TemplateType> members,
                                    String dsmType,
-                                   TemplatePythonType pythonType, ArrayList<TemplatePythonType> pythonMembers) {
+                                   TemplateBindingType bindingType) {
         this.type = type;
         this.typeSuffix = typeSuffix;
         this.members = members;
         this.dsmType = dsmType;
-        this.pythonType = pythonType;
-        this.pythonMembers = pythonMembers;
+        this.bindingType = bindingType;
     }
 
     // DSM
@@ -50,12 +48,8 @@ public final class TemplateVariantFunction {
         return "ValueVariant";
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
-        return pythonType;
-    }
-
-    public ArrayList<TemplatePythonType> getPythonMembers() {
-        return pythonMembers;
+    // Binding
+    public TemplateBindingType getBindingType() {
+        return bindingType;
     }
 }

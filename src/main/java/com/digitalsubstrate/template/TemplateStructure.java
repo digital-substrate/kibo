@@ -58,6 +58,11 @@ public final class TemplateStructure {
     }
 
     // Type
+    /** The DSM name of this entity — what the model calls it, whatever the target. */
+    public String getDsmType() {
+        return dsmStructure.typeName.representation();
+    }
+
     public String getType() {
         return type;
     }
@@ -75,10 +80,10 @@ public final class TemplateStructure {
         return "ValueStructure";
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
+    // Binding
+    public TemplateBindingType getBindingType() {
         final var proxy = dsmStructure.typeName.nameSpace.name + "_" + dsmStructure.typeName.name;
-        return new TemplatePythonType(proxy, typeSuffix);
+        return new TemplateBindingType(proxy, typeSuffix, proxy, true);
     }
 
 }

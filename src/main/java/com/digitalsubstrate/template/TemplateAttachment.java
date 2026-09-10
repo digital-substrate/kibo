@@ -10,7 +10,6 @@ public final class TemplateAttachment {
     private final TemplateAttachedDocumentType documentType;
 
     private String identifier;
-    private String pythonIdentifier;
 
     public TemplateAttachment(boolean isAmbiguous,
                               DSMAttachment dsmAttachment,

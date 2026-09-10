@@ -6,18 +6,18 @@ public final class TemplateSetFunction {
     private final String typeSuffix;
     private final String elementTypeSuffix;
     private final String dsmType;
-    private final TemplatePythonType pythonType;
-    private final TemplatePythonType pythonElementType;
+    private final TemplateBindingType bindingType;
+    private final TemplateBindingType bindingElementType;
 
     public TemplateSetFunction(String type, String typeSuffix, String elementTypeSuffix,
                                String dsmType,
-                               TemplatePythonType pythonType, TemplatePythonType pythonElementType) {
+                               TemplateBindingType bindingType, TemplateBindingType bindingElementType) {
         this.type = type;
         this.typeSuffix = typeSuffix;
         this.elementTypeSuffix = elementTypeSuffix;
         this.dsmType = dsmType;
-        this.pythonType = pythonType;
-        this.pythonElementType = pythonElementType;
+        this.bindingType = bindingType;
+        this.bindingElementType = bindingElementType;
     }
 
     // DSM
@@ -47,12 +47,12 @@ public final class TemplateSetFunction {
        return "ValueSet";
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
-        return pythonType;
+    // Binding
+    public TemplateBindingType getBindingType() {
+        return bindingType;
     }
 
-    public TemplatePythonType getPythonElementType() {
-        return pythonElementType;
+    public TemplateBindingType getBindingElementType() {
+        return bindingElementType;
     }
 }

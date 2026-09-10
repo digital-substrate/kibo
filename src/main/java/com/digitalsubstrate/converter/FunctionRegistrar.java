@@ -99,13 +99,14 @@ final class FunctionRegistrar {
             final var typeSuffix = typeConverter.typeSuffix(vec);
             final var elementTypeSuffix = typeConverter.typeSuffix(vec.elementType);
             final var dsmType = vec.representation();
-            final var pythonType = typeConverter.templatePythonType(vec);
-            final var pythonElementType = typeConverter.templatePythonType(vec.elementType);
+            final var bindingType = typeConverter.templateBindingType(vec);
+            final var bindingElementType = typeConverter.templateBindingType(vec.elementType);
 
             definitions.vecFunctions.add(new TemplateVecFunction(
                     type, vec.size, typeSuffix, elementTypeSuffix,
                     dsmType,
-                    pythonType, pythonElementType));
+                    bindingType, bindingElementType,
+                    typeConverter.bindingSequence(bindingElementType.getType(), vec.size)));
         }
 
         for (var mat : matFunctions.values()) {
@@ -113,13 +114,16 @@ final class FunctionRegistrar {
             final var typeSuffix = typeConverter.typeSuffix(mat);
             final var elementTypeSuffix = typeConverter.typeSuffix(mat.elementType);
             final var dsmType = mat.representation();
-            final var pythonType = typeConverter.templatePythonType(mat);
-            final var pythonElementType = typeConverter.templatePythonType(mat.elementType);
+            final var bindingType = typeConverter.templateBindingType(mat);
+            final var bindingElementType = typeConverter.templateBindingType(mat.elementType);
+
+            final var bindingColumnType = typeConverter.bindingSequence(bindingElementType.getType(), mat.rows);
 
             definitions.matFunctions.add(new TemplateMatFunction(
                     type, mat.columns, mat.rows, typeSuffix, elementTypeSuffix,
                     dsmType,
-                    pythonType, pythonElementType));
+                    bindingType, bindingElementType,
+                    typeConverter.bindingSequence(bindingColumnType, mat.columns), bindingColumnType));
         }
 
         for (var tuple : tupleFunctions.values()) {
@@ -127,20 +131,18 @@ final class FunctionRegistrar {
             final var typeSuffix = typeConverter.typeSuffix(tuple);
             final var members = new ArrayList<TemplateType>();
             final var dsmType = tuple.representation();
-            final var pythonType = typeConverter.templatePythonType(tuple);
-            final var pythonMembers = new ArrayList<TemplatePythonType>();
+            final var bindingType = typeConverter.templateBindingType(tuple);
 
-            for (var memberType : tuple.types) {
-                final var mType = typeConverter.convertType(memberType);
-                final var mTypeSuffix = typeConverter.typeSuffix(memberType);
-                members.add(new TemplateType(mType, mTypeSuffix));
-                pythonMembers.add(typeConverter.templatePythonType(memberType));
-            }
+            for (var memberType : tuple.types)
+                members.add(new TemplateType(memberType.representation(),
+                                             typeConverter.convertType(memberType),
+                                             typeConverter.typeSuffix(memberType),
+                                             typeConverter.templateBindingType(memberType)));
 
             definitions.tupleFunctions.add(new TemplateTupleFunction(
                     type, typeSuffix, members,
                     dsmType,
-                    pythonType, pythonMembers));
+                    bindingType));
         }
 
         for (var optional : optionalFunctions.values()) {
@@ -149,13 +151,13 @@ final class FunctionRegistrar {
             final var elementType = typeConverter.convertType(optional.elementType);
             final var elementTypeSuffix = typeConverter.typeSuffix(optional.elementType);
             final var dsmType = optional.representation();
-            final var pythonType = typeConverter.templatePythonType(optional);
-            final var pythonElementType = typeConverter.templatePythonType(optional.elementType);
+            final var bindingType = typeConverter.templateBindingType(optional);
+            final var bindingElementType = typeConverter.templateBindingType(optional.elementType);
 
             definitions.optionalFunctions.add(new TemplateOptionalFunction(
                     type, typeSuffix, elementType, elementTypeSuffix,
                     dsmType,
-                    pythonType, pythonElementType));
+                    bindingType, bindingElementType));
         }
 
         for (var vector : vectorFunctions.values()) {
@@ -163,13 +165,13 @@ final class FunctionRegistrar {
             final var typeSuffix = typeConverter.typeSuffix(vector);
             final var elementTypeSuffix = typeConverter.typeSuffix(vector.elementType);
             final var dsmType = vector.representation();
-            final var pythonType = typeConverter.templatePythonType(vector);
-            final var pythonElementType = typeConverter.templatePythonType(vector.elementType);
+            final var bindingType = typeConverter.templateBindingType(vector);
+            final var bindingElementType = typeConverter.templateBindingType(vector.elementType);
 
             definitions.vectorFunctions.add(new TemplateVectorFunction(
                     type, typeSuffix, elementTypeSuffix,
                     dsmType,
-                    pythonType, pythonElementType));
+                    bindingType, bindingElementType));
         }
 
         for (var set : setFunctions.values()) {
@@ -177,13 +179,13 @@ final class FunctionRegistrar {
             final var typeSuffix = typeConverter.typeSuffix(set);
             final var elementTypeSuffix = typeConverter.typeSuffix(set.elementType);
             final var dsmType = set.representation();
-            final var pythonType = typeConverter.templatePythonType(set);
-            final var pythonElementType = typeConverter.templatePythonType(set.elementType);
+            final var bindingType = typeConverter.templateBindingType(set);
+            final var bindingElementType = typeConverter.templateBindingType(set.elementType);
 
             definitions.setFunctions.add(new TemplateSetFunction(
                     type, typeSuffix, elementTypeSuffix,
                     dsmType,
-                    pythonType, pythonElementType));
+                    bindingType, bindingElementType));
         }
 
         for (var map : mapFunctions.values()) {
@@ -192,14 +194,14 @@ final class FunctionRegistrar {
             final var keyTypeSuffix = typeConverter.typeSuffix(map.keyType);
             final var elementTypeSuffix = typeConverter.typeSuffix(map.elementType);
             final var dsmType = map.representation();
-            final var pythonType = typeConverter.templatePythonType(map);
-            final var pythonKeyType = typeConverter.templatePythonType(map.keyType);
-            final var pythonElementType = typeConverter.templatePythonType(map.elementType);
+            final var bindingType = typeConverter.templateBindingType(map);
+            final var bindingKeyType = typeConverter.templateBindingType(map.keyType);
+            final var bindingElementType = typeConverter.templateBindingType(map.elementType);
 
             definitions.mapFunctions.add(new TemplateMapFunction(
                     type, typeSuffix, keyTypeSuffix, elementTypeSuffix,
                     dsmType,
-                    pythonType, pythonKeyType, pythonElementType));
+                    bindingType, bindingKeyType, bindingElementType));
         }
 
         for (var xarray : xarrayFunctions.values()) {
@@ -208,12 +210,12 @@ final class FunctionRegistrar {
             final var elementType = typeConverter.convertType(xarray.elementType);
             final var elementTypeSuffix = typeConverter.typeSuffix(xarray.elementType);
             final var dsmType = xarray.representation();
-            final var pythonType = typeConverter.templatePythonType(xarray);
-            final var pythonElementType = typeConverter.templatePythonType(xarray.elementType);
+            final var bindingType = typeConverter.templateBindingType(xarray);
+            final var bindingElementType = typeConverter.templateBindingType(xarray.elementType);
 
             definitions.xarrayFunctions.add(new TemplateXArrayFunction(type, typeSuffix, elementType, elementTypeSuffix,
                     dsmType,
-                    pythonType, pythonElementType));
+                    bindingType, bindingElementType));
         }
 
         for (var variant : variantFunctions.values()) {
@@ -221,20 +223,18 @@ final class FunctionRegistrar {
             final var typeSuffix = typeConverter.typeSuffix(variant);
             final var members = new ArrayList<TemplateType>();
             final var dsmType = variant.representation();
-            final var pythonType = typeConverter.templatePythonType(variant);
-            final var pythonMembers = new ArrayList<TemplatePythonType>();
+            final var bindingType = typeConverter.templateBindingType(variant);
 
-            for (var memberType : variant.types) {
-                final var mType = typeConverter.convertType(memberType);
-                final var mTypeSuffix = typeConverter.typeSuffix(memberType);
-                members.add(new TemplateType(mType, mTypeSuffix));
-                pythonMembers.add(typeConverter.templatePythonType(memberType));
-            }
+            for (var memberType : variant.types)
+                members.add(new TemplateType(memberType.representation(),
+                                             typeConverter.convertType(memberType),
+                                             typeConverter.typeSuffix(memberType),
+                                             typeConverter.templateBindingType(memberType)));
 
             definitions.variantFunctions.add(new TemplateVariantFunction(
                     type, typeSuffix, members,
                     dsmType,
-                    pythonType, pythonMembers));
+                    bindingType));
         }
     }
 }

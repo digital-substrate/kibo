@@ -9,6 +9,79 @@ Kibo carries its own version line (declared in `pom.xml`), independent from
 the DSM language contract it consumes and from any runtime targeted by the
 templates it renders.
 
+## [2.0.0] - 2026-09-10
+
+The Template Model names the three type spaces it serves, and the delegating templates
+stop carrying lookup tables. Generated output changes only where a comment, a repr or a
+message named a type — and in the headers, which now state the runtime each target is
+generated against.
+
+
+A TypeScript surface fix, template render diagnostics, build tooling — and a
+**breaking rename of the Template Model's binding-side accessors**. The DSM language
+is unchanged, and so is every byte of generated output; what changes is the model API
+that template authors read.
+
+### Added
+
+- **`MIGRATING.md` — moving a template pack from Template Model 1 to 2.** The
+  Template Model is kibo's public surface, consumed by packs Digital Substrate does
+  not enumerate, and 2.0.0 renames part of it without aliases. The guide lists every
+  accessor that moved and what replaces it, and gives the rule that tells an author
+  when they are done: a Template Model migration does not change what a pack emits,
+  so regenerating before and after must diff empty apart from the generator banner.
+  A non-empty diff means the migration is incomplete, not that the generator changed
+  its mind.
+
+  It also states which packs are affected at all. A native target reads nothing that
+  moved and migrates with zero edits — checked on a third-party C++ pack rendered by
+  1.2.11 and by 2.0.0, identical but for the banner.
+
+### Changed
+
+- **`--converter` selects a target, and a target knows how its binding spells types.** It
+  used to select a binding *style*: TypeScript shipped by reusing the `python` arm, so it
+  had nowhere to put the spellings its binding needs and kept them in its templates
+  instead. `int64` is `int` in Python and `bigint` in TypeScript for the same runtime
+  `ValueInt64` — a property of the binding, which only the generator was in a position to
+  state once.
+
+  There is now a `typescript` arm, and a `BindingVocabulary` per delegating target
+  answering two questions: how a primitive that crosses as a host value is written, and how
+  a fixed-size sequence is spelled. Two implementations, about twenty lines each. C++ is the only native target and
+  carries no vocabulary: its types are built recursively, as they always were.
+
+- **Every entity carries its DSM name, and a member carries all three spaces.**
+  `TemplateConcept`, `TemplateClub`, `TemplateEnumeration` and `TemplateStructure` gain
+  `getDsmType()` — what the model calls the entity, whatever the target. Until now the
+  only DSM spelling in the model was on the container functions, so a template that wanted
+  to name an entity in a comment or an exception message had to borrow the C++ one, which
+  for a concept carries a `Key` suffix the DSM does not.
+
+  `TemplateType`, one member of a tuple or a variant, now carries `dsmType`, `type` and
+  `bindingType` together, so a member is described the same way a container is.
+  `getBindingMembers()` on `TemplateTupleFunction` and `TemplateVariantFunction` was the
+  parallel list that made that impossible, and is removed.
+
+- **The binding-side accessors say which space they name, and hold nothing of a language.**
+  `TemplatePythonType` carried the handle on the generated proxy — its class name, the
+  passthrough predicate, the neutral type suffix — and a `getType()` returning a *Python*
+  spelling. The name said Python; four fifths of it were not.
+
+  It is now `TemplateBindingType`, reached through `getBindingType()`. `getType()` stays but
+  answers for the target being generated. The companion accessors follow: `getPythonElementType` → `getBindingElementType`,
+  `getPythonKeyType` → `getBindingKeyType`, `getPythonMembers` → `getBindingMembers`,
+  `getReturnPythonType` → `getReturnBindingType`.
+
+  `TemplateVecFunction.getPythonTupleType()` and `TemplateMatFunction`'s
+  `getPythonTupleType()` / `getPythonColumnType()` built a *Python* annotation inside the
+  generator whatever the target. They become `getBindingSequenceType()` and
+  `getBindingColumnType()`, which the target's vocabulary spells.
+
+  **Breaking, with no compatibility aliases.** The first-party templates move with it; a
+  template outside this repository must be adapted. The render diagnostics below exist so
+  that such a template reports what stopped resolving instead of silently emitting less.
+
 ## [1.2.12] - 2026-09-10
 
 A TypeScript surface fix, template render diagnostics, and build tooling. The DSM

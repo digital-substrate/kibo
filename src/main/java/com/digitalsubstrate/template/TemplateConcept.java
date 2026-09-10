@@ -151,9 +151,9 @@ public final class TemplateConcept {
         return "ValueKey";
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
+    // Binding
+    public TemplateBindingType getBindingType() {
         final var proxy = dsmConcept.typeName.nameSpace.name + "_" + dsmConcept.typeName.name;
-        return new TemplatePythonType(proxy, typeSuffix);
+        return new TemplateBindingType(proxy, typeSuffix, proxy + "Key", true);
     }
 }

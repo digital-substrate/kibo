@@ -1,6 +1,7 @@
 package com.digitalsubstrate.kibo;
 
 import com.beust.jcommander.JCommander;
+import com.digitalsubstrate.converter.Target;
 import com.digitalsubstrate.viper.dsm.DSMDefinitions;
 import com.digitalsubstrate.viper.dsm.DSMDefinitionsJsonDecoder;
 
@@ -8,6 +9,7 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 public final class App {
@@ -50,21 +52,14 @@ public final class App {
                     options.output.toString());
     }
 
-    // CPP
-    static void generateCpp(String generated, DSMDefinitions dsmDefinitions, Options options) throws Exception {
+    static void generate(Target target, String generated, DSMDefinitions dsmDefinitions, Options options) throws Exception {
         generateLog(options);
-        AppUtils.generateCpp(generated, dsmDefinitions, options.namespace, options.template, options.output, options.log);
-    }
-
-    // Python
-    static void generatePython(String generated, DSMDefinitions dsmDefinitions, Options options) throws Exception {
-        generateLog(options);
-        AppUtils.generatePython(generated, dsmDefinitions, options.namespace, options.template, options.output, options.log);
+        AppUtils.generate(target, generated, dsmDefinitions, options.namespace, options.template, options.output, options.log);
     }
 
     // Fatal Error
     static void fatalAvailableGenerator(String generator) {
-        if (!generators.contains(generator)) {
+        if (Target.of(generator) == null) {
             System.err.printf("%s: No such generator.%n", generator);
             System.exit(1);
         }
@@ -77,12 +72,12 @@ public final class App {
         }
     }
 
-    static final List<String> generators = List.of("cpp", "python");
+    static final List<String> generators = Arrays.stream(Target.values()).map(t -> t.identifier).toList();
 
     public static void main(String[] argv) throws Exception {
 
         final var APP = "kibo";
-        final var VERSION = "1.2.12";
+        final var VERSION = "2.0.0";
         final var GENERATOR = APP + "-" + VERSION + ".jar";
         final var options = new Options();
         final var jCommander = JCommander.newBuilder().addObject(options).build();
@@ -110,8 +105,7 @@ public final class App {
         final var definitions = fatalDecodeDefinitions(data);
 
         switch (options.converter) {
-            case "cpp" -> generateCpp(generated, definitions, options);
-            case "python" -> generatePython(generated, definitions, options);
+            case "cpp", "python", "typescript" -> generate(Target.of(options.converter), generated, definitions, options);
             default -> {
             }
         }

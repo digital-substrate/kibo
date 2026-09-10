@@ -90,13 +90,13 @@ final class EntityConverter {
         final var typeSuffix = typeConverter.typeSuffix(field.type);
         final var isAny = typeConverter.isTypeAny(field.type);
         final var viperValue = typeConverter.viperValue(field.type);
-        final var pythonType = typeConverter.templatePythonType(field.type);
+        final var bindingType = typeConverter.templateBindingType(field.type);
         final var templateField = typeConverter.createTemplateField(field.type);
 
         return new TemplateStructureField(
                 field, type, typeInNamespace, passBy, isMovable, defaultValue, typeSuffix,
                 isAny,
-                viperValue, pythonType, templateField);
+                viperValue, bindingType, templateField);
     }
 
     ArrayList<TemplateConcept> collectConceptChildren(DSMConcept concept) {
@@ -191,9 +191,9 @@ final class EntityConverter {
         final var typeInNamespace = typeConverter.convertTypeInNamespace(nameSpace, dsmKeyType);
         final var typeSuffix = typeConverter.typeSuffix(dsmKeyType);
         final var viperValue = typeConverter.viperValue(dsmKeyType);
-        final var pythonType = typeConverter.templatePythonType(dsmKeyType);
+        final var bindingType = typeConverter.templateBindingType(dsmKeyType);
 
-        return new TemplateAttachedKeyType(dsmKeyType.typeName, type, typeInNamespace, typeSuffix, viperValue, pythonType);
+        return new TemplateAttachedKeyType(dsmKeyType.typeName, type, typeInNamespace, typeSuffix, viperValue, bindingType);
     }
 
     private TemplateAttachedDocumentType convertAttachmentDocumentType(NameSpace nameSpace, DSMType dsmDocumentType) throws Exception {
@@ -204,12 +204,12 @@ final class EntityConverter {
         final var typeInNameSpace = typeConverter.convertTypeInNamespace(nameSpace, dsmDocumentType);
         final var typeSuffix = typeConverter.typeSuffix(dsmDocumentType);
         final var viperValue = typeConverter.viperValue(dsmDocumentType);
-        final var pythonType = typeConverter.templatePythonType(dsmDocumentType);
+        final var bindingType = typeConverter.templateBindingType(dsmDocumentType);
         final var templateStructure = findTemplateStructure(dsmDocumentType);
         final var templateField = typeConverter.createTemplateField(dsmDocumentType);
         final var useBlobId = typeConverter.useBlobId(dsmDocumentType);
 
-        return new TemplateAttachedDocumentType(type, typeInNameSpace, typeSuffix, viperValue, pythonType, templateStructure, templateField, useBlobId);
+        return new TemplateAttachedDocumentType(type, typeInNameSpace, typeSuffix, viperValue, bindingType, templateStructure, templateField, useBlobId);
     }
 
     private boolean isAttachmentAmbiguousInNamespace(DSMAttachment attachment) {
@@ -256,12 +256,12 @@ final class EntityConverter {
         final var type = typeConverter.convertType(function.prototype.returnType);
         final var typeSuffix = typeConverter.typeSuffix(function.prototype.returnType);
         final var returnViperValue = typeConverter.viperValue(function.prototype.returnType);
-        final var returnPythonType = typeConverter.templatePythonType(function.prototype.returnType);
+        final var returnBindingType = typeConverter.templateBindingType(function.prototype.returnType);
         functionRegistrar.registerFunctionForContainer(function.prototype.returnType);
 
         return new TemplateFunction(
                 function, type, typeSuffix, parameters,
-                returnViperValue, returnPythonType);
+                returnViperValue, returnBindingType);
     }
 
     ArrayList<TemplateAttachmentFunctionPool> convertAttachmentFunctionPool() throws Exception {
@@ -285,12 +285,12 @@ final class EntityConverter {
         final var type = typeConverter.convertType(function.prototype.returnType);
         final var typeSuffix = typeConverter.typeSuffix(function.prototype.returnType);
         final var returnViperValue = typeConverter.viperValue(function.prototype.returnType);
-        final var templatePythonType = typeConverter.templatePythonType(function.prototype.returnType);
+        final var templateBindingType = typeConverter.templateBindingType(function.prototype.returnType);
         functionRegistrar.registerFunctionForContainer(function.prototype.returnType);
 
         return new TemplateAttachmentFunction(
                 function, type, typeSuffix, parameters,
-                returnViperValue, templatePythonType);
+                returnViperValue, templateBindingType);
     }
 
     private ArrayList<TemplateFunctionParameter> convertFunctionParameters(ArrayList<DSMFunctionPrototypeParameter> parameters) throws Exception {
@@ -308,8 +308,8 @@ final class EntityConverter {
         final var passBy = typeConverter.passByQualifier(parameter.type);
         final var typeSuffix = typeConverter.typeSuffix(parameter.type);
         final var viperValue = typeConverter.viperValue(parameter.type);
-        final var templatePythonType = typeConverter.templatePythonType(parameter.type);
+        final var templateBindingType = typeConverter.templateBindingType(parameter.type);
 
-        return new TemplateFunctionParameter(parameter, type, passBy, typeSuffix, viperValue, templatePythonType);
+        return new TemplateFunctionParameter(parameter, type, passBy, typeSuffix, viperValue, templateBindingType);
     }
 }

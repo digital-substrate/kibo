@@ -14,7 +14,7 @@ public final class TemplateStructureField {
     private final String typeSuffix;
     private final boolean isTypeAny;
     private final String viperValue;
-    private final TemplatePythonType pythonType;
+    private final TemplateBindingType bindingType;
     private final TemplateField field;
 
     public TemplateStructureField(DSMStructureField dsmStructureField,
@@ -26,7 +26,7 @@ public final class TemplateStructureField {
                                   String typeSuffix,
                                   boolean isTypeAny,
                                   String viperValue,
-                                  TemplatePythonType pythonType,
+                                  TemplateBindingType bindingType,
                                   TemplateField field) {
 
         this.dsmStructureField = dsmStructureField;
@@ -39,7 +39,7 @@ public final class TemplateStructureField {
         this.typeSuffix = typeSuffix;
         this.isTypeAny = isTypeAny;
         this.viperValue = viperValue;
-        this.pythonType = pythonType;
+        this.bindingType = bindingType;
         this.field = field;
     }
 
@@ -101,8 +101,8 @@ public final class TemplateStructureField {
         return viperValue;
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
-        return pythonType;
+    // Binding
+    public TemplateBindingType getBindingType() {
+        return bindingType;
     }
 }

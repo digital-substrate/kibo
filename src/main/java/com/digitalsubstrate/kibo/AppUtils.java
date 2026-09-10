@@ -1,6 +1,6 @@
 package com.digitalsubstrate.kibo;
 
-import com.digitalsubstrate.converter.Binding;
+import com.digitalsubstrate.converter.Target;
 import com.digitalsubstrate.converter.Converter;
 import com.digitalsubstrate.viper.dsm.DSMDefinitions;
 import com.digitalsubstrate.template.TemplateDefinitions;
@@ -75,16 +75,10 @@ public final class AppUtils {
             renderAndSave(file_prefix, templateDefinitions, template, output, debug);
     }
 
-    // Cpp
-    public static void generateCpp(String generated, DSMDefinitions dsmDefinitions, String namespace, Path template, Path output, boolean debug) throws Exception {
-        final var templateDefinitions = new Converter(generated, dsmDefinitions, namespace, Binding.NATIVE).convert();
-        final var file_prefix = templateDefinitions.getNamespace() + "_";
+    public static void generate(Target target, String generated, DSMDefinitions dsmDefinitions, String namespace,
+                                Path template, Path output, boolean debug) throws Exception {
+        final var templateDefinitions = new Converter(generated, dsmDefinitions, namespace, target).convert();
+        final var file_prefix = target.prefixesFilesWithNamespace ? templateDefinitions.getNamespace() + "_" : "";
         renderAndSave(file_prefix, templateDefinitions, AppUtils.collectTemplates(template), output, debug);
-    }
-
-    // Python
-    public static void generatePython(String generated, DSMDefinitions dsmDefinitions, String namespace, Path template, Path output, boolean debug) throws Exception {
-        final var templateDefinitions = new Converter(generated, dsmDefinitions, namespace, Binding.DELEGATING).convert();
-        renderAndSave("", templateDefinitions, AppUtils.collectTemplates(template), output, debug);
     }
 }

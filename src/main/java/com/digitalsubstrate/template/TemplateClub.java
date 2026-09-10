@@ -110,10 +110,10 @@ public final class TemplateClub {
         return "ValueKey";
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
+    // Binding
+    public TemplateBindingType getBindingType() {
         final var proxy = dsmClub.typeName.nameSpace.name + "_" + dsmClub.typeName.name;
-        return new TemplatePythonType(proxy, typeSuffix);
+        return new TemplateBindingType(proxy, typeSuffix, proxy + "Key", true);
     }
 
 }

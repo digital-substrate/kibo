@@ -27,8 +27,8 @@ public final class Converter {
 
     private final Binding binding;
 
-    public Converter(String generated, DSMDefinitions definitions, String namespace, Binding binding) {
-        this.binding = binding;
+    public Converter(String generated, DSMDefinitions definitions, String namespace, Target target) {
+        this.binding = target.binding;
         this.generated = generated;
         this.definitions = definitions;
         this.namespace = namespace;
@@ -36,7 +36,7 @@ public final class Converter {
         this.inspector = new DSMDefinitionsInspector(definitions);
         this.structureDependency = new DSMStructureDependency(this.inspector);
         this.literalConverter = new LiteralConverter(structuresByTypeName);
-        this.typeConverter = new TypeConverter(cppPrimitiveTypes, viperPrimitiveValues, structuresByTypeName);
+        this.typeConverter = new TypeConverter(cppPrimitiveTypes, viperPrimitiveValues, structuresByTypeName, target.vocabulary);
         this.functionRegistrar = new FunctionRegistrar(definitions, typeConverter, binding);
         this.entityConverter = new EntityConverter(definitions, structureDependency, typeConverter, literalConverter, functionRegistrar, binding);
 

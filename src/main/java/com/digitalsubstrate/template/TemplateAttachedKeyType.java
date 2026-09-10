@@ -9,20 +9,20 @@ public final class TemplateAttachedKeyType {
     private final String typeInNamespace;
     private final String typeSuffix;
     private final String viperValue;
-    private final TemplatePythonType pythonType;
+    private final TemplateBindingType bindingType;
 
     public TemplateAttachedKeyType(TypeName typeName,
                                    String type,
                                    String typeInNamespace,
                                    String typeSuffix,
                                    String viperValue,
-                                   TemplatePythonType pythonType) {
+                                   TemplateBindingType bindingType) {
         this.typeName = typeName;
         this.type = type;
         this.typeInNamespace = typeInNamespace;
         this.typeSuffix = typeSuffix;
         this.viperValue = viperValue;
-        this.pythonType = pythonType;
+        this.bindingType = bindingType;
     }
 
     // Namespace
@@ -52,8 +52,8 @@ public final class TemplateAttachedKeyType {
         return viperValue;
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
-        return pythonType;
+    // Binding
+    public TemplateBindingType getBindingType() {
+        return bindingType;
     }
 }

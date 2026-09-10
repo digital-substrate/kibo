@@ -70,8 +70,19 @@ templated feature, first-party (DS-maintained) and third-party
 features, including those DS does not own. Treat changes with the
 same rigour as a public runtime API.
 
-Versioning follows the dsviper ecosystem MAJOR.MINOR API line; see
-[https://docs.digitalsubstrate.io/](https://docs.digitalsubstrate.io/).
+kibo's version is its own. It is a product, and its number says nothing
+about the two contracts it sits between; those are declared separately,
+and each moves on its own cadence:
+
+| | |
+|---|---|
+| **input** | DSM 1.0, in the format specified by the [`dsm`](https://github.com/digital-substrate/dsm) repository |
+| **output** | Template Model 2, specified in this repository's documentation |
+
+A Template Model revision is not a kibo minor, and a kibo minor does not
+imply one. The CHANGELOG says which release moved which. Moving a
+template pack across a Template Model revision is covered in
+[MIGRATING.md](MIGRATING.md).
 
 ## License
 

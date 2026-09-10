@@ -11,20 +11,20 @@ public final class TemplateFunction {
     final private String typeSuffix;
     final private ArrayList<TemplateFunctionParameter> parameters;
     final private String returnViperValue;
-    final private TemplatePythonType returnPythonType;
+    final private TemplateBindingType returnBindingType;
 
     public TemplateFunction(DSMFunction dsmFunction,
                             String type,
                             String typeSuffix,
                             ArrayList<TemplateFunctionParameter> parameters ,
                             String returnViperValue,
-                            TemplatePythonType returnPythonType) {
+                            TemplateBindingType returnBindingType) {
         this.dsmFunction = dsmFunction;
         this.type = type;
         this.typeSuffix = typeSuffix;
         this.parameters = parameters;
         this.returnViperValue = returnViperValue;
-        this.returnPythonType = returnPythonType;
+        this.returnBindingType = returnBindingType;
     }
 
     public String getName() {
@@ -64,9 +64,9 @@ public final class TemplateFunction {
         return returnViperValue;
     }
 
-    // Python
-    public TemplatePythonType getReturnPythonType() {
-        return returnPythonType;
+    // Binding
+    public TemplateBindingType getReturnBindingType() {
+        return returnBindingType;
     }
 
 }

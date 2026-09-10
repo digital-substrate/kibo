@@ -2,7 +2,7 @@ package com.digitalsubstrate.converter;
 
 import com.digitalsubstrate.template.TemplateField;
 import com.digitalsubstrate.template.TemplateFieldType;
-import com.digitalsubstrate.template.TemplatePythonType;
+import com.digitalsubstrate.template.TemplateBindingType;
 import com.digitalsubstrate.viper.NameSpace;
 import com.digitalsubstrate.viper.TypeName;
 import com.digitalsubstrate.viper.dsm.*;
@@ -11,16 +11,46 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 final class TypeConverter {
+    /** kibo's own proxy name for the ANY domain, which the DSM lexicon does not name. */
+    static final String Any = "Any";
+
     private final HashMap<String, String> cppPrimitiveTypes;
     private final HashMap<String, String> viperPrimitiveValues;
     private final HashMap<TypeName, DSMStructure> structuresByTypeName;
+    private final BindingVocabulary vocabulary;
 
     TypeConverter(HashMap<String, String> cppPrimitiveTypes,
                   HashMap<String, String> viperPrimitiveValues,
-                  HashMap<TypeName, DSMStructure> structuresByTypeName) {
+                  HashMap<TypeName, DSMStructure> structuresByTypeName,
+                  BindingVocabulary vocabulary) {
         this.cppPrimitiveTypes = cppPrimitiveTypes;
         this.viperPrimitiveValues = viperPrimitiveValues;
         this.structuresByTypeName = structuresByTypeName;
+        this.vocabulary = vocabulary;
+    }
+
+    /**
+     * Whether a type needs a generated proxy. The DSM primitives do not — they cross the
+     * binding as host values — and everything else does. Shared by every binding; only how
+     * those primitives are spelled differs, and that is the vocabulary's business.
+     */
+    private boolean needsProxy(String proxy) {
+        return switch (proxy) {
+            case DSMLexicon.Bool,
+                 DSMLexicon.UInt8, DSMLexicon.UInt16, DSMLexicon.UInt32, DSMLexicon.UInt64,
+                 DSMLexicon.Int8, DSMLexicon.Int16, DSMLexicon.Int32, DSMLexicon.Int64,
+                 DSMLexicon.Float, DSMLexicon.Double,
+                 DSMLexicon.BlobId, DSMLexicon.CommitId, DSMLexicon.UUId,
+                 DSMLexicon.String, DSMLexicon.Blob,
+                 DSMLexicon.Void,
+                 Any -> false;
+            default -> true;
+        };
+    }
+
+    /** How the target writes a fixed-size sequence, or nothing under a native binding. */
+    String bindingSequence(String element, long count) {
+        return vocabulary == null || element == null ? null : vocabulary.sequence(element, count);
     }
 
     boolean isTypeAny(DSMType type) {
@@ -355,8 +385,8 @@ final class TypeConverter {
         var elementType = "<None>";
         var elementTypeSuffix = "<None>";
         var elementTypeViperValue = "<None>";
-        TemplatePythonType pythonKeyType = null;
-        TemplatePythonType pythonElementType = null;
+        TemplateBindingType bindingKeyType = null;
+        TemplateBindingType bindingElementType = null;
         var passBy = "<None>";
 
         if (type instanceof DSMTypeSet typeSet) {
@@ -364,7 +394,7 @@ final class TypeConverter {
             elementType = convertType(typeSet.elementType);
             elementTypeSuffix = typeSuffix(typeSet.elementType);
             elementTypeViperValue = viperValue(typeSet.elementType);
-            pythonElementType = templatePythonType(typeSet.elementType);
+            bindingElementType = templateBindingType(typeSet.elementType);
             passBy = passByQualifier(typeSet.elementType);
         }
 
@@ -375,8 +405,8 @@ final class TypeConverter {
             elementType = convertType(typeMap.elementType);
             elementTypeSuffix = typeSuffix(typeMap.elementType);
             elementTypeViperValue = viperValue(typeMap.elementType);
-            pythonKeyType = templatePythonType(typeMap.keyType);
-            pythonElementType = templatePythonType(typeMap.elementType);
+            bindingKeyType = templateBindingType(typeMap.keyType);
+            bindingElementType = templateBindingType(typeMap.elementType);
             passBy = passByQualifier(typeMap.elementType);
         }
 
@@ -385,58 +415,62 @@ final class TypeConverter {
             elementType = convertType(typeXArray.elementType);
             elementTypeSuffix = typeSuffix(typeXArray.elementType);
             elementTypeViperValue = viperValue(typeXArray.elementType);
-            pythonElementType = templatePythonType(typeXArray.elementType);
+            bindingElementType = templateBindingType(typeXArray.elementType);
             passBy = passByQualifier(typeXArray.elementType);
         }
 
-        return new TemplateField(ctype, keyType, keyTypeSuffix, elementType, elementTypeSuffix, elementTypeViperValue, pythonKeyType, pythonElementType, passBy);
+        return new TemplateField(ctype, keyType, keyTypeSuffix, elementType, elementTypeSuffix, elementTypeViperValue, bindingKeyType, bindingElementType, passBy);
     }
 
-    TemplatePythonType templatePythonType(DSMType type) throws Exception {
-        final var pythonType = pythonType(type);
+    TemplateBindingType templateBindingType(DSMType type) throws Exception {
+        final var proxy = bindingType(type);
         final var typeSuffix = typeSuffix(type);
+        final var useProxy = needsProxy(proxy);
 
-        return new TemplatePythonType(pythonType, typeSuffix);
+        if (useProxy || vocabulary == null)
+            return new TemplateBindingType(proxy, typeSuffix, useProxy ? proxy : null, useProxy);
+
+        return new TemplateBindingType(proxy, typeSuffix, vocabulary.leaf(proxy), false);
     }
 
-    private String pythonType(DSMType type) throws Exception {
+    private String bindingType(DSMType type) throws Exception {
         if (type instanceof DSMTypeKey typeKey) {
-            return pythonType(typeKey.elementType);
+            return bindingType(typeKey.elementType);
         }
 
         if (type instanceof DSMTypeVec typeVec)
-            return String.format("Vec_%s_%d", pythonType(typeVec.elementType), typeVec.size);
+            return String.format("Vec_%s_%d", bindingType(typeVec.elementType), typeVec.size);
 
         if (type instanceof DSMTypeMat typeMat)
-            return String.format("Mat_%s_%d_%d", pythonType(typeMat.elementType), typeMat.columns, typeMat.rows);
+            return String.format("Mat_%s_%d_%d", bindingType(typeMat.elementType), typeMat.columns, typeMat.rows);
 
         if (type instanceof DSMTypeTuple typeTuple) {
             var memberSuffixes = new ArrayList<String>();
             for (var memberType : typeTuple.types)
-                memberSuffixes.add(pythonType(memberType));
+                memberSuffixes.add(bindingType(memberType));
 
             return "Tuple_" + String.join("_", memberSuffixes);
         }
 
         if (type instanceof DSMTypeOptional typeOptional)
-            return String.format("Optional_%s", pythonType(typeOptional.elementType));
+            return String.format("Optional_%s", bindingType(typeOptional.elementType));
 
         if (type instanceof DSMTypeVector typeVector)
-            return String.format("Vector_%s", pythonType(typeVector.elementType));
+            return String.format("Vector_%s", bindingType(typeVector.elementType));
 
         if (type instanceof DSMTypeMap typeMap)
-            return String.format("Map_%s_to_%s", pythonType(typeMap.keyType), pythonType(typeMap.elementType));
+            return String.format("Map_%s_to_%s", bindingType(typeMap.keyType), bindingType(typeMap.elementType));
 
         if (type instanceof DSMTypeSet typeSet)
-            return String.format("Set_%s", pythonType(typeSet.elementType));
+            return String.format("Set_%s", bindingType(typeSet.elementType));
 
         if (type instanceof DSMTypeXArray typeXArray)
-            return String.format("XArray_%s", pythonType(typeXArray.elementType));
+            return String.format("XArray_%s", bindingType(typeXArray.elementType));
 
         if (type instanceof DSMTypeVariant typeVariant) {
             var memberSuffixes = new ArrayList<String>();
             for (var memberType : typeVariant.types)
-                memberSuffixes.add(pythonType(memberType));
+                memberSuffixes.add(bindingType(memberType));
 
             return "Variant_" + String.join("_", memberSuffixes);
         }
@@ -461,7 +495,7 @@ final class TypeConverter {
             }
         }
 
-        throw new ConvertException(String.format("pythonType: Type '%s' not handled.", type.representation()));
+        throw new ConvertException(String.format("bindingType: Type '%s' not handled.", type.representation()));
     }
 
     boolean useBlobId(DSMType type) throws Exception {

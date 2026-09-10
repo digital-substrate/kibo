@@ -9,20 +9,20 @@ public final class TemplateFunctionParameter {
     private final String passBy;
     private final String typeSuffix;
     private final String viperValue;
-    private final TemplatePythonType pythonType;
+    private final TemplateBindingType bindingType;
 
     public TemplateFunctionParameter(DSMFunctionPrototypeParameter dsmFunctionPrototypeParameter,
                                      String type,
                                      String passBy,
                                      String typeSuffix,
                                      String viperValue,
-                                     TemplatePythonType pythonType) {
+                                     TemplateBindingType bindingType) {
         this.dsmFunctionPrototypeParameter = dsmFunctionPrototypeParameter;
         this.type = type;
         this.passBy = passBy;
         this.typeSuffix = typeSuffix;
         this.viperValue = viperValue;
-        this.pythonType = pythonType;
+        this.bindingType = bindingType;
     }
 
     public String getName() {
@@ -47,8 +47,8 @@ public final class TemplateFunctionParameter {
         return viperValue;
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
-        return pythonType;
+    // Binding
+    public TemplateBindingType getBindingType() {
+        return bindingType;
     }
 }

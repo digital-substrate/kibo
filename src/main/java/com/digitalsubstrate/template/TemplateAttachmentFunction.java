@@ -11,20 +11,20 @@ public final class TemplateAttachmentFunction {
     final private String typeSuffix;
     final private ArrayList<TemplateFunctionParameter> parameters;
     final private String returnViperValue;
-    final private TemplatePythonType returnPythonType;
+    final private TemplateBindingType returnBindingType;
 
     public TemplateAttachmentFunction(DSMAttachmentFunction dsmAttachmentFunction,
                                       String type,
                                       String typeSuffix,
                                       ArrayList<TemplateFunctionParameter> parameters,
                                       String returnViperValue,
-                                      TemplatePythonType returnPythonType) {
+                                      TemplateBindingType returnBindingType) {
        this.dsmAttachmentFunction = dsmAttachmentFunction;
        this.parameters = parameters;
        this.type = type;
        this.typeSuffix = typeSuffix;
        this.returnViperValue = returnViperValue;
-       this.returnPythonType = returnPythonType;
+       this.returnBindingType = returnBindingType;
     }
 
     // DSM
@@ -70,9 +70,9 @@ public final class TemplateAttachmentFunction {
         return returnViperValue;
     }
 
-    // Python
-    public TemplatePythonType getReturnPythonType() {
-        return returnPythonType;
+    // Binding
+    public TemplateBindingType getReturnBindingType() {
+        return returnBindingType;
     }
 
 }

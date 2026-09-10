@@ -7,7 +7,7 @@ public final class TemplateAttachedDocumentType {
     private final String typeSuffix;
     private final String viperValue;
     private final TemplateStructure structure;
-    private final TemplatePythonType pythonType;
+    private final TemplateBindingType bindingType;
     private final TemplateField field;
     private final boolean useBlobId;
 
@@ -15,7 +15,7 @@ public final class TemplateAttachedDocumentType {
                                         String typeInNamespace,
                                         String typeSuffix,
                                         String viperValue,
-                                        TemplatePythonType pythonType,
+                                        TemplateBindingType bindingType,
                                         TemplateStructure structure,
                                         TemplateField field,
                                         boolean useBlobId) {
@@ -23,7 +23,7 @@ public final class TemplateAttachedDocumentType {
         this.typeInNamespace = typeInNamespace;
         this.typeSuffix = typeSuffix;
         this.viperValue = viperValue;
-        this.pythonType = pythonType;
+        this.bindingType = bindingType;
         this.structure = structure;
         this.field = field;
         this.useBlobId = useBlobId;
@@ -66,8 +66,8 @@ public final class TemplateAttachedDocumentType {
         return viperValue;
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
-        return pythonType;
+    // Binding
+    public TemplateBindingType getBindingType() {
+        return bindingType;
     }
 }

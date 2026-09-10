@@ -51,6 +51,11 @@ public final class TemplateEnumeration {
     }
 
     // Type
+    /** The DSM name of this entity — what the model calls it, whatever the target. */
+    public String getDsmType() {
+        return dsmEnumeration.typeName.representation();
+    }
+
     public String getType() {
         return type;
     }
@@ -68,9 +73,9 @@ public final class TemplateEnumeration {
         return "ValueEnumeration";
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
+    // Binding
+    public TemplateBindingType getBindingType() {
         final var proxy = dsmEnumeration.typeName.nameSpace.name + "_" + dsmEnumeration.typeName.name;
-        return new TemplatePythonType(proxy, typeSuffix);
+        return new TemplateBindingType(proxy, typeSuffix, proxy, true);
     }
 }

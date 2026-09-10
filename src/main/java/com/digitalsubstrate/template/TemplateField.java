@@ -8,8 +8,8 @@ public final class TemplateField {
     private final String elementType;
     private final String elementTypeSuffix;
     private final String elementTypeViperValue;
-    private final TemplatePythonType pythonKeyType;
-    private final TemplatePythonType pythonElementType;
+    private final TemplateBindingType bindingKeyType;
+    private final TemplateBindingType bindingElementType;
     private final String passBy;
 
     public TemplateField(TemplateFieldType type,
@@ -18,8 +18,8 @@ public final class TemplateField {
                          String elementType,
                          String elementTypeSuffix,
                          String elementTypeViperValue,
-                         TemplatePythonType pythonKeyType,
-                         TemplatePythonType pythonElementType,
+                         TemplateBindingType bindingKeyType,
+                         TemplateBindingType bindingElementType,
                          String passBy) {
         this.type = type;
         this.keyType = keyType;
@@ -27,8 +27,8 @@ public final class TemplateField {
         this.elementType = elementType;
         this.elementTypeSuffix = elementTypeSuffix;
         this.elementTypeViperValue = elementTypeViperValue;
-        this.pythonKeyType = pythonKeyType;
-        this.pythonElementType = pythonElementType;
+        this.bindingKeyType = bindingKeyType;
+        this.bindingElementType = bindingElementType;
         this.passBy = passBy;
     }
 
@@ -82,12 +82,12 @@ public final class TemplateField {
         return elementTypeViperValue;
     }
 
-    // Python
-    public TemplatePythonType getPythonKeyType() {
-        return pythonKeyType;
+    // Binding
+    public TemplateBindingType getBindingKeyType() {
+        return bindingKeyType;
     }
 
-    public TemplatePythonType getPythonElementType() {
-        return pythonElementType;
+    public TemplateBindingType getBindingElementType() {
+        return bindingElementType;
     }
 }

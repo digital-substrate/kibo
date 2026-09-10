@@ -10,20 +10,25 @@ public final class TemplateMatFunction {
     private final String typeSuffix;
     private final String elementTypeSuffix;
     private final String dsmType;
-    private final TemplatePythonType pythonType;
-    private final TemplatePythonType pythonElementType;
+    private final TemplateBindingType bindingType;
+    private final TemplateBindingType bindingElementType;
+    private final String bindingSequenceType;
+    private final String bindingColumnType;
 
     public TemplateMatFunction(String type, long columns, long rows, String typeSuffix, String elementTypeSuffix,
                                String dsmType,
-                               TemplatePythonType pythonType, TemplatePythonType pythonElementType) {
+                               TemplateBindingType bindingType, TemplateBindingType bindingElementType,
+                               String bindingSequenceType, String bindingColumnType) {
         this.type = type;
         this.columns = columns;
         this.rows = rows;
         this.typeSuffix = typeSuffix;
         this.dsmType = dsmType;
         this.elementTypeSuffix = elementTypeSuffix;
-        this.pythonType = pythonType;
-        this.pythonElementType = pythonElementType;
+        this.bindingType = bindingType;
+        this.bindingElementType = bindingElementType;
+        this.bindingSequenceType = bindingSequenceType;
+        this.bindingColumnType = bindingColumnType;
     }
 
     // DSM
@@ -61,26 +66,22 @@ public final class TemplateMatFunction {
         return "ValueMat";
     }
 
-    // Python
-    public TemplatePythonType getPythonType() {
-        return pythonType;
+    // Binding
+    public TemplateBindingType getBindingType() {
+        return bindingType;
     }
 
-    public TemplatePythonType getPythonElementType() {
-        return pythonElementType;
+    public TemplateBindingType getBindingElementType() {
+        return bindingElementType;
     }
 
-    public String getPythonTupleType() {
-        final var elements = new ArrayList<String>();
-        for (var i = 0; i < columns; i++)
-            elements.add(getPythonColumnType());
-        return String.format("tuple[%s]", String.join(", ", elements));
+    /** How the target writes this matrix: a sequence of columns. */
+    public String getBindingSequenceType() {
+        return bindingSequenceType;
     }
 
-    public String getPythonColumnType() {
-        var elements = new ArrayList<String>();
-        for (var i = 0; i < rows; i++)
-            elements.add(pythonElementType.getType());
-        return String.format("tuple[%s]", String.join(", ", elements));
+    /** How the target writes one of its columns. */
+    public String getBindingColumnType() {
+        return bindingColumnType;
     }
 }
