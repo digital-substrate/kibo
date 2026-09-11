@@ -45,6 +45,7 @@ public final class DSMDefinitionsInspector {
 
         for (var e : this.definitions.attachments) {
             attachments.put(e.getIdentifier(), e);
+            registerTypeName(e.typeName);
         }
 
         for (var e : this.definitions.functionPools) {

@@ -63,6 +63,11 @@ public class DSMNameSpaceDependency {
             collectType(nameSpace, field.type, dependencies);
     }
 
+    void collectAttachment(NameSpace nameSpace, DSMAttachment attachment, HashSet<NameSpace> dependencies) {
+        collectType(nameSpace, attachment.keyType, dependencies);
+        collectType(nameSpace, attachment.documentType, dependencies);
+    }
+
     // MARK: - Dependency
     public void collect(DSMDefinitionsInspector inspector) {
         for (var nameSpace : inspector.getNameSpaces()) {
@@ -80,8 +85,18 @@ public class DSMNameSpaceDependency {
                 if (structure.typeName.nameSpace.equals(nameSpace))
                     collectStructure(nameSpace, structure, dependencies);
             }
+
+            for (var attachment : inspector.getDefinitions().attachments) {
+                if (attachment.typeName.nameSpace.equals(nameSpace))
+                    collectAttachment(nameSpace, attachment, dependencies);
+            }
+
             dependencyByNameSpace.put(nameSpace, dependencies);
         }
+    }
+
+    public HashSet<NameSpace> dependencies(NameSpace nameSpace) {
+        return dependencyByNameSpace.getOrDefault(nameSpace, new HashSet<>());
     }
 
     public void debug() {

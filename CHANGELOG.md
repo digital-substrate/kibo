@@ -9,18 +9,15 @@ Kibo carries its own version line (declared in `pom.xml`), independent from
 the DSM language contract it consumes and from any runtime targeted by the
 templates it renders.
 
-## [2.0.0] - 2026-09-10
+## [Unreleased] — 2.0.0
 
-The Template Model names the three type spaces it serves, and the delegating templates
-stop carrying lookup tables. Generated output changes only where a comment, a repr or a
-message named a type — and in the headers, which now state the runtime each target is
-generated against.
-
-
-A TypeScript surface fix, template render diagnostics, build tooling — and a
-**breaking rename of the Template Model's binding-side accessors**. The DSM language
-is unchanged, and so is every byte of generated output; what changes is the model API
-that template authors read.
+A **breaking rename of the Template Model's binding-side accessors**: the model now
+names the three type spaces it serves, and the delegating templates stop carrying lookup
+tables. Alongside it, a TypeScript surface fix, template render diagnostics and build
+tooling. The DSM language is unchanged; what changes for template authors is the model
+API they read. Generated output changes only where a comment, a repr or a message named
+a type — and in the headers, which now state the runtime each target is generated
+against.
 
 ### Added
 
@@ -81,6 +78,24 @@ that template authors read.
   **Breaking, with no compatibility aliases.** The first-party templates move with it; a
   template outside this repository must be adapted. The render diagnostics below exist so
   that such a template reports what stopped resolving instead of silently emitting less.
+
+### Fixed
+
+- **An attachment carried no namespace dependency, so the namespace order it implies was
+  not held.** `DSMNameSpaceDependency` collected the edges of concepts, clubs and
+  structures and skipped attachments entirely, although an attachment names two types: the
+  concept it is keyed on and its document type. A namespace whose only reference to
+  another was through an attachment therefore had no edge, and the topological sort was
+  free to emit it first — a wrong include order on input that is perfectly acyclic, with
+  nothing to say so, since the sort does not detect cycles and is not meant to. Both
+  positions now go through `collectType`, so they follow the same rule as a structure
+  field: the global namespace is not a dependency, and `key<any_concept>` names none.
+
+- **A namespace holding only attachments was not known at all.** `DSMDefinitionsInspector`
+  registered the type names of concepts, clubs, enumerations and structures, but not of
+  attachments. Such a namespace was missing from `getNameSpaces()`, so it received no
+  `TemplateNameSpace` and its attachments reached only the templates that walk the flat
+  list, never those that walk namespace by namespace.
 
 ## [1.2.12] - 2026-09-10
 
