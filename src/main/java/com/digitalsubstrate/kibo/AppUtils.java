@@ -47,10 +47,33 @@ public final class AppUtils {
     private static final String WHOLE_MODEL = "main";     // Template Model 1 and 2
     private static final String MODEL = "model";          // once, for the whole model
     private static final String PER_UNIT = "unit";        // once per namespace
+    private static final String PER_POOL = "pool";        // once per function pool
+    private static final String PER_ATTACHMENT_POOL = "attachment_pool";
 
     // Not "namespace": 58 templates already declare a sub-template of that name for
     // their loop body, and an entry cannot share a name with something that is not one.
     // "unit" is what the design calls a namespace's generated code anyway.
+
+    /**
+     * Whether a template declares this entry, taking the argument an entry takes.
+     *
+     * <p>The name alone is not enough. Template packs already use these words for their
+     * own sub-templates — 58 declare {@code namespace(ns)} for a loop body, two declare
+     * {@code pool(po)} — and rendering one of those with an argument it does not take
+     * throws, which aborts the whole invocation and silently stops writing every file
+     * that would have followed. A pack should not lose its render to a word it chose
+     * before kibo reserved it.
+     */
+    private static boolean declares(STGroupFile group, String entry, String argument) {
+        if (!group.isDefined(entry))
+            return false;
+
+        final var instance = group.getInstanceOf(entry);
+        return instance != null
+            && instance.impl != null
+            && instance.impl.formalArguments != null
+            && instance.impl.formalArguments.containsKey(argument);
+    }
 
     private static STGroupFile group(Path template, RenderDiagnostics diagnostics) {
         final var group = new STGroupFile(template.toString());
@@ -102,16 +125,34 @@ public final class AppUtils {
         var rendered = false;
 
         for (var entry : new String[]{WHOLE_MODEL, MODEL})
-            if (group.isDefined(entry)) {
+            if (declares(group, entry, "m")) {
                 save(target, templateDefinitions.getNamespace(), template, output,
                      render(group, entry, "m", templateDefinitions), debug);
                 rendered = true;
             }
 
-        if (group.isDefined(PER_UNIT)) {
+        if (declares(group, PER_UNIT, "u")) {
             for (var nameSpace : templateDefinitions.nameSpaces)
                 save(target, nameSpace.getName(), template, output,
                      render(group, PER_UNIT, "u", nameSpace), debug);
+            rendered = true;
+        }
+
+        // A pool is a unit too — a namespace holding only functions — but it is a
+        // different collection to walk, and a template written for one would read
+        // accessors the other does not have. Separate entries rather than one that
+        // renders plausibly wrong output for half its inputs.
+        if (declares(group, PER_POOL, "p")) {
+            for (var pool : templateDefinitions.functionPools)
+                save(target, pool.getName(), template, output,
+                     render(group, PER_POOL, "p", pool), debug);
+            rendered = true;
+        }
+
+        if (declares(group, PER_ATTACHMENT_POOL, "p")) {
+            for (var pool : templateDefinitions.attachmentFunctionPools)
+                save(target, pool.getName(), template, output,
+                     render(group, PER_ATTACHMENT_POOL, "p", pool), debug);
             rendered = true;
         }
 

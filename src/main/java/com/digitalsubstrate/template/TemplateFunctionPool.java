@@ -1,5 +1,6 @@
 package com.digitalsubstrate.template;
 
+import com.digitalsubstrate.converter.TargetLayout;
 import com.digitalsubstrate.viper.dsm.DSMFunctionPool;
 
 import java.util.ArrayList;
@@ -12,6 +13,30 @@ public final class TemplateFunctionPool {
     public TemplateFunctionPool(ArrayList<TemplateFunction> functions, DSMFunctionPool dsmFunctionPool) {
         this.functions = functions;
         this.dsmFunctionPool = dsmFunctionPool;
+    }
+
+    private TemplateDefinitions model;
+    private TemplateIncludePaths include;
+
+    /**
+     * The whole model, for what a pool does not own.
+     *
+     * <p>A pool is a unit like a namespace — it holds only functions — so a template
+     * rendering one needs the same two things a namespace template needs: the banner,
+     * and a way to reach artefacts that are not its own.
+     */
+    public TemplateDefinitions getModel() {
+        return model;
+    }
+
+    /** Where this pool's own artefacts are found: {@code <p.include.FunctionPoolBridges>}. */
+    public TemplateIncludePaths getInclude() {
+        return include;
+    }
+
+    public void setModel(TemplateDefinitions model, TargetLayout layout) {
+        this.model = model;
+        this.include = new TemplateIncludePaths(layout, getName());
     }
 
     public String getName() {

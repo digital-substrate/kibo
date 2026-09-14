@@ -105,6 +105,11 @@ public final class Converter {
         result.functionPools.sort(Comparator.comparing(TemplateFunctionPool::getName));
         result.attachmentFunctionPools.sort(Comparator.comparing(TemplateAttachmentFunctionPool::getName));
 
+        for (var pool : result.functionPools)
+            pool.setModel(result, layout);
+        for (var pool : result.attachmentFunctionPools)
+            pool.setModel(result, layout);
+
         // Create NameSpaces
         fillNameSpaces(result);
         return result;
