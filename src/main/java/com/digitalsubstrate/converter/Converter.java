@@ -119,7 +119,7 @@ public final class Converter {
         final var byNameSpace = new HashMap<NameSpace, TemplateNameSpace>();
 
         for (var nameSpace : nameSpaces) {
-            final var templateNameSpace = new TemplateNameSpace(nameSpace);
+            final var templateNameSpace = new TemplateNameSpace(nameSpace, definitions, layout);
             byNameSpace.put(nameSpace, templateNameSpace);
 
             // Topological order guarantees each dependency is already built.

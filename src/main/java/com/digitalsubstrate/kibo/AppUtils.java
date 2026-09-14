@@ -43,31 +43,82 @@ public final class AppUtils {
         return result;
     }
 
-    public static String render(Path template, Object obj, boolean debug) {
-        if (debug) {
-            System.out.println("Render " + template);
-        }
+    /** The entry a template declares, which is how it says what it is rendered for. */
+    private static final String WHOLE_MODEL = "main";     // Template Model 1 and 2
+    private static final String MODEL = "model";          // once, for the whole model
+    private static final String PER_UNIT = "unit";        // once per namespace
 
-        final var templates = new STGroupFile(template.toString());
-        final var diagnostics = new RenderDiagnostics(template);
-        templates.setListener(diagnostics);
-        templates.registerRenderer(String.class, new TemplateStringRenderer());
-        final ST main = templates.getInstanceOf("main");
-        main.add("m", obj);
-        final var code = main.render();
-        diagnostics.summarize();
-        return code;
+    // Not "namespace": 58 templates already declare a sub-template of that name for
+    // their loop body, and an entry cannot share a name with something that is not one.
+    // "unit" is what the design calls a namespace's generated code anyway.
+
+    private static STGroupFile group(Path template, RenderDiagnostics diagnostics) {
+        final var group = new STGroupFile(template.toString());
+        group.setListener(diagnostics);
+        group.registerRenderer(String.class, new TemplateStringRenderer());
+        return group;
     }
 
-    public static void renderAndSave(Target target, TemplateDefinitions templateDefinitions, Path template, Path output, boolean debug) throws Exception {
-        final var code = render(template, templateDefinitions, debug);
-        final var filename = target.layout.outputFileName(templateDefinitions.getNamespace(),
-                                                          outputFilePath(template).toString());
+    private static String render(STGroupFile group, String entry, String argument, Object value) {
+        final ST instance = group.getInstanceOf(entry);
+        instance.add(argument, value);
+        return instance.render();
+    }
+
+    private static void save(Target target, String unit, Path template, Path output, String code, boolean debug)
+            throws Exception {
+        final var filename = target.layout.outputFileName(unit, outputFilePath(template).toString());
         final var filePath = Paths.get(output.toString(), filename);
         if (debug)
             System.out.printf("Save %s%n", filePath);
 
         FileUtils.saveSource(code, filePath);
+    }
+
+    /**
+     * Render one template file, once per thing it says it is for.
+     *
+     * <p>A template declares its scope by which entry it defines, which is the only
+     * thing kibo can ask: it never sees a template pack, only whatever {@code -t}
+     * points at, so there is no manifest to consult and nothing to keep in step.
+     *
+     * <p>{@code main(m)} renders the whole model into one file, as Template Model 1 and
+     * 2 always have. {@code model(m)} does the same and says so. {@code unit(u)} renders
+     * once per namespace, into one file each — and a template may declare both, because
+     * most of them are both: the primitives and the container functions of
+     * {@code ValueHexdigest} belong to the model, and only its concepts and structures
+     * belong to a unit.
+     *
+     * <p>A template declaring none of the three is an error rather than an empty file.
+     * StringTemplate answers a missing template with the empty string, and a generator
+     * that writes a plausible short file is worse than one that stops.
+     */
+    public static void renderAndSave(Target target, TemplateDefinitions templateDefinitions, Path template, Path output, boolean debug) throws Exception {
+        if (debug)
+            System.out.println("Render " + template);
+
+        final var diagnostics = new RenderDiagnostics(template);
+        final var group = group(template, diagnostics);
+        var rendered = false;
+
+        for (var entry : new String[]{WHOLE_MODEL, MODEL})
+            if (group.isDefined(entry)) {
+                save(target, templateDefinitions.getNamespace(), template, output,
+                     render(group, entry, "m", templateDefinitions), debug);
+                rendered = true;
+            }
+
+        if (group.isDefined(PER_UNIT)) {
+            for (var nameSpace : templateDefinitions.nameSpaces)
+                save(target, nameSpace.getName(), template, output,
+                     render(group, PER_UNIT, "u", nameSpace), debug);
+            rendered = true;
+        }
+
+        diagnostics.summarize();
+
+        if (!rendered)
+            throw new Exception(template + " declares no entry: expected main(m), model(m) or namespace(u).");
     }
 
     public static void renderAndSave(Target target, TemplateDefinitions templateDefinitions, ArrayList<Path> templates, Path output, boolean debug) throws Exception {

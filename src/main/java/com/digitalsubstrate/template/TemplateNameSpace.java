@@ -1,5 +1,6 @@
 package com.digitalsubstrate.template;
 
+import com.digitalsubstrate.converter.TargetLayout;
 import com.digitalsubstrate.viper.NameSpace;
 
 import java.util.ArrayList;
@@ -29,8 +30,32 @@ public class TemplateNameSpace {
     public final ArrayList<TemplateEnumeration> enumerations = new ArrayList<>();
     public final ArrayList<TemplateAttachment> attachments = new ArrayList<>();
 
-    public TemplateNameSpace(NameSpace nameSpace) {
+    private final TemplateDefinitions model;
+    private final TemplateIncludePaths include;
+
+    public TemplateNameSpace(NameSpace nameSpace, TemplateDefinitions model, TargetLayout layout) {
         this.nameSpace = nameSpace;
+        this.model = model;
+        this.include = new TemplateIncludePaths(layout, nameSpace.name);
+    }
+
+    /**
+     * The whole model, for what a unit does not own.
+     *
+     * <p>A unit template needs the banner, and it needs to reach artefacts that have not
+     * been split yet — those still live under {@code -n}, so {@code u.model.include.Data}
+     * is where Data is until Data itself becomes per-unit, at which point the template
+     * switches to {@code u.include.Data}. Making that switch an edit, at the moment the
+     * artefact moves, is the point: it is visible in a diff instead of resolving
+     * differently depending on what else has been migrated.
+     */
+    public TemplateDefinitions getModel() {
+        return model;
+    }
+
+    /** Where this unit's own artefacts are found: {@code <u.include.Data>}. */
+    public TemplateIncludePaths getInclude() {
+        return include;
     }
 
     public String getName() {
