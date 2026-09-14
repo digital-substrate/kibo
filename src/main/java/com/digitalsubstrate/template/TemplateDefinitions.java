@@ -10,6 +10,7 @@ public final class TemplateDefinitions {
 
     private final String generated;
     private final String namespace;
+    private final TemplateIncludePaths include;
 
     public final ArrayList<TemplateNameSpace> nameSpaces = new ArrayList<>();
 
@@ -44,6 +45,7 @@ public final class TemplateDefinitions {
     public TemplateDefinitions(String generated, String namespace) {
         this.generated = generated;
         this.namespace = namespace;
+        this.include = new TemplateIncludePaths(namespace);
     }
 
     public String getGenerated() {
@@ -52,6 +54,15 @@ public final class TemplateDefinitions {
 
     public String getNamespace() {
         return namespace;
+    }
+
+    /**
+     * Where another generated artefact is found, by name: {@code <m.include.Data>}.
+     * See {@link TemplateIncludePaths} for why a template declares the name and not
+     * the path.
+     */
+    public TemplateIncludePaths getInclude() {
+        return include;
     }
 
     // Components
