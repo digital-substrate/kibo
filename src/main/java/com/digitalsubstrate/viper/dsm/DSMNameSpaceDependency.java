@@ -11,7 +11,9 @@ import java.util.Map;
 
 public class DSMNameSpaceDependency {
 
-    private final HashMap<NameSpace, HashSet<NameSpace>>  dependencyByNameSpace = new HashMap<>();
+    private final HashMap<NameSpace, HashSet<NameSpace>> dependencyByNameSpace = new HashMap<>();
+    private final HashMap<NameSpace, HashSet<NameSpace>> typeDependencyByNameSpace = new HashMap<>();
+    private final HashMap<NameSpace, HashSet<NameSpace>> attachmentDependencyByNameSpace = new HashMap<>();
 
     void collectType(NameSpace nameSpace, DSMType type, HashSet<NameSpace> dependencies) {
         if (type instanceof DSMTypeKey typeKey) {
@@ -69,30 +71,58 @@ public class DSMNameSpaceDependency {
     }
 
     // MARK: - Dependency
+    /**
+     * What each namespace reaches, collected separately by the kind of declaration that
+     * reaches it.
+     *
+     * <p>A namespace's dependencies are not one set. The types it declares reach other
+     * namespaces through a concept's parent, a club's members and a structure's fields;
+     * its attachments reach them through a key or a document type. An artefact needs the
+     * dependencies of <em>what it emits</em>, and emitting the types while including what
+     * only the attachments reach is a wrong include that compiles — the worst kind, since
+     * nothing reports it.
+     *
+     * <p>The union is kept as well, because the emission order is a property of the
+     * namespace and not of any one artefact.
+     */
     public void collect(DSMDefinitionsInspector inspector) {
         for (var nameSpace : inspector.getNameSpaces()) {
-            final var dependencies = new HashSet<NameSpace>();
+            final var byTypes = new HashSet<NameSpace>();
+            final var byAttachments = new HashSet<NameSpace>();
 
             for (var concept : inspector.getDefinitions().concepts)
                 if (concept.typeName.nameSpace.equals(nameSpace))
-                    collectConcept(nameSpace, concept, dependencies);
+                    collectConcept(nameSpace, concept, byTypes);
 
             for (var club : inspector.getDefinitions().clubs)
                 if (club.typeName.nameSpace.equals(nameSpace))
-                    collectClub(nameSpace, club, dependencies);
+                    collectClub(nameSpace, club, byTypes);
 
-            for (var structure : inspector.getDefinitions().structures) {
+            for (var structure : inspector.getDefinitions().structures)
                 if (structure.typeName.nameSpace.equals(nameSpace))
-                    collectStructure(nameSpace, structure, dependencies);
-            }
+                    collectStructure(nameSpace, structure, byTypes);
 
-            for (var attachment : inspector.getDefinitions().attachments) {
+            for (var attachment : inspector.getDefinitions().attachments)
                 if (attachment.typeName.nameSpace.equals(nameSpace))
-                    collectAttachment(nameSpace, attachment, dependencies);
-            }
+                    collectAttachment(nameSpace, attachment, byAttachments);
 
-            dependencyByNameSpace.put(nameSpace, dependencies);
+            final var all = new HashSet<>(byTypes);
+            all.addAll(byAttachments);
+
+            typeDependencyByNameSpace.put(nameSpace, byTypes);
+            attachmentDependencyByNameSpace.put(nameSpace, byAttachments);
+            dependencyByNameSpace.put(nameSpace, all);
         }
+    }
+
+    /** What the types of {@code nameSpace} reach: concept parents, club members, structure fields. */
+    public HashSet<NameSpace> typeDependencies(NameSpace nameSpace) {
+        return typeDependencyByNameSpace.getOrDefault(nameSpace, new HashSet<>());
+    }
+
+    /** What the attachments of {@code nameSpace} reach: their key and document types. */
+    public HashSet<NameSpace> attachmentDependencies(NameSpace nameSpace) {
+        return attachmentDependencyByNameSpace.getOrDefault(nameSpace, new HashSet<>());
     }
 
     public HashSet<NameSpace> dependencies(NameSpace nameSpace) {

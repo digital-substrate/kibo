@@ -115,6 +115,16 @@ public final class Converter {
         return result;
     }
 
+    private static void fill(java.util.ArrayList<TemplateNameSpace> into,
+                             java.util.Collection<com.digitalsubstrate.viper.NameSpace> from,
+                             java.util.Map<com.digitalsubstrate.viper.NameSpace, TemplateNameSpace> built) {
+        for (var nameSpace : from) {
+            final var templateNameSpace = built.get(nameSpace);
+            if (templateNameSpace != null)
+                into.add(templateNameSpace);
+        }
+    }
+
     private void fillNameSpaces(TemplateDefinitions definitions) {
         final var nameSpaceDependency = new DSMNameSpaceDependency();
         nameSpaceDependency.collect(inspector);
@@ -128,11 +138,9 @@ public final class Converter {
             byNameSpace.put(nameSpace, templateNameSpace);
 
             // Topological order guarantees each dependency is already built.
-            for (var dependency : nameSpaceDependency.dependencies(nameSpace)) {
-                final var dependencyNameSpace = byNameSpace.get(dependency);
-                if (dependencyNameSpace != null)
-                    templateNameSpace.dependencies.add(dependencyNameSpace);
-            }
+            fill(templateNameSpace.dependencies.types, nameSpaceDependency.typeDependencies(nameSpace), byNameSpace);
+            fill(templateNameSpace.dependencies.attachments, nameSpaceDependency.attachmentDependencies(nameSpace), byNameSpace);
+            fill(templateNameSpace.dependencies.all, nameSpaceDependency.dependencies(nameSpace), byNameSpace);
 
             for (var e : definitions.concepts)
                 if (e.getDsmConcept().typeName.nameSpace.equals(nameSpace))

@@ -21,7 +21,7 @@ public class TemplateNameSpace {
      * <p>Populated in topological order, so a dependency is always already built when
      * the namespace that needs it is.
      */
-    public final ArrayList<TemplateNameSpace> dependencies = new ArrayList<>();
+    public final TemplateDependencies dependencies = new TemplateDependencies();
 
     public final ArrayList<TemplateConcept> concepts = new ArrayList<>();
     public final ArrayList<TemplateClub> clubs = new ArrayList<>();
@@ -62,7 +62,7 @@ public class TemplateNameSpace {
         return nameSpace.name;
     }
 
-    public ArrayList<TemplateNameSpace> getDependencies() {
+    public TemplateDependencies getDependencies() {
         return dependencies;
     }
 }

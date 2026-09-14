@@ -22,11 +22,23 @@ final class TemplateNameSpaceView {
                 .orElseThrow(() -> new AssertionError("no namespace named " + name));
     }
 
-    String dependenciesOf(String name) {
-        return get(name).dependencies.stream()
+    private static String render(java.util.List<TemplateNameSpace> nameSpaces) {
+        return nameSpaces.stream()
                 .map(TemplateNameSpace::getName)
                 .sorted()
                 .collect(Collectors.joining(", ", "[", "]"));
+    }
+
+    String dependenciesOf(String name) {
+        return render(get(name).dependencies.all);
+    }
+
+    String typeDependenciesOf(String name) {
+        return render(get(name).dependencies.types);
+    }
+
+    String attachmentDependenciesOf(String name) {
+        return render(get(name).dependencies.attachments);
     }
 
     int positionOf(String name) {

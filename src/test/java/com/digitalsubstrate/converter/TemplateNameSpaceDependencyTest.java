@@ -74,6 +74,33 @@ public final class TemplateNameSpaceDependencyTest {
         assertTrue(view.positionOf("B") < view.positionOf("C"));
     }
 
+    /** An attachment in {@code home}, on {@code home}'s own concept, documenting {@code target}'s. */
+    private static DSMAttachment attachmentReaching(NameSpace home, String name,
+                                                    String ownConcept, NameSpace target, String concept) {
+        return new DSMAttachment(
+                new TypeName(home, name),
+                new DSMTypeReference(new TypeName(home, ownConcept), DSMTypeReferenceDomain.CONCEPT),
+                new DSMTypeReference(new TypeName(target, concept), DSMTypeReferenceDomain.CONCEPT),
+                "", UUID.randomUUID());
+    }
+
+    @Test
+    public void whatTheTypesReachAndWhatTheAttachmentsReachAreNotOneSet() throws Exception {
+        final var definitions = new DSMDefinitions();
+        definitions.concepts.add(concept(A, "CA"));
+        definitions.concepts.add(concept(B, "CB"));
+        definitions.concepts.add(concept(C, "CC"));
+
+        // C's types reach A; only C's attachment reaches B.
+        definitions.structures.add(referencing(C, "SC", A, "CA"));
+        definitions.attachments.add(attachmentReaching(C, "note", "CC", B, "CB"));
+
+        final var view = convert(definitions);
+        assertEquals("[A]", view.typeDependenciesOf("C"));
+        assertEquals("[B]", view.attachmentDependenciesOf("C"));
+        assertEquals("[A, B]", view.dependenciesOf("C"));
+    }
+
     @Test
     public void aNameSpaceThatReachesNothingCarriesNothing() throws Exception {
         final var definitions = new DSMDefinitions();
