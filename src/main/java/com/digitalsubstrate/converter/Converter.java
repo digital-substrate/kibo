@@ -116,6 +116,14 @@ public final class Converter {
         return result;
     }
 
+    /** How many parents a concept has above it. A parent is always shallower than its child. */
+    private static int inheritanceDepth(TemplateConcept concept) {
+        var depth = 0;
+        for (var parent = concept.getParent(); parent != null; parent = parent.getParent())
+            depth++;
+        return depth;
+    }
+
     private static void fill(java.util.ArrayList<TemplateNameSpace> into,
                              java.util.Collection<com.digitalsubstrate.viper.NameSpace> from,
                              java.util.Map<com.digitalsubstrate.viper.NameSpace, TemplateNameSpace> built) {
@@ -176,6 +184,16 @@ public final class Converter {
             for (var e : definitions.concepts)
                 if (e.getDsmConcept().typeName.nameSpace.equals(nameSpace))
                     templateNameSpace.concepts.add(e);
+
+            // A parent before its children, and the whole model is sorted by name.
+            //
+            // A unit emits its concepts into one file, so a derived concept that mentions
+            // its parent -- a widening conversion, a constructor -- needs the parent
+            // declared above it. Sorting by name puts `SubThing` before `Thing`, which
+            // compiles nowhere. Depth in the parent chain is enough to order them: a
+            // parent is always shallower than its child, and the model guarantees the
+            // chain is acyclic. Ties keep the name order, so the output stays stable.
+            templateNameSpace.concepts.sort(Comparator.comparingInt(Converter::inheritanceDepth));
 
             for (var e : definitions.clubs)
                 if (e.getDsmClub().typeName.nameSpace.equals(nameSpace))
