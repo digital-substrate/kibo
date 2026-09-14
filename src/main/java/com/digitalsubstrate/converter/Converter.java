@@ -5,6 +5,7 @@ import com.digitalsubstrate.viper.TypeName;
 import com.digitalsubstrate.viper.dsm.*;
 
 import java.util.Comparator;
+import com.digitalsubstrate.viper.NameSpace;
 import java.util.HashMap;
 
 public final class Converter {
@@ -115,8 +116,18 @@ public final class Converter {
         final var nameSpaces = nameSpaceDependency.sorted();
         //nameSpaceDependency.debug();
 
+        final var byNameSpace = new HashMap<NameSpace, TemplateNameSpace>();
+
         for (var nameSpace : nameSpaces) {
             final var templateNameSpace = new TemplateNameSpace(nameSpace);
+            byNameSpace.put(nameSpace, templateNameSpace);
+
+            // Topological order guarantees each dependency is already built.
+            for (var dependency : nameSpaceDependency.dependencies(nameSpace)) {
+                final var dependencyNameSpace = byNameSpace.get(dependency);
+                if (dependencyNameSpace != null)
+                    templateNameSpace.dependencies.add(dependencyNameSpace);
+            }
 
             for (var e : definitions.concepts)
                 if (e.getDsmConcept().typeName.nameSpace.equals(nameSpace))

@@ -31,8 +31,19 @@ public class TypeName {
         return nameSpace.representation(name);
     }
 
-    public String representationIn(NameSpace nameSpace) {
-        return nameSpace.representationIn(nameSpace, name);
+    /**
+     * How this name is written when read from {@code context}: bare inside its own
+     * namespace, qualified from anywhere else.
+     *
+     * <p>The parameter is named {@code context} and not {@code nameSpace} on purpose.
+     * It used to shadow the field, so the call below ran on the argument instead of on
+     * this name's own namespace, the two UUIDs compared were the same object's, and the
+     * method returned the bare name every time. With one namespace in a model that
+     * answer is always right, which is why it survived from the day the DSM gained
+     * namespaces until a model with five of them existed.
+     */
+    public String representationIn(NameSpace context) {
+        return nameSpace.representationIn(context, name);
     }
 }
 
