@@ -133,6 +133,82 @@ public final class DSMNameSpaceDependencyTest {
         assertTrue(sorted.indexOf(NS_A) < sorted.indexOf(NS_B));
     }
 
+    private static DSMFunctionPool pool(String name, DSMType returnType, DSMType... parameters) {
+        final var prototype = new ArrayList<DSMFunctionPrototypeParameter>();
+        var i = 0;
+        for (var type : parameters)
+            prototype.add(new DSMFunctionPrototypeParameter("p" + i++, type));
+
+        final var functions = new ArrayList<DSMFunction>();
+        functions.add(new DSMFunction(new DSMFunctionPrototype("f", prototype, returnType), ""));
+        return new DSMFunctionPool(UUID.randomUUID(), name, functions, "");
+    }
+
+    @Test
+    public void aPoolReachesTheNameSpacesOfItsParameters() {
+        final var definitions = new DSMDefinitions();
+        final var conceptA = concept(NS_A, "CA");
+        final var conceptB = concept(NS_B, "CB");
+        definitions.concepts.add(conceptA);
+        definitions.concepts.add(conceptB);
+
+        final var spanning = pool("Projector", DSMTypeReference.Void,
+                                  new DSMTypeKey(conceptA.typeReference),
+                                  new DSMTypeKey(conceptB.typeReference));
+        definitions.functionPools.add(spanning);
+
+        final var reached = collected(definitions).dependencies(spanning);
+        assertEquals(2, reached.size());
+        assertTrue(reached.contains(NS_A));
+        assertTrue(reached.contains(NS_B));
+    }
+
+    @Test
+    public void aPoolReachesTheNameSpaceOfItsReturnType() {
+        final var definitions = new DSMDefinitions();
+        final var structureA = structure(NS_A, "SA");
+        definitions.structures.add(structureA);
+
+        final var returning = pool("Maker", structureA.typeReference);
+        definitions.functionPools.add(returning);
+
+        assertTrue(collected(definitions).dependencies(returning).contains(NS_A));
+    }
+
+    /**
+     * A pool belongs to no namespace, so there is nothing to subtract: the exclusion that
+     * keeps a namespace out of its own dependency set has no counterpart here, and a pool
+     * naming only primitives depends on nothing at all.
+     */
+    @Test
+    public void aPoolNamingNoNameSpacedTypeDependsOnNothing() {
+        final var definitions = new DSMDefinitions();
+        definitions.concepts.add(concept(NS_A, "CA"));
+
+        final var plain = pool("Tools", DSMTypeReference.Int64, DSMTypeReference.Int64);
+        definitions.functionPools.add(plain);
+
+        assertEquals(0, collected(definitions).dependencies(plain).size());
+    }
+
+    @Test
+    public void anAttachmentPoolReachesTheNameSpaceOfItsKey() {
+        final var definitions = new DSMDefinitions();
+        final var conceptA = concept(NS_A, "CA");
+        definitions.concepts.add(conceptA);
+
+        final var functions = new ArrayList<DSMAttachmentFunction>();
+        final var parameters = new ArrayList<DSMFunctionPrototypeParameter>();
+        parameters.add(new DSMFunctionPrototypeParameter("k", new DSMTypeKey(conceptA.typeReference)));
+        functions.add(new DSMAttachmentFunction(
+                true, new DSMFunctionPrototype("clear", parameters, DSMTypeReference.Void), ""));
+
+        final var linkModel = new DSMAttachmentFunctionPool(UUID.randomUUID(), "LinkModel", functions, "");
+        definitions.attachmentFunctionPools.add(linkModel);
+
+        assertTrue(collected(definitions).dependencies(linkModel).contains(NS_A));
+    }
+
     @Test
     public void anAnyConceptKeyNamesNoNameSpace() {
         final var definitions = new DSMDefinitions();

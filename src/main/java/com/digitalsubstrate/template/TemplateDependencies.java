@@ -3,7 +3,7 @@ package com.digitalsubstrate.template;
 import java.util.ArrayList;
 
 /**
- * What a namespace reaches, separated by the kind of declaration that reaches it.
+ * What a unit reaches, separated by the kind of declaration that reaches it.
  *
  * <p>A unit's dependencies are not one list, and treating them as one produces a wrong
  * include that compiles. `Projection` reaches `ModelC` through an attachment's document
@@ -16,6 +16,12 @@ import java.util.ArrayList;
  * {@code <u.dependencies.attachments:…>} in an attachments one. {@code all} is the union,
  * which is what the emission order is built on — that is a property of the namespace, not
  * of any one artefact.
+ *
+ * <p>A pool is a unit too, and it reaches namespaces by a third kind of declaration: the
+ * signatures of the functions it holds. It fills {@code functions} and nothing else, so
+ * the same question is asked of both kinds of unit and the wrong kind answers with an
+ * empty list — a missing include, which the compiler reports, rather than a spurious one,
+ * which it does not.
  */
 public final class TemplateDependencies {
 
@@ -25,7 +31,10 @@ public final class TemplateDependencies {
     /** Reached by an attachment's key or document type. */
     public final ArrayList<TemplateNameSpace> attachments = new ArrayList<>();
 
-    /** Everything the namespace reaches, in emission order. */
+    /** Reached by a function's parameters or return type. A pool's dependencies. */
+    public final ArrayList<TemplateNameSpace> functions = new ArrayList<>();
+
+    /** Everything the unit reaches, in emission order. */
     public final ArrayList<TemplateNameSpace> all = new ArrayList<>();
 
     public ArrayList<TemplateNameSpace> getTypes() {
@@ -34,6 +43,10 @@ public final class TemplateDependencies {
 
     public ArrayList<TemplateNameSpace> getAttachments() {
         return attachments;
+    }
+
+    public ArrayList<TemplateNameSpace> getFunctions() {
+        return functions;
     }
 
     public ArrayList<TemplateNameSpace> getAll() {

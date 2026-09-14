@@ -15,6 +15,14 @@ public class DSMNameSpaceDependency {
     private final HashMap<NameSpace, HashSet<NameSpace>> typeDependencyByNameSpace = new HashMap<>();
     private final HashMap<NameSpace, HashSet<NameSpace>> attachmentDependencyByNameSpace = new HashMap<>();
 
+    /**
+     * Add to {@code dependencies} every namespace {@code type} names, other than the
+     * global one and {@code nameSpace} itself.
+     *
+     * <p>{@code nameSpace} is the scope the declaration is being read from, and may be
+     * {@code null} — a pool is declared in no namespace, so it subtracts none and every
+     * namespace its signatures name is a dependency.
+     */
     void collectType(NameSpace nameSpace, DSMType type, HashSet<NameSpace> dependencies) {
         if (type instanceof DSMTypeKey typeKey) {
             collectType(nameSpace, typeKey.elementType, dependencies);
@@ -68,6 +76,43 @@ public class DSMNameSpaceDependency {
     void collectAttachment(NameSpace nameSpace, DSMAttachment attachment, HashSet<NameSpace> dependencies) {
         collectType(nameSpace, attachment.keyType, dependencies);
         collectType(nameSpace, attachment.documentType, dependencies);
+    }
+
+    void collectPrototype(NameSpace nameSpace, DSMFunctionPrototype prototype, HashSet<NameSpace> dependencies) {
+        collectType(nameSpace, prototype.returnType, dependencies);
+        for (var parameter : prototype.parameters)
+            collectType(nameSpace, parameter.type, dependencies);
+    }
+
+    // MARK: - Pools
+    /**
+     * What a pool's signatures reach.
+     *
+     * <p>A pool holds only functions and belongs to no namespace — the model gives it a
+     * uuid and a display name, nothing more — so there is nothing to exclude and no
+     * enclosing scope to subtract: every namespace a parameter or a return type names is
+     * a dependency, and a pool naming none has none.
+     *
+     * <p>This is the same question the graph above answers for a namespace, asked of the
+     * one kind of declaration a namespace never holds. Without it a pool template has only
+     * the whole model to include, which on a per-unit layout is an artefact nothing
+     * produces.
+     *
+     * <p>Computed on demand rather than collected: no pool depends on a pool, so there is
+     * no order to establish and nothing for the sort below to carry.
+     */
+    public HashSet<NameSpace> dependencies(DSMFunctionPool pool) {
+        final var dependencies = new HashSet<NameSpace>();
+        for (var function : pool.functions)
+            collectPrototype(null, function.prototype, dependencies);
+        return dependencies;
+    }
+
+    public HashSet<NameSpace> dependencies(DSMAttachmentFunctionPool pool) {
+        final var dependencies = new HashSet<NameSpace>();
+        for (var function : pool.functions)
+            collectPrototype(null, function.prototype, dependencies);
+        return dependencies;
     }
 
     // MARK: - Dependency

@@ -111,7 +111,8 @@ public final class Converter {
             pool.setModel(result, layout);
 
         // Create NameSpaces
-        fillNameSpaces(result);
+        final var nameSpaceDependency = fillNameSpaces(result);
+        fillPoolDependencies(result, nameSpaceDependency);
         return result;
     }
 
@@ -125,7 +126,37 @@ public final class Converter {
         }
     }
 
-    private void fillNameSpaces(TemplateDefinitions definitions) {
+    /**
+     * What each pool's signatures reach, in the order the namespaces are emitted.
+     *
+     * <p>Filled after the namespaces, and from the model's own list rather than from the
+     * collected set, so a pool's includes come out in the same order as a namespace's and
+     * two runs of the generator produce the same file.
+     */
+    private void fillPoolDependencies(TemplateDefinitions definitions,
+                                      DSMNameSpaceDependency nameSpaceDependency) {
+        for (var pool : definitions.functionPools)
+            fillInEmissionOrder(pool.dependencies,
+                                nameSpaceDependency.dependencies(pool.dsmFunctionPool),
+                                definitions);
+
+        for (var pool : definitions.attachmentFunctionPools)
+            fillInEmissionOrder(pool.dependencies,
+                                nameSpaceDependency.dependencies(pool.dsmAttachmentFunctionPool),
+                                definitions);
+    }
+
+    private static void fillInEmissionOrder(TemplateDependencies dependencies,
+                                            java.util.Set<NameSpace> reached,
+                                            TemplateDefinitions definitions) {
+        for (var templateNameSpace : definitions.nameSpaces)
+            if (reached.contains(templateNameSpace.nameSpace)) {
+                dependencies.functions.add(templateNameSpace);
+                dependencies.all.add(templateNameSpace);
+            }
+    }
+
+    private DSMNameSpaceDependency fillNameSpaces(TemplateDefinitions definitions) {
         final var nameSpaceDependency = new DSMNameSpaceDependency();
         nameSpaceDependency.collect(inspector);
         final var nameSpaces = nameSpaceDependency.sorted();
@@ -168,6 +199,8 @@ public final class Converter {
 
             definitions.nameSpaces.add(templateNameSpace);
         }
+
+        return nameSpaceDependency;
     }
 
     // Tools Initializations

@@ -40,6 +40,20 @@ public final class TemplateAttachmentFunctionPool {
         this.include = new TemplateIncludePaths(layout, getName());
     }
 
+    /**
+     * The namespaces this pool's signatures reach.
+     *
+     * <p>A pool is a unit, and like any unit it needs the dependencies of what it emits.
+     * What it emits is function declarations, so it fills
+     * {@code dependencies.functions} — {@code <p.dependencies.functions:{d|#include "<d.include.Data>"}>}
+     * — and a pool whose signatures name no namespaced type includes nothing.
+     */
+    public final TemplateDependencies dependencies = new TemplateDependencies();
+
+    public TemplateDependencies getDependencies() {
+        return dependencies;
+    }
+
     public String getName() {
         return dsmAttachmentFunctionPool.name;
     }
