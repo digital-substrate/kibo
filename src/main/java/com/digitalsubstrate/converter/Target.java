@@ -13,9 +13,9 @@ package com.digitalsubstrate.converter;
  */
 public enum Target {
 
-    CPP("cpp", Binding.NATIVE, null, true),
-    PYTHON("python", Binding.DELEGATING, new PythonVocabulary(), false),
-    TYPESCRIPT("typescript", Binding.DELEGATING, new TypeScriptVocabulary(), false);
+    CPP("cpp", Binding.NATIVE, null, new CppLayout()),
+    PYTHON("python", Binding.DELEGATING, new PythonVocabulary(), new PackageLayout("python")),
+    TYPESCRIPT("typescript", Binding.DELEGATING, new TypeScriptVocabulary(), new PackageLayout("typescript"));
 
     /** The value of {@code --converter}. */
     public final String identifier;
@@ -23,18 +23,14 @@ public enum Target {
     final Binding binding;
     final BindingVocabulary vocabulary;
 
-    /**
-     * Whether generated files are prefixed with the namespace. C++ writes every namespace
-     * into one flat output directory and needs the prefix to keep them apart; a package or
-     * a module directory does not.
-     */
-    public final boolean prefixesFilesWithNamespace;
+    /** Where this target's artefacts go, and how one reaches another. */
+    public final TargetLayout layout;
 
-    Target(String identifier, Binding binding, BindingVocabulary vocabulary, boolean prefixesFilesWithNamespace) {
+    Target(String identifier, Binding binding, BindingVocabulary vocabulary, TargetLayout layout) {
         this.identifier = identifier;
         this.binding = binding;
         this.vocabulary = vocabulary;
-        this.prefixesFilesWithNamespace = prefixesFilesWithNamespace;
+        this.layout = layout;
     }
 
     public static Target of(String identifier) {

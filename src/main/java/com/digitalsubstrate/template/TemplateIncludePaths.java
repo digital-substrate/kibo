@@ -1,5 +1,7 @@
 package com.digitalsubstrate.template;
 
+import com.digitalsubstrate.converter.TargetLayout;
+
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Set;
@@ -22,15 +24,17 @@ import java.util.Set;
  */
 public final class TemplateIncludePaths extends AbstractMap<String, String> {
 
-    private final String prefix;
+    private final TargetLayout layout;
+    private final String unit;
 
-    public TemplateIncludePaths(String prefix) {
-        this.prefix = prefix;
+    public TemplateIncludePaths(TargetLayout layout, String unit) {
+        this.layout = layout;
+        this.unit = unit;
     }
 
     @Override
     public String get(Object artefact) {
-        return prefix + "_" + artefact + ".hpp";
+        return layout.artefactPath(unit, String.valueOf(artefact));
     }
 
     @Override

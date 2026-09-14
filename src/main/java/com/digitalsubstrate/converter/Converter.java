@@ -26,9 +26,11 @@ public final class Converter {
     public boolean hasTypeAny;
 
     private final Binding binding;
+    private final TargetLayout layout;
 
     public Converter(String generated, DSMDefinitions definitions, String namespace, Target target) {
         this.binding = target.binding;
+        this.layout = target.layout;
         this.generated = generated;
         this.definitions = definitions;
         this.namespace = namespace;
@@ -46,7 +48,7 @@ public final class Converter {
 
     // Definitions
     public TemplateDefinitions convert() throws Exception {
-        final var result = new TemplateDefinitions(generated, namespace);
+        final var result = new TemplateDefinitions(generated, namespace, layout);
 
         result.sortedStructures.addAll(entityConverter.convertStructures());
         result.enumerations.addAll(entityConverter.convertEnumerations());

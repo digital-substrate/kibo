@@ -59,9 +59,10 @@ public final class AppUtils {
         return code;
     }
 
-    public static void renderAndSave(String file_prefix, TemplateDefinitions templateDefinitions, Path template, Path output, boolean debug) throws Exception {
+    public static void renderAndSave(Target target, TemplateDefinitions templateDefinitions, Path template, Path output, boolean debug) throws Exception {
         final var code = render(template, templateDefinitions, debug);
-        final var filename = file_prefix + outputFilePath(template);
+        final var filename = target.layout.outputFileName(templateDefinitions.getNamespace(),
+                                                          outputFilePath(template).toString());
         final var filePath = Paths.get(output.toString(), filename);
         if (debug)
             System.out.printf("Save %s%n", filePath);
@@ -69,16 +70,15 @@ public final class AppUtils {
         FileUtils.saveSource(code, filePath);
     }
 
-    public static void renderAndSave(String file_prefix, TemplateDefinitions templateDefinitions, ArrayList<Path> templates, Path output, boolean debug) throws Exception {
+    public static void renderAndSave(Target target, TemplateDefinitions templateDefinitions, ArrayList<Path> templates, Path output, boolean debug) throws Exception {
         Files.createDirectories(output);
         for (var template : templates)
-            renderAndSave(file_prefix, templateDefinitions, template, output, debug);
+            renderAndSave(target, templateDefinitions, template, output, debug);
     }
 
     public static void generate(Target target, String generated, DSMDefinitions dsmDefinitions, String namespace,
                                 Path template, Path output, boolean debug) throws Exception {
         final var templateDefinitions = new Converter(generated, dsmDefinitions, namespace, target).convert();
-        final var file_prefix = target.prefixesFilesWithNamespace ? templateDefinitions.getNamespace() + "_" : "";
-        renderAndSave(file_prefix, templateDefinitions, AppUtils.collectTemplates(template), output, debug);
+        renderAndSave(target, templateDefinitions, AppUtils.collectTemplates(template), output, debug);
     }
 }

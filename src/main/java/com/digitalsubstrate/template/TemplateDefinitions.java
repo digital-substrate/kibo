@@ -1,5 +1,7 @@
 package com.digitalsubstrate.template;
 
+import com.digitalsubstrate.converter.TargetLayout;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -42,10 +44,10 @@ public final class TemplateDefinitions {
     private ArrayList<TemplateAttachedKeyType> attachedKeyTypes;
     private ArrayList<TemplateAttachedDocumentType> attachedDocumentTypes;
 
-    public TemplateDefinitions(String generated, String namespace) {
+    public TemplateDefinitions(String generated, String namespace, TargetLayout layout) {
         this.generated = generated;
         this.namespace = namespace;
-        this.include = new TemplateIncludePaths(namespace);
+        this.include = new TemplateIncludePaths(layout, namespace);
     }
 
     public String getGenerated() {
