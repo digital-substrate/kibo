@@ -31,7 +31,7 @@ public final class TemplateAttachedKeyType {
     }
 
     public String getName() {
-        return typeName.name.equals("any_concept") ? "AnyConcept" : typeName.name;
+        return TemplateTool.typeName(typeName.name);
     }
 
     // Type

@@ -53,9 +53,9 @@ public final class TemplateAttachment {
         final var here = dsmAttachment.typeName.nameSpace;
 
         if (concept.nameSpace.equals(here) || concept.nameSpace.isGlobal())
-            return TemplateTool.uf(concept.name);
+            return TemplateTool.typeName(concept.name);
 
-        return TemplateTool.uf(concept.nameSpace.name) + "_" + TemplateTool.uf(concept.name);
+        return TemplateTool.uf(concept.nameSpace.name) + "_" + TemplateTool.typeName(concept.name);
     }
 
     public String getIdentifier() {
