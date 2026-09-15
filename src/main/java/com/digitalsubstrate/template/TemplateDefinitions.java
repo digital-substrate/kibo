@@ -47,7 +47,7 @@ public final class TemplateDefinitions {
     public TemplateDefinitions(String generated, String namespace, TargetLayout layout) {
         this.generated = generated;
         this.namespace = namespace;
-        this.include = new TemplateIncludePaths(layout, namespace);
+        this.include = new TemplateIncludePaths(layout, TargetLayout.Scope.MODEL, namespace);
     }
 
     public String getGenerated() {

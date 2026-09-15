@@ -25,16 +25,18 @@ import java.util.Set;
 public final class TemplateIncludePaths extends AbstractMap<String, String> {
 
     private final TargetLayout layout;
+    private final TargetLayout.Scope scope;
     private final String unit;
 
-    public TemplateIncludePaths(TargetLayout layout, String unit) {
+    public TemplateIncludePaths(TargetLayout layout, TargetLayout.Scope scope, String unit) {
         this.layout = layout;
+        this.scope = scope;
         this.unit = unit;
     }
 
     @Override
     public String get(Object artefact) {
-        return layout.artefactPath(unit, String.valueOf(artefact));
+        return layout.artefactPath(scope, unit, String.valueOf(artefact));
     }
 
     @Override

@@ -17,12 +17,12 @@ package com.digitalsubstrate.converter;
 public final class CppLayout implements TargetLayout {
 
     @Override
-    public String outputFileName(String unit, String templateBaseName) {
+    public String outputFileName(Scope scope, String unit, String templateBaseName) {
         return unit + "_" + templateBaseName;
     }
 
     @Override
-    public String artefactPath(String unit, String artefact) {
+    public String artefactPath(Scope scope, String unit, String artefact) {
         return unit + "_" + artefact + ".hpp";
     }
 }

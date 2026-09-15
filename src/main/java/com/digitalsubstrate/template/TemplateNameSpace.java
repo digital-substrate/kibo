@@ -36,7 +36,7 @@ public class TemplateNameSpace {
     public TemplateNameSpace(NameSpace nameSpace, TemplateDefinitions model, TargetLayout layout) {
         this.nameSpace = nameSpace;
         this.model = model;
-        this.include = new TemplateIncludePaths(layout, nameSpace.name);
+        this.include = new TemplateIncludePaths(layout, TargetLayout.Scope.UNIT, nameSpace.name);
     }
 
     /**

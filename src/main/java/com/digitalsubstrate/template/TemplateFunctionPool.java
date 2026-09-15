@@ -36,7 +36,7 @@ public final class TemplateFunctionPool {
 
     public void setModel(TemplateDefinitions model, TargetLayout layout) {
         this.model = model;
-        this.include = new TemplateIncludePaths(layout, getName());
+        this.include = new TemplateIncludePaths(layout, TargetLayout.Scope.UNIT, getName());
     }
 
     /**
