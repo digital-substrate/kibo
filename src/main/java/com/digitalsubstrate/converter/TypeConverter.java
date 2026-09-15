@@ -456,14 +456,15 @@ final class TypeConverter {
         final var useProxy = needsProxy(proxy);
         final var inNamespace = bindingTypeInNamespace(nameSpace, type);
         final var isNamed = isNamedType(type);
+        final var annotation = bindingAnnotationInNamespace(nameSpace, type);
 
         if (useProxy || vocabulary == null)
             return new TemplateBindingType(proxy, typeSuffix,
                                            useProxy ? proxy : null,
-                                           useProxy ? inNamespace : null, useProxy, isNamed);
+                                           useProxy ? inNamespace : null, useProxy, isNamed, annotation);
 
         return new TemplateBindingType(proxy, typeSuffix,
-                                       vocabulary.leaf(proxy), vocabulary.leaf(proxy), false, isNamed);
+                                       vocabulary.leaf(proxy), vocabulary.leaf(proxy), false, isNamed, annotation);
     }
 
     /** Whether a unit declares this type, rather than it being built from others. */
@@ -515,6 +516,82 @@ final class TypeConverter {
             };
 
         return bindingType(type);
+    }
+
+    /**
+     * The type as a target writes it in an annotation, from inside the unit {@code nameSpace}.
+     *
+     * <p>THE ONE PLACE THE STRENGTH OF THE GENERATED TYPES IS DECIDED. A binding that emits a
+     * class per container shape gets its annotation for free — the class is the annotation.
+     * One that does not has to spell the shape here, and anything less than the whole shape
+     * is a checker made blind: {@code Any} accepts every assignment, so a field that holds
+     * colours would take an integer without a word.
+     *
+     * <p>Recursive, and the spellings are the binding's rather than this method's: what a
+     * sequence or an association is called is a property of the target, stated once in its
+     * vocabulary.
+     */
+    String bindingAnnotationInNamespace(NameSpace nameSpace, DSMType type) throws Exception {
+        if (vocabulary == null)
+            return null;
+
+        if (type instanceof DSMTypeKey typeKey)
+            return bindingAnnotationInNamespace(nameSpace, typeKey.elementType);
+
+        if (type instanceof DSMTypeVec typeVec)
+            return vocabulary.list(bindingAnnotationInNamespace(nameSpace, typeVec.elementType));
+
+        if (type instanceof DSMTypeMat typeMat)
+            return vocabulary.matrix(bindingAnnotationInNamespace(nameSpace, typeMat.elementType));
+
+        if (type instanceof DSMTypeTuple typeTuple)
+            return vocabulary.tuple(annotations(nameSpace, typeTuple.types));
+
+        if (type instanceof DSMTypeOptional typeOptional)
+            return vocabulary.optional(bindingAnnotationInNamespace(nameSpace, typeOptional.elementType));
+
+        if (type instanceof DSMTypeVector typeVector)
+            return vocabulary.list(bindingAnnotationInNamespace(nameSpace, typeVector.elementType));
+
+        if (type instanceof DSMTypeSet typeSet)
+            return vocabulary.list(bindingAnnotationInNamespace(nameSpace, typeSet.elementType));
+
+        if (type instanceof DSMTypeMap typeMap)
+            return vocabulary.map(bindingAnnotationInNamespace(nameSpace, typeMap.keyType),
+                                  bindingAnnotationInNamespace(nameSpace, typeMap.elementType));
+
+        if (type instanceof DSMTypeXArray typeXArray)
+            return vocabulary.ordered(bindingAnnotationInNamespace(nameSpace, typeXArray.elementType));
+
+        if (type instanceof DSMTypeVariant typeVariant)
+            return vocabulary.union(annotations(nameSpace, typeVariant.types));
+
+        if (type instanceof DSMTypeReference reference)
+            switch (reference.domain) {
+                case ENUMERATION, STRUCTURE, CONCEPT, CLUB -> {
+                    return bindingTypeInNamespace(nameSpace, type);
+                }
+                case ANY_CONCEPT -> {
+                    return "AnyConceptKey";
+                }
+                case ANY -> {
+                    return vocabulary.any();
+                }
+                case PRIMITIVE -> {
+                    return vocabulary.leaf(reference.typeName.name);
+                }
+            }
+
+        throw new ConvertException(
+            String.format("bindingAnnotationInNamespace: type '%s' is not handled.", type.representation()));
+    }
+
+    private ArrayList<String> annotations(NameSpace nameSpace, ArrayList<DSMType> types) throws Exception {
+        final var result = new ArrayList<String>();
+        for (var type : types)
+            result.add(bindingAnnotationInNamespace(nameSpace, type));
+
+        return result;
     }
 
     private String bindingType(DSMType type) throws Exception {

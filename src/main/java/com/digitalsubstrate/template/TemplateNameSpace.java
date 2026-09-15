@@ -30,6 +30,35 @@ public class TemplateNameSpace {
     public final ArrayList<TemplateEnumeration> enumerations = new ArrayList<>();
     public final ArrayList<TemplateAttachment> attachments = new ArrayList<>();
 
+    /**
+     * The same attachments, grouped by the concept they are keyed on.
+     *
+     * <p>Both lists, because both are true and a target needs one or the other: a scope that
+     * merges wants the flat list, a scope that does not wants the grouping. Deriving one from
+     * the other in a template is what StringTemplate cannot do.
+     */
+    public final ArrayList<TemplateAttachmentScope> attachmentScopes = new ArrayList<>();
+
+    /** Fill {@link #attachmentScopes} from {@link #attachments}, in order of first sighting. */
+    public void groupAttachments() {
+        for (var attachment : attachments) {
+            final var name = attachment.getConceptScope();
+            var scope = attachmentScopes.stream()
+                .filter(candidate -> candidate.getName().equals(name))
+                .findFirst().orElse(null);
+
+            if (scope == null) {
+                scope = new TemplateAttachmentScope(name, attachment.getKeyType());
+                attachmentScopes.add(scope);
+            }
+            scope.attachments.add(attachment);
+        }
+    }
+
+    public ArrayList<TemplateAttachmentScope> getAttachmentScopes() {
+        return attachmentScopes;
+    }
+
     private final TemplateDefinitions model;
     private final TemplateIncludePaths include;
 

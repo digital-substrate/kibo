@@ -3,6 +3,7 @@ package com.digitalsubstrate.converter;
 import com.digitalsubstrate.viper.dsm.DSMLexicon;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * The `@digitalsubstrate/dsviper` Node binding. Widths that exceed what a JavaScript
@@ -42,5 +43,45 @@ final class TypeScriptVocabulary implements BindingVocabulary {
     @Override
     public String sequence(String element, long count) {
         return element + "[]";
+    }
+
+    @Override
+    public String list(String element) {
+        return element + "[]";
+    }
+
+    @Override
+    public String matrix(String element) {
+        return element + "[][]";
+    }
+
+    @Override
+    public String tuple(List<String> members) {
+        return "[" + String.join(", ", members) + "]";
+    }
+
+    @Override
+    public String optional(String element) {
+        return element + " | null";
+    }
+
+    @Override
+    public String map(String key, String element) {
+        return String.format("Map<%s, %s>", key, element);
+    }
+
+    @Override
+    public String ordered(String element) {
+        return String.format("dsviper.XArray<%s>", element);
+    }
+
+    @Override
+    public String union(List<String> members) {
+        return String.join(" | ", new java.util.LinkedHashSet<>(members));
+    }
+
+    @Override
+    public String any() {
+        return "unknown";
     }
 }

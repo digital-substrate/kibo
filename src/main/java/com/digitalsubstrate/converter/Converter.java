@@ -215,6 +215,7 @@ public final class Converter {
                 if (e.getDsmAttachment().typeName.nameSpace.equals(nameSpace))
                     templateNameSpace.attachments.add(e);
 
+            templateNameSpace.groupAttachments();
             definitions.nameSpaces.add(templateNameSpace);
         }
 

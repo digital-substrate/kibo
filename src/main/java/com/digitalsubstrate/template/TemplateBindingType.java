@@ -6,6 +6,11 @@ package com.digitalsubstrate.template;
  * <p>{@code proxy} is the generated class name and is the same whatever the binding;
  * {@code type} is how the target writes this type, which is the proxy name when the type
  * needs one and the binding's own spelling of a primitive when it does not.
+ * <p>{@code annotation} is the type written in full for a target that annotates —
+ * {@code Sequence[Colour]}, {@code MaterialKey | None} — as opposed to {@code type}, which
+ * stops at the proxy. The two differ only for containers, and only for a binding that does
+ * not emit a class per shape; where they differ, {@code annotation} is what a type checker
+ * needs and {@code type} is what it cannot use.
  * <p>{@code isNamed} says whether the type is one a unit declares — an enumeration, a
  * structure, a concept, a club — as opposed to a container built from other types. Both
  * need a proxy under a binding that generates one per shape; only the first has a class
@@ -25,15 +30,22 @@ public final class TemplateBindingType {
     private final String typeInNamespace;
     private final boolean useProxy;
     private final boolean isNamed;
+    private final String annotation;
 
     public TemplateBindingType(String proxy, String typeSuffix, String type, String typeInNamespace,
                                boolean useProxy) {
-        this(proxy, typeSuffix, type, typeInNamespace, useProxy, false);
+        this(proxy, typeSuffix, type, typeInNamespace, useProxy, false, typeInNamespace);
     }
 
     public TemplateBindingType(String proxy, String typeSuffix, String type, String typeInNamespace,
                                boolean useProxy, boolean isNamed) {
+        this(proxy, typeSuffix, type, typeInNamespace, useProxy, isNamed, typeInNamespace);
+    }
+
+    public TemplateBindingType(String proxy, String typeSuffix, String type, String typeInNamespace,
+                               boolean useProxy, boolean isNamed, String annotation) {
         this.isNamed = isNamed;
+        this.annotation = annotation;
         this.proxy = proxy;
         this.typeSuffix = typeSuffix;
         this.type = type;
@@ -47,6 +59,10 @@ public final class TemplateBindingType {
 
     public Boolean getIsNamed() {
         return isNamed;
+    }
+
+    public String getAnnotation() {
+        return annotation;
     }
 
     public String getProxy() {
