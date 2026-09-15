@@ -131,7 +131,11 @@ final class TypeConverter {
                     return String.format("%sKey", typeReference.representation());
                 }
                 case ANY_CONCEPT -> {
-                    return "AnyConceptKey";
+                    // Qualifiée ici aussi : un pool n'est dans aucun namespace du modèle,
+                    // et un nom nu n'y résout rien. Là où le nom nu marchait -- dans un
+                    // fichier enveloppé du namespace du modèle -- la forme qualifiée
+                    // marche également.
+                    return "::" + model + "::AnyConceptKey";
                 }
                 case ANY -> {
                     return "Viper::Any";
