@@ -75,7 +75,11 @@ public final class TemplateEnumeration {
 
     // Binding
     public TemplateBindingType getBindingType() {
-        final var proxy = dsmEnumeration.typeName.nameSpace.name + "_" + dsmEnumeration.typeName.name;
-        return new TemplateBindingType(proxy, typeSuffix, proxy, true);
+        // Ce type-ci est déclaré par cette unité-ci, donc vu d'elle il s'écrit nu : c'est
+        // le seul cas où les deux orthographes se déduisent l'une de l'autre sans rien
+        // savoir de plus.
+        final var name = dsmEnumeration.typeName.name;
+        final var proxy = dsmEnumeration.typeName.nameSpace.name + "_" + name;
+        return new TemplateBindingType(proxy, typeSuffix, proxy, name, true);
     }
 }

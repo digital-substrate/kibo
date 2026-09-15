@@ -3,6 +3,7 @@ package com.digitalsubstrate.converter;
 import com.digitalsubstrate.template.TemplateField;
 import com.digitalsubstrate.template.TemplateFieldType;
 import com.digitalsubstrate.template.TemplateBindingType;
+import com.digitalsubstrate.template.TemplateTool;
 import com.digitalsubstrate.viper.NameSpace;
 import com.digitalsubstrate.viper.TypeName;
 import com.digitalsubstrate.viper.dsm.*;
@@ -446,14 +447,55 @@ final class TypeConverter {
     }
 
     TemplateBindingType templateBindingType(DSMType type) throws Exception {
+        return templateBindingType(null, type);
+    }
+
+    TemplateBindingType templateBindingType(NameSpace nameSpace, DSMType type) throws Exception {
         final var proxy = bindingType(type);
         final var typeSuffix = typeSuffix(type);
         final var useProxy = needsProxy(proxy);
+        final var inNamespace = nameSpace == null ? proxy : bindingTypeInNamespace(nameSpace, type);
 
         if (useProxy || vocabulary == null)
-            return new TemplateBindingType(proxy, typeSuffix, useProxy ? proxy : null, useProxy);
+            return new TemplateBindingType(proxy, typeSuffix,
+                                           useProxy ? proxy : null,
+                                           useProxy ? inNamespace : null, useProxy);
 
-        return new TemplateBindingType(proxy, typeSuffix, vocabulary.leaf(proxy), false);
+        return new TemplateBindingType(proxy, typeSuffix,
+                                       vocabulary.leaf(proxy), vocabulary.leaf(proxy), false);
+    }
+
+    /**
+     * The proxy name, spelled as the unit {@code nameSpace} can write it.
+     *
+     * <p>The flat spelling — {@code ModelA_Colour} — exists because a package whose modules
+     * are one flat file has nowhere else to put the unit's name. When a unit is a module,
+     * it has somewhere: {@code Colour} inside ModelA, {@code modela.Colour} anywhere else.
+     * The pair is the same one {@link #convertType} and {@link #convertTypeInNamespace} form
+     * for the native target, and it has to stay in step for the same reason — in-unit and
+     * cross-unit renderings that drift produce code that compiles in one file and not in
+     * the next.
+     *
+     * <p>Only a reference carries a unit; a container is written from its elements, so it
+     * qualifies wherever they do.
+     */
+    String bindingTypeInNamespace(NameSpace nameSpace, DSMType type) throws Exception {
+        if (type instanceof DSMTypeKey typeKey)
+            return bindingTypeInNamespace(nameSpace, typeKey.elementType);
+
+        if (type instanceof DSMTypeReference typeReference)
+            return switch (typeReference.domain) {
+                case ENUMERATION, STRUCTURE, CONCEPT, CLUB -> {
+                    final var unit = typeReference.typeName.nameSpace;
+                    final var bare = typeReference.typeName.name
+                                   + (typeReference.domain == DSMTypeReferenceDomain.CONCEPT
+                                      || typeReference.domain == DSMTypeReferenceDomain.CLUB ? "Key" : "");
+                    yield unit.equals(nameSpace) ? bare : TemplateTool.lsc(unit.name) + "." + bare;
+                }
+                default -> bindingType(type);
+            };
+
+        return bindingType(type);
     }
 
     private String bindingType(DSMType type) throws Exception {

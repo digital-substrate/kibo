@@ -112,8 +112,12 @@ public final class TemplateClub {
 
     // Binding
     public TemplateBindingType getBindingType() {
-        final var proxy = dsmClub.typeName.nameSpace.name + "_" + dsmClub.typeName.name;
-        return new TemplateBindingType(proxy, typeSuffix, proxy + "Key", true);
+        // Ce type-ci est déclaré par cette unité-ci, donc vu d'elle il s'écrit nu : c'est
+        // le seul cas où les deux orthographes se déduisent l'une de l'autre sans rien
+        // savoir de plus.
+        final var name = dsmClub.typeName.name;
+        final var proxy = dsmClub.typeName.nameSpace.name + "_" + name;
+        return new TemplateBindingType(proxy, typeSuffix, proxy + "Key", name + "Key", true);
     }
 
 }

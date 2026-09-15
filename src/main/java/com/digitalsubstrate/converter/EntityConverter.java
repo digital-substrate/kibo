@@ -90,7 +90,7 @@ final class EntityConverter {
         final var typeSuffix = typeConverter.typeSuffix(field.type);
         final var isAny = typeConverter.isTypeAny(field.type);
         final var viperValue = typeConverter.viperValue(field.type);
-        final var bindingType = typeConverter.templateBindingType(field.type);
+        final var bindingType = typeConverter.templateBindingType(nameSpace, field.type);
         final var templateField = typeConverter.createTemplateField(field.type);
 
         return new TemplateStructureField(
@@ -191,7 +191,7 @@ final class EntityConverter {
         final var typeInNamespace = typeConverter.convertTypeInNamespace(nameSpace, dsmKeyType);
         final var typeSuffix = typeConverter.typeSuffix(dsmKeyType);
         final var viperValue = typeConverter.viperValue(dsmKeyType);
-        final var bindingType = typeConverter.templateBindingType(dsmKeyType);
+        final var bindingType = typeConverter.templateBindingType(nameSpace, dsmKeyType);
 
         return new TemplateAttachedKeyType(dsmKeyType.typeName, type, typeInNamespace, typeSuffix, viperValue, bindingType);
     }
@@ -204,7 +204,7 @@ final class EntityConverter {
         final var typeInNameSpace = typeConverter.convertTypeInNamespace(nameSpace, dsmDocumentType);
         final var typeSuffix = typeConverter.typeSuffix(dsmDocumentType);
         final var viperValue = typeConverter.viperValue(dsmDocumentType);
-        final var bindingType = typeConverter.templateBindingType(dsmDocumentType);
+        final var bindingType = typeConverter.templateBindingType(nameSpace, dsmDocumentType);
         final var templateStructure = findTemplateStructure(dsmDocumentType);
         final var templateField = typeConverter.createTemplateField(dsmDocumentType);
         final var useBlobId = typeConverter.useBlobId(dsmDocumentType);
