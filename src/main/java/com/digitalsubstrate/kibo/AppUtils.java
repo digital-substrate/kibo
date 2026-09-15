@@ -168,9 +168,33 @@ public final class AppUtils {
             renderAndSave(target, templateDefinitions, template, output, debug);
     }
 
+    /**
+     * Refuse a model that would write two different files to one path.
+     *
+     * <p>A template may render both once per namespace and once for the model — most do —
+     * and the two outputs are told apart only by the name they are prefixed with. When a
+     * namespace of the model carries the model's own name, the prefixes are equal, and the
+     * second write silently replaces the first: whichever of the unit or the model-wide
+     * artefact is rendered last is the one that survives, and nothing says so.
+     *
+     * <p>Caught here rather than in a layout, because no naming scheme fixes it. The two
+     * files describe different things that happen to be called the same, and only the
+     * model can say which one should be renamed.
+     */
+    private static void checkNamespaceDoesNotShadowModel(TemplateDefinitions definitions) throws Exception {
+        for (var nameSpace : definitions.nameSpaces)
+            if (nameSpace.getName().equals(definitions.getNamespace()))
+                throw new Exception(String.format(
+                    "the model is generated as '%s' and declares a namespace of that name, so its "
+                    + "artefacts and that namespace's would be written to the same files. "
+                    + "Rename the namespace, or generate the model under another name (-n).",
+                    definitions.getNamespace()));
+    }
+
     public static void generate(Target target, String generated, DSMDefinitions dsmDefinitions, String namespace,
                                 Path template, Path output, boolean debug) throws Exception {
         final var templateDefinitions = new Converter(generated, dsmDefinitions, namespace, target).convert();
+        checkNamespaceDoesNotShadowModel(templateDefinitions);
         renderAndSave(target, templateDefinitions, AppUtils.collectTemplates(template), output, debug);
     }
 }
