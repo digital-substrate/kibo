@@ -117,7 +117,7 @@ public final class TemplateClub {
         // savoir de plus.
         final var name = dsmClub.typeName.name;
         final var proxy = dsmClub.typeName.nameSpace.name + "_" + name;
-        return new TemplateBindingType(proxy, typeSuffix, proxy + "Key", name + "Key", true);
+        return new TemplateBindingType(proxy, typeSuffix, proxy + "Key", name + "Key", true, true);
     }
 
 }

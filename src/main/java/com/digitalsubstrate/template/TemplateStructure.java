@@ -87,7 +87,7 @@ public final class TemplateStructure {
         // savoir de plus.
         final var name = dsmStructure.typeName.name;
         final var proxy = dsmStructure.typeName.nameSpace.name + "_" + name;
-        return new TemplateBindingType(proxy, typeSuffix, proxy, name, true);
+        return new TemplateBindingType(proxy, typeSuffix, proxy, name, true, true);
     }
 
 }

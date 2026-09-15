@@ -158,6 +158,6 @@ public final class TemplateConcept {
         // savoir de plus.
         final var name = dsmConcept.typeName.name;
         final var proxy = dsmConcept.typeName.nameSpace.name + "_" + name;
-        return new TemplateBindingType(proxy, typeSuffix, proxy + "Key", name + "Key", true);
+        return new TemplateBindingType(proxy, typeSuffix, proxy + "Key", name + "Key", true, true);
     }
 }

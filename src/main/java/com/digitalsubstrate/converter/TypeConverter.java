@@ -454,15 +454,28 @@ final class TypeConverter {
         final var proxy = bindingType(type);
         final var typeSuffix = typeSuffix(type);
         final var useProxy = needsProxy(proxy);
-        final var inNamespace = nameSpace == null ? proxy : bindingTypeInNamespace(nameSpace, type);
+        final var inNamespace = bindingTypeInNamespace(nameSpace, type);
+        final var isNamed = isNamedType(type);
 
         if (useProxy || vocabulary == null)
             return new TemplateBindingType(proxy, typeSuffix,
                                            useProxy ? proxy : null,
-                                           useProxy ? inNamespace : null, useProxy);
+                                           useProxy ? inNamespace : null, useProxy, isNamed);
 
         return new TemplateBindingType(proxy, typeSuffix,
-                                       vocabulary.leaf(proxy), vocabulary.leaf(proxy), false);
+                                       vocabulary.leaf(proxy), vocabulary.leaf(proxy), false, isNamed);
+    }
+
+    /** Whether a unit declares this type, rather than it being built from others. */
+    private boolean isNamedType(DSMType type) {
+        if (type instanceof DSMTypeKey typeKey)
+            return isNamedType(typeKey.elementType);
+
+        return type instanceof DSMTypeReference reference
+            && switch (reference.domain) {
+                   case ENUMERATION, STRUCTURE, CONCEPT, CLUB -> true;
+                   default -> false;
+               };
     }
 
     /**
@@ -478,6 +491,10 @@ final class TypeConverter {
      *
      * <p>Only a reference carries a unit; a container is written from its elements, so it
      * qualifies wherever they do.
+     *
+     * <p>A null {@code nameSpace} is not a missing answer but a real one: a pool belongs to
+     * no namespace, so every named type it mentions is foreign to it and every one of them
+     * qualifies. The same holds for what the model carries rather than a unit.
      */
     String bindingTypeInNamespace(NameSpace nameSpace, DSMType type) throws Exception {
         if (type instanceof DSMTypeKey typeKey)
@@ -490,7 +507,9 @@ final class TypeConverter {
                     final var bare = typeReference.typeName.name
                                    + (typeReference.domain == DSMTypeReferenceDomain.CONCEPT
                                       || typeReference.domain == DSMTypeReferenceDomain.CLUB ? "Key" : "");
-                    yield unit.equals(nameSpace) ? bare : TemplateTool.lsc(unit.name) + "." + bare;
+                    yield nameSpace != null && unit.equals(nameSpace)
+                        ? bare
+                        : TemplateTool.lsc(unit.name) + "." + bare;
                 }
                 default -> bindingType(type);
             };

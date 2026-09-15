@@ -80,6 +80,6 @@ public final class TemplateEnumeration {
         // savoir de plus.
         final var name = dsmEnumeration.typeName.name;
         final var proxy = dsmEnumeration.typeName.nameSpace.name + "_" + name;
-        return new TemplateBindingType(proxy, typeSuffix, proxy, name, true);
+        return new TemplateBindingType(proxy, typeSuffix, proxy, name, true, true);
     }
 }
