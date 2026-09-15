@@ -19,10 +19,27 @@ final class TypeConverter {
     private final HashMap<TypeName, DSMStructure> structuresByTypeName;
     private final BindingVocabulary vocabulary;
 
-    TypeConverter(HashMap<String, String> cppPrimitiveTypes,
+    /**
+     * Where the untyped key lives, spelled so that it resolves from anywhere.
+     *
+     * <p>{@code key<any_concept>} has no namespace of the model behind it, so nothing
+     * qualified it and the bare name came out. That resolves inside a file wrapped in the
+     * model's namespace and nowhere else — a per-unit file is not, and a bare
+     * {@code AnyConceptKey} there names nothing.
+     *
+     * <p>The class belongs to the model rather than to the runtime, and that is not a
+     * fallback. Two models linked into one program would each define a
+     * {@code Viper::AnyConceptKey}; one definition per model has no such problem, and the
+     * runtime as shipped carries no such type to borrow.
+     */
+    private final String model;
+
+    TypeConverter(String model,
+                  HashMap<String, String> cppPrimitiveTypes,
                   HashMap<String, String> viperPrimitiveValues,
                   HashMap<TypeName, DSMStructure> structuresByTypeName,
                   BindingVocabulary vocabulary) {
+        this.model = model;
         this.cppPrimitiveTypes = cppPrimitiveTypes;
         this.viperPrimitiveValues = viperPrimitiveValues;
         this.structuresByTypeName = structuresByTypeName;
@@ -184,7 +201,9 @@ final class TypeConverter {
                     return String.format("%sKey", typeReference.representation());
                 }
                 case ANY_CONCEPT -> {
-                    return "AnyConceptKey";
+                    // Depuis la portée globale : un namespace du modèle pourrait porter le
+                    // nom du modèle, et la recherche s'arrêterait sur lui.
+                    return "::" + model + "::AnyConceptKey";
                 }
                 case ANY -> {
                     return "Viper::Any";

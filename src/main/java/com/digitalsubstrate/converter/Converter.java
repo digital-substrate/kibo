@@ -39,7 +39,7 @@ public final class Converter {
         this.inspector = new DSMDefinitionsInspector(definitions);
         this.structureDependency = new DSMStructureDependency(this.inspector);
         this.literalConverter = new LiteralConverter(structuresByTypeName);
-        this.typeConverter = new TypeConverter(cppPrimitiveTypes, viperPrimitiveValues, structuresByTypeName, target.vocabulary);
+        this.typeConverter = new TypeConverter(namespace, cppPrimitiveTypes, viperPrimitiveValues, structuresByTypeName, target.vocabulary);
         this.functionRegistrar = new FunctionRegistrar(definitions, typeConverter, binding);
         this.entityConverter = new EntityConverter(definitions, structureDependency, typeConverter, literalConverter, functionRegistrar, binding);
 
