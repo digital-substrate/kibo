@@ -59,6 +59,32 @@ public class TemplateNameSpace {
         return attachmentScopes;
     }
 
+    /**
+     * Every name this unit declares, as the target writes it.
+     *
+     * <p>The four lists concatenated, with a concept's and a club's {@code Key} suffix
+     * applied — which is the one thing a template cannot do for itself: StringTemplate has
+     * no concatenation across lists, so joining four possibly-empty groups with a separator
+     * means writing the four cases and their three commas by hand, once per template that
+     * needs it.
+     *
+     * <p>And several need it: an export list, an import of a unit's own names from a
+     * sibling module, a registry of its classes. All three are the same list.
+     */
+    public ArrayList<String> getExported() {
+        final var result = new ArrayList<String>();
+        for (var concept : concepts)
+            result.add(concept.getName() + "Key");
+        for (var club : clubs)
+            result.add(club.getName() + "Key");
+        for (var enumeration : enumerations)
+            result.add(enumeration.getName());
+        for (var structure : structures)
+            result.add(structure.getName());
+
+        return result;
+    }
+
     private final TemplateDefinitions model;
     private final TemplateIncludePaths include;
 

@@ -45,34 +45,54 @@ final class TypeScriptVocabulary implements BindingVocabulary {
         return element + "[]";
     }
 
+    // LES TROIS VUES DE LA LIAISON, ET LEURS NOMS RÉELS. Une annotation ne vaut que si elle
+    // nomme une classe qui existe : `Map<K, V>` serait faux ici, parce qu'une `Map` de
+    // JavaScript indexe par identité et qu'une correspondance du runtime indexe par valeur.
+    // Ce sont deux choses différentes, et confondre les deux mots ferait écrire du code qui
+    // compile et perd des entrées.
+
     @Override
     public String list(String element) {
-        return element + "[]";
+        return String.format("Sequence<%s>", element);
     }
 
     @Override
     public String matrix(String element) {
-        return element + "[][]";
+        return String.format("Sequence<Sequence<%s>>", element);
     }
 
+    /**
+     * A tuple reads as a sequence of the union of its members.
+     *
+     * <p>Not {@code [A, B]}, which would say more than is true: what the runtime hands back
+     * is one view over a heterogeneous value, indexable but not positionally typed.
+     */
     @Override
     public String tuple(List<String> members) {
-        return "[" + String.join(", ", members) + "]";
+        return list(union(members));
     }
 
+    /**
+     * {@code undefined} and not {@code null}.
+     *
+     * <p>A missing document reads as {@code undefined} because that is what an absent value
+     * is in this language — what a property with no value, an array past its end, and a
+     * lookup that found nothing all return. {@code null} would be a second spelling of
+     * absence, and the two are not interchangeable under {@code strictNullChecks}.
+     */
     @Override
     public String optional(String element) {
-        return element + " | null";
+        return element + " | undefined";
     }
 
     @Override
     public String map(String key, String element) {
-        return String.format("Map<%s, %s>", key, element);
+        return String.format("Mapping<%s, %s>", key, element);
     }
 
     @Override
     public String ordered(String element) {
-        return String.format("dsviper.XArray<%s>", element);
+        return String.format("Ordered<%s>", element);
     }
 
     @Override

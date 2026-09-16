@@ -42,6 +42,25 @@ public final class TemplateConcept {
         return parent.dsmConcept.typeName.representationIn(dsmConcept.typeName.nameSpace);
     }
 
+    /**
+     * The parent's key, spelled as a target that makes a unit a module writes it.
+     *
+     * <p>{@link #getParentNameInNamespace()} answers for a target where a unit is a scope —
+     * {@code Core::ThingKey} — and a module target needs the other spelling,
+     * {@code core.ThingKey}. The rule is the one the binding already applies to every other
+     * type: bare inside the declaring unit, prefixed by the module elsewhere. Stated here
+     * rather than composed in a template, because StringTemplate cannot compare two
+     * namespaces and so cannot know which of the two cases it is in.
+     */
+    public String getParentBindingInNamespace() {
+        final var parentName = parent.dsmConcept.typeName;
+        final var here = dsmConcept.typeName.nameSpace;
+
+        return parentName.nameSpace.equals(here)
+            ? parentName.name + "Key"
+            : TemplateTool.lsc(parentName.nameSpace.name) + "." + parentName.name + "Key";
+    }
+
     public void setParent(TemplateConcept parent) {
         this.parent = parent;
     }
