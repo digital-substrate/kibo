@@ -136,7 +136,7 @@ final class TypeConverter {
                     // et un nom nu n'y résout rien. Là où le nom nu marchait -- dans un
                     // fichier enveloppé du namespace du modèle -- la forme qualifiée
                     // marche également.
-                    return "::" + TemplateTool.lsc(model) + "::AnyConceptKey";
+                    return "::" + model + "::AnyConceptKey";
                 }
                 case ANY -> {
                     return "Viper::Any";
@@ -208,7 +208,7 @@ final class TypeConverter {
                 case ANY_CONCEPT -> {
                     // Depuis la portée globale : un namespace du modèle pourrait porter le
                     // nom du modèle, et la recherche s'arrêterait sur lui.
-                    return "::" + TemplateTool.lsc(model) + "::AnyConceptKey";
+                    return "::" + model + "::AnyConceptKey";
                 }
                 case ANY -> {
                     return "Viper::Any";

@@ -1,5 +1,7 @@
 package com.digitalsubstrate.kibo;
 
+import com.digitalsubstrate.template.TemplateTool;
+
 import com.digitalsubstrate.converter.Target;
 import com.digitalsubstrate.converter.TargetLayout;
 import com.digitalsubstrate.converter.Converter;
@@ -192,10 +194,47 @@ public final class AppUtils {
                     definitions.getNamespace()));
     }
 
+    /**
+     * In C++ the model's name (-n) is the namespace of all the generated infrastructure: the
+     * namespaces of the DSM and the function pools live under it, beside the model-wide code no
+     * namespace can claim -- its codec, its test support, its attachment pool. They share one
+     * scope, so a namespace or a pool spelled like one of those would merge into it, and two
+     * pools or a pool and a namespace of the same spelling would merge into each other. Refused
+     * here, when the model is read, rather than as a redefinition deep in a compile.
+     */
+    private static final java.util.Set<String> CPP_MODEL_SCOPE =
+            java.util.Set.of("codec", "test", "python_definitions", "attachment_pool");
+
+    private static void checkNamesUnderModel(TemplateDefinitions definitions) throws Exception {
+        final var seen = new java.util.HashMap<String, String>();
+        final var names = new java.util.ArrayList<String[]>();
+        for (var nameSpace : definitions.nameSpaces)
+            names.add(new String[]{"namespace", nameSpace.getName()});
+        for (var pool : definitions.functionPools)
+            names.add(new String[]{"function pool", pool.getName()});
+        for (var pool : definitions.attachmentFunctionPools)
+            names.add(new String[]{"attachment function pool", pool.getName()});
+        for (var name : names) {
+            final var cpp = TemplateTool.lsc(name[1]);
+            if (CPP_MODEL_SCOPE.contains(cpp))
+                throw new Exception(String.format(
+                    "the %s '%s' is written '%s::%s' in C++, which the model-wide code of '%s' "
+                    + "already uses. Rename it.", name[0], name[1], definitions.getNamespace(), cpp,
+                    definitions.getNamespace()));
+            final var previous = seen.putIfAbsent(cpp, name[0] + " '" + name[1] + "'");
+            if (previous != null)
+                throw new Exception(String.format(
+                    "the %s '%s' and the %s are both written '%s::%s' in C++. Rename one.",
+                    name[0], name[1], previous, definitions.getNamespace(), cpp));
+        }
+    }
+
     public static void generate(Target target, String generated, DSMDefinitions dsmDefinitions, String namespace,
                                 Path template, Path output, boolean debug) throws Exception {
         final var templateDefinitions = new Converter(generated, dsmDefinitions, namespace, target).convert();
         checkNamespaceDoesNotShadowModel(templateDefinitions);
+        if (target == Target.CPP)
+            checkNamesUnderModel(templateDefinitions);
         renderAndSave(target, templateDefinitions, AppUtils.collectTemplates(template), output, debug);
     }
 }
