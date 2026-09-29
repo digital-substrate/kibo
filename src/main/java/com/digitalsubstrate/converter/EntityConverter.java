@@ -44,7 +44,7 @@ final class EntityConverter {
     }
 
     private TemplateEnumeration convertEnumeration(DSMEnumeration enumeration) {
-        final var type = enumeration.typeName.representation();
+        final var type = TypeConverter.cppQualified(enumeration.typeName);
         final var typeSuffix = typeConverter.typeSuffix(enumeration.typeName);
 
         return new TemplateEnumeration(enumeration, type, typeSuffix);
@@ -64,7 +64,7 @@ final class EntityConverter {
     }
 
     private TemplateStructure convertStructure(DSMStructure structure) throws Exception {
-        final var type = structure.typeName.representation();
+        final var type = TypeConverter.cppQualified(structure.typeName);
         final var typeSuffix = typeConverter.typeSuffix(structure.typeName);
         final var isMovable = typeConverter.isStructureMovable(structure);
         TemplateStructure result = new TemplateStructure(structure, type, typeSuffix, isMovable);
@@ -91,7 +91,7 @@ final class EntityConverter {
         final var isAny = typeConverter.isTypeAny(field.type);
         final var viperValue = typeConverter.viperValue(field.type);
         final var bindingType = typeConverter.templateBindingType(nameSpace, field.type);
-        final var templateField = typeConverter.createTemplateField(field.type);
+        final var templateField = typeConverter.createTemplateField(nameSpace, field.type);
 
         return new TemplateStructureField(
                 field, type, typeInNamespace, passBy, isMovable, defaultValue, typeSuffix,
@@ -206,7 +206,7 @@ final class EntityConverter {
         final var viperValue = typeConverter.viperValue(dsmDocumentType);
         final var bindingType = typeConverter.templateBindingType(nameSpace, dsmDocumentType);
         final var templateStructure = findTemplateStructure(dsmDocumentType);
-        final var templateField = typeConverter.createTemplateField(dsmDocumentType);
+        final var templateField = typeConverter.createTemplateField(nameSpace, dsmDocumentType);
         final var useBlobId = typeConverter.useBlobId(dsmDocumentType);
 
         return new TemplateAttachedDocumentType(type, typeInNameSpace, typeSuffix, viperValue, bindingType, templateStructure, templateField, useBlobId);

@@ -4,8 +4,10 @@ public final class TemplateField {
 
     private final TemplateFieldType type;
     private final String keyType;
+    private final String keyTypeInNamespace;
     private final String keyTypeSuffix;
     private final String elementType;
+    private final String elementTypeInNamespace;
     private final String elementTypeSuffix;
     private final String elementTypeViperValue;
     private final TemplateBindingType bindingKeyType;
@@ -14,8 +16,10 @@ public final class TemplateField {
 
     public TemplateField(TemplateFieldType type,
                          String keyType,
+                         String keyTypeInNamespace,
                          String keyTypeSuffix,
                          String elementType,
+                         String elementTypeInNamespace,
                          String elementTypeSuffix,
                          String elementTypeViperValue,
                          TemplateBindingType bindingKeyType,
@@ -23,8 +27,10 @@ public final class TemplateField {
                          String passBy) {
         this.type = type;
         this.keyType = keyType;
+        this.keyTypeInNamespace = keyTypeInNamespace;
         this.keyTypeSuffix = keyTypeSuffix;
         this.elementType = elementType;
+        this.elementTypeInNamespace = elementTypeInNamespace;
         this.elementTypeSuffix = elementTypeSuffix;
         this.elementTypeViperValue = elementTypeViperValue;
         this.bindingKeyType = bindingKeyType;
@@ -66,12 +72,27 @@ public final class TemplateField {
         return keyType;
     }
 
+    /**
+     * The key type as written inside the namespace that owns this field -- a structure's for a
+     * structure field, an attachment's for a document -- the same rule as the owner's
+     * {@code typeInNamespace}. Qualified {@link #getKeyType()} names can be shadowed there: a
+     * concept named like its namespace makes {@code Graph::X} name the concept.
+     */
+    public String getKeyTypeInNamespace() {
+        return keyTypeInNamespace;
+    }
+
     public String getKeyTypeSuffix() {
         return keyTypeSuffix;
     }
 
     public String getElementType() {
         return elementType;
+    }
+
+    /** The element type as written inside the owning namespace; see {@link #getKeyTypeInNamespace()}. */
+    public String getElementTypeInNamespace() {
+        return elementTypeInNamespace;
     }
 
     public String getElementTypeSuffix() {

@@ -39,7 +39,10 @@ public final class TemplateConcept {
     }
 
     public String getParentNameInNamespace() {
-        return parent.dsmConcept.typeName.representationIn(dsmConcept.typeName.nameSpace);
+        final var parentName = parent.dsmConcept.typeName;
+        if (parentName.nameSpace.equals(dsmConcept.typeName.nameSpace))
+            return parentName.name;
+        return TemplateTool.lsc(parentName.nameSpace.name) + "::" + parentName.name;
     }
 
     /**

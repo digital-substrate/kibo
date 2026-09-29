@@ -126,17 +126,17 @@ final class TypeConverter {
                     return convertPrimitiveType(typeReference.typeName.name);
                 }
                 case ENUMERATION, STRUCTURE -> {
-                    return typeReference.representation();
+                    return cppQualified(typeReference.typeName);
                 }
                 case CONCEPT, CLUB -> {
-                    return String.format("%sKey", typeReference.representation());
+                    return String.format("%sKey", cppQualified(typeReference.typeName));
                 }
                 case ANY_CONCEPT -> {
                     // Qualifiée ici aussi : un pool n'est dans aucun namespace du modèle,
                     // et un nom nu n'y résout rien. Là où le nom nu marchait -- dans un
                     // fichier enveloppé du namespace du modèle -- la forme qualifiée
                     // marche également.
-                    return "::" + model + "::AnyConceptKey";
+                    return "::" + TemplateTool.lsc(model) + "::AnyConceptKey";
                 }
                 case ANY -> {
                     return "Viper::Any";
@@ -198,17 +198,17 @@ final class TypeConverter {
                 case ENUMERATION, STRUCTURE -> {
                     if (typeReference.typeName.nameSpace.equals(nameSpace))
                         return typeReference.typeName.name;
-                    return typeReference.representation();
+                    return cppQualified(typeReference.typeName);
                 }
                 case CONCEPT, CLUB -> {
                     if (typeReference.typeName.nameSpace.name.equals(nameSpace.name))
                         return String.format("%sKey", typeReference.typeName.name);
-                    return String.format("%sKey", typeReference.representation());
+                    return String.format("%sKey", cppQualified(typeReference.typeName));
                 }
                 case ANY_CONCEPT -> {
                     // Depuis la portée globale : un namespace du modèle pourrait porter le
                     // nom du modèle, et la recherche s'arrêterait sur lui.
-                    return "::" + model + "::AnyConceptKey";
+                    return "::" + TemplateTool.lsc(model) + "::AnyConceptKey";
                 }
                 case ANY -> {
                     return "Viper::Any";
@@ -317,7 +317,19 @@ final class TypeConverter {
     }
 
     String typeForKey(TypeName typeName) {
-        return String.format("%sKey", typeName.representation());
+        return String.format("%sKey", cppQualified(typeName));
+    }
+
+    /**
+     * A DSM type name as C++ writes it: the namespace in lower snake case, the same spelling
+     * the Python and Node modules take, so that generated namespaces never share the case of
+     * the types they hold -- nor of the runtime's {@code Viper::}. The DSM representation keeps
+     * the DSM spelling; this is the C++ one.
+     */
+    static String cppQualified(TypeName typeName) {
+        if (typeName.nameSpace.isGlobal())
+            return typeName.name;
+        return TemplateTool.lsc(typeName.nameSpace.name) + "::" + typeName.name;
     }
 
     String typeSuffixForKey(TypeName typeName) {
@@ -402,9 +414,11 @@ final class TypeConverter {
         throw new ConvertException(String.format("viperValue: type '%s' is not handled.", type.getClass().getName()));
     }
 
-    TemplateField createTemplateField(DSMType type) throws Exception {
+    TemplateField createTemplateField(NameSpace nameSpace, DSMType type) throws Exception {
         var ctype = TemplateFieldType.BOX;
         var keyType = "<None>";
+        var keyTypeInNamespace = "<None>";
+        var elementTypeInNamespace = "<None>";
         var keyTypeSuffix = "<None>";
         var elementType = "<None>";
         var elementTypeSuffix = "<None>";
@@ -416,6 +430,7 @@ final class TypeConverter {
         if (type instanceof DSMTypeSet typeSet) {
             ctype = TemplateFieldType.SET;
             elementType = convertType(typeSet.elementType);
+            elementTypeInNamespace = convertTypeInNamespace(nameSpace, typeSet.elementType);
             elementTypeSuffix = typeSuffix(typeSet.elementType);
             elementTypeViperValue = viperValue(typeSet.elementType);
             bindingElementType = templateBindingType(typeSet.elementType);
@@ -425,8 +440,10 @@ final class TypeConverter {
         if (type instanceof DSMTypeMap typeMap) {
             ctype = TemplateFieldType.MAP;
             keyType = convertType(typeMap.keyType);
+            keyTypeInNamespace = convertTypeInNamespace(nameSpace, typeMap.keyType);
             keyTypeSuffix = typeSuffix(typeMap.keyType);
             elementType = convertType(typeMap.elementType);
+            elementTypeInNamespace = convertTypeInNamespace(nameSpace, typeMap.elementType);
             elementTypeSuffix = typeSuffix(typeMap.elementType);
             elementTypeViperValue = viperValue(typeMap.elementType);
             bindingKeyType = templateBindingType(typeMap.keyType);
@@ -437,13 +454,14 @@ final class TypeConverter {
         if (type instanceof DSMTypeXArray typeXArray) {
             ctype = TemplateFieldType.XARRAY;
             elementType = convertType(typeXArray.elementType);
+            elementTypeInNamespace = convertTypeInNamespace(nameSpace, typeXArray.elementType);
             elementTypeSuffix = typeSuffix(typeXArray.elementType);
             elementTypeViperValue = viperValue(typeXArray.elementType);
             bindingElementType = templateBindingType(typeXArray.elementType);
             passBy = passByQualifier(typeXArray.elementType);
         }
 
-        return new TemplateField(ctype, keyType, keyTypeSuffix, elementType, elementTypeSuffix, elementTypeViperValue, bindingKeyType, bindingElementType, passBy);
+        return new TemplateField(ctype, keyType, keyTypeInNamespace, keyTypeSuffix, elementType, elementTypeInNamespace, elementTypeSuffix, elementTypeViperValue, bindingKeyType, bindingElementType, passBy);
     }
 
     TemplateBindingType templateBindingType(DSMType type) throws Exception {

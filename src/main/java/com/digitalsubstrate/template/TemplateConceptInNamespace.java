@@ -20,7 +20,7 @@ public class TemplateConceptInNamespace {
         if (concept.getNamespace().equals(namespace))  {
             return concept.getName();
         } else {
-            return concept.getNamespace() + "::" + concept.getName();
+            return TemplateTool.lsc(concept.getNamespace()) + "::" + concept.getName();
         }
     }
 
