@@ -82,9 +82,8 @@ public final class TemplateStructure {
 
     // Binding
     public TemplateBindingType getBindingType() {
-        // Ce type-ci est déclaré par cette unité-ci, donc vu d'elle il s'écrit nu : c'est
-        // le seul cas où les deux orthographes se déduisent l'une de l'autre sans rien
-        // savoir de plus.
+        // This unit declares this type, so from inside it the type is written bare: the one
+        // case where the two spellings follow from each other with nothing more to know.
         final var name = dsmStructure.typeName.name;
         final var proxy = dsmStructure.typeName.nameSpace.name + "_" + name;
         return new TemplateBindingType(proxy, typeSuffix, proxy, name, true, true);

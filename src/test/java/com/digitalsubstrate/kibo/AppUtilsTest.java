@@ -46,7 +46,7 @@ public final class AppUtilsTest {
             AppUtils.generate(Target.of("cpp"), "", withNameSpace("Unit"), "Model",
                               Path.of("no-such-template-directory"), Path.of("."), false);
         } catch (Exception e) {
-            assertTrue("refusé pour la mauvaise raison : " + e.getMessage(),
+            assertTrue("refused for the wrong reason: " + e.getMessage(),
                        !e.getMessage().contains("same files"));
         }
     }

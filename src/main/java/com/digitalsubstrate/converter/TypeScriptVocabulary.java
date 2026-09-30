@@ -45,11 +45,10 @@ final class TypeScriptVocabulary implements BindingVocabulary {
         return element + "[]";
     }
 
-    // LES TROIS VUES DE LA LIAISON, ET LEURS NOMS RÉELS. Une annotation ne vaut que si elle
-    // nomme une classe qui existe : `Map<K, V>` serait faux ici, parce qu'une `Map` de
-    // JavaScript indexe par identité et qu'une correspondance du runtime indexe par valeur.
-    // Ce sont deux choses différentes, et confondre les deux mots ferait écrire du code qui
-    // compile et perd des entrées.
+    // The binding's three views, by their real names. An annotation is worth something only
+    // if it names a class that exists: `Map<K, V>` would be wrong here, because a JavaScript
+    // `Map` indexes by identity where a runtime mapping indexes by value. Confusing the two
+    // would write code that compiles and loses entries.
 
     @Override
     public String list(String element) {

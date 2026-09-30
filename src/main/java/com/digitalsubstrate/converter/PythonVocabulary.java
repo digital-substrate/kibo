@@ -44,9 +44,9 @@ final class PythonVocabulary implements BindingVocabulary {
         return String.format("tuple[%s]", String.join(", ", members));
     }
 
-    // LES TROIS VUES DE LA LIAISON, ET RIEN D'AUTRE. Une suite, une correspondance, un
-    // ordonné : ce sont les trois classes génériques que le runtime porte, et elles suffisent
-    // parce qu'un conteneur ne diffère d'un autre que par ce qu'il contient.
+    // The binding's three views, and nothing else: a sequence, a mapping and an ordered
+    // sequence are the three generic classes the runtime carries. They are enough, because a
+    // container differs from another only by what it holds.
 
     @Override
     public String list(String element) {

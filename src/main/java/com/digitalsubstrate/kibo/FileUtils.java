@@ -47,9 +47,9 @@ public final class FileUtils {
     }
 
     public static void saveSource(String code, Path path) throws Exception {
-        // Le chemin d'une sortie porte maintenant un répertoire pour les cibles dont un
-        // module EST un répertoire. Le créer ici plutôt qu'à l'appel : il y a un seul
-        // endroit où un fichier est écrit, et c'est le seul qui sait s'il en faut un.
+        // An output path carries a directory for the targets where a module is a directory.
+        // It is created here rather than by the caller: this is the one place a file is
+        // written, and the only one that knows whether a directory is needed.
         createDirectoryForFile(path);
         var output = new PrintWriter(path.toString());
         output.write(code);

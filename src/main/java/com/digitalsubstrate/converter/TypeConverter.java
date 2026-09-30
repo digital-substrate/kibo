@@ -132,10 +132,9 @@ final class TypeConverter {
                     return String.format("%sKey", cppQualified(typeReference.typeName));
                 }
                 case ANY_CONCEPT -> {
-                    // Qualifiée ici aussi : un pool n'est dans aucun namespace du modèle,
-                    // et un nom nu n'y résout rien. Là où le nom nu marchait -- dans un
-                    // fichier enveloppé du namespace du modèle -- la forme qualifiée
-                    // marche également.
+                    // Qualified here too: a pool is in none of the model's namespaces, where a
+                    // bare name resolves to nothing. Where the bare name worked -- in a file
+                    // wrapped in the model's namespace -- the qualified form works as well.
                     return "::" + model + "::AnyConceptKey";
                 }
                 case ANY -> {
@@ -206,8 +205,8 @@ final class TypeConverter {
                     return String.format("%sKey", cppQualified(typeReference.typeName));
                 }
                 case ANY_CONCEPT -> {
-                    // Depuis la portée globale : un namespace du modèle pourrait porter le
-                    // nom du modèle, et la recherche s'arrêterait sur lui.
+                    // From the global scope: a namespace of the model could carry the model's
+                    // name, and the lookup would stop on it.
                     return "::" + model + "::AnyConceptKey";
                 }
                 case ANY -> {
