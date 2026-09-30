@@ -48,4 +48,24 @@ public final class TemplateDefinitionsToolTest {
     assertEquals("render_2d_attributes", TemplateTool.snake("render2DAttributes"));
     assertEquals("f_e", TemplateTool.snake("f_E"));
   }
+
+  @Test
+  public void stringEscapesWhatEndsALiteral() {
+    assertEquals("one\\ntwo", TemplateTool.string("one\ntwo"));
+    assertEquals("say \\\"hi\\\"", TemplateTool.string("say \"hi\""));
+    assertEquals("a\\\\b", TemplateTool.string("a\\b"));
+  }
+
+  @Test
+  public void docstringKeepsLinesAndEscapesItsDelimiter() {
+    assertEquals("one\ntwo", TemplateTool.docstring("one\ntwo"));
+    assertEquals("a \\\"\\\"\\\" b", TemplateTool.docstring("a \"\"\" b"));
+    assertEquals("ends with \\\"", TemplateTool.docstring("ends with \""));
+    assertEquals("a\\\\b", TemplateTool.docstring("a\\b"));
+  }
+
+  @Test
+  public void commentCannotCloseItsBlock() {
+    assertEquals("a * / b", TemplateTool.comment("a */ b"));
+  }
 }
