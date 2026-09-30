@@ -193,7 +193,11 @@ final class EntityConverter {
         final var viperValue = typeConverter.viperValue(dsmKeyType);
         final var bindingType = typeConverter.templateBindingType(nameSpace, dsmKeyType);
 
-        return new TemplateAttachedKeyType(dsmKeyType.typeName, type, typeInNamespace, typeSuffix, viperValue, bindingType);
+        final var bindingKeySetType = binding.needsDerivedContainerProxies()
+                                      ? typeConverter.templateBindingType(nameSpace, new DSMTypeSet(dsmKeyType))
+                                      : null;
+        return new TemplateAttachedKeyType(dsmKeyType.typeName, type, typeInNamespace, typeSuffix, viperValue, bindingType,
+                                           bindingKeySetType);
     }
 
     private TemplateAttachedDocumentType convertAttachmentDocumentType(NameSpace nameSpace, DSMType dsmDocumentType) throws Exception {

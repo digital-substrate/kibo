@@ -10,6 +10,7 @@ public final class TemplateAttachedKeyType {
     private final String typeSuffix;
     private final String viperValue;
     private final TemplateBindingType bindingType;
+    private final TemplateBindingType bindingKeySetType;
 
     public TemplateAttachedKeyType(TypeName typeName,
                                    String type,
@@ -17,6 +18,17 @@ public final class TemplateAttachedKeyType {
                                    String typeSuffix,
                                    String viperValue,
                                    TemplateBindingType bindingType) {
+        this(typeName, type, typeInNamespace, typeSuffix, viperValue, bindingType, null);
+    }
+
+    public TemplateAttachedKeyType(TypeName typeName,
+                                   String type,
+                                   String typeInNamespace,
+                                   String typeSuffix,
+                                   String viperValue,
+                                   TemplateBindingType bindingType,
+                                   TemplateBindingType bindingKeySetType) {
+        this.bindingKeySetType = bindingKeySetType;
         this.typeName = typeName;
         this.type = type;
         this.typeInNamespace = typeInNamespace;
@@ -53,6 +65,11 @@ public final class TemplateAttachedKeyType {
     }
 
     // Binding
+    /** The set of these keys, seen through the binding: what listing an attachment's keys returns. */
+    public TemplateBindingType getBindingKeySetType() {
+        return bindingKeySetType;
+    }
+
     public TemplateBindingType getBindingType() {
         return bindingType;
     }
