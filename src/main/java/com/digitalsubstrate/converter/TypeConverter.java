@@ -475,14 +475,15 @@ final class TypeConverter {
         final var inNamespace = bindingTypeInNamespace(nameSpace, type);
         final var isNamed = isNamedType(type);
         final var annotation = bindingAnnotationInNamespace(nameSpace, type);
+        final var qualified = bindingAnnotationInNamespace(null, type);
 
         if (useProxy || vocabulary == null)
             return new TemplateBindingType(proxy, typeSuffix,
                                            useProxy ? proxy : null,
-                                           useProxy ? inNamespace : null, useProxy, isNamed, annotation);
+                                           useProxy ? inNamespace : null, useProxy, isNamed, annotation, qualified);
 
         return new TemplateBindingType(proxy, typeSuffix,
-                                       vocabulary.leaf(proxy), vocabulary.leaf(proxy), false, isNamed, annotation);
+                                       vocabulary.leaf(proxy), vocabulary.leaf(proxy), false, isNamed, annotation, qualified);
     }
 
     /** Whether a unit declares this type, rather than it being built from others. */

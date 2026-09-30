@@ -19,6 +19,11 @@ package com.digitalsubstrate.template;
  * of that unit needs no qualification and a type of another needs its module —
  * {@code Colour} against {@code modela.Colour}. It equals {@code type} wherever no unit is
  * in scope, which is where the flat spelling is the only one that means anything.
+ * <p>{@code qualified} is the annotation written from outside every unit: a type of the unit
+ * in scope is qualified by its module too -- {@code model_a.MaterialKey} where
+ * {@code annotation} says {@code MaterialKey}. A template needs it where a name the unit
+ * declares at module level can hide the type: the attachments of a concept named
+ * {@code MaterialKey} are a class of that name, beside the key of {@code Material}.
  * <p>Under a native binding there is no binding space: {@code type} is then absent, and
  * only the neutral members carry.
  */
@@ -31,6 +36,7 @@ public final class TemplateBindingType {
     private final boolean useProxy;
     private final boolean isNamed;
     private final String annotation;
+    private final String qualified;
 
     public TemplateBindingType(String proxy, String typeSuffix, String type, String typeInNamespace,
                                boolean useProxy) {
@@ -44,6 +50,12 @@ public final class TemplateBindingType {
 
     public TemplateBindingType(String proxy, String typeSuffix, String type, String typeInNamespace,
                                boolean useProxy, boolean isNamed, String annotation) {
+        this(proxy, typeSuffix, type, typeInNamespace, useProxy, isNamed, annotation, annotation);
+    }
+
+    public TemplateBindingType(String proxy, String typeSuffix, String type, String typeInNamespace,
+                               boolean useProxy, boolean isNamed, String annotation, String qualified) {
+        this.qualified = qualified;
         this.isNamed = isNamed;
         this.annotation = annotation;
         this.proxy = proxy;
@@ -63,6 +75,10 @@ public final class TemplateBindingType {
 
     public String getAnnotation() {
         return annotation;
+    }
+
+    public String getQualified() {
+        return qualified;
     }
 
     public String getProxy() {
