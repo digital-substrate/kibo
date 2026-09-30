@@ -1,5 +1,8 @@
 package com.digitalsubstrate.template;
 
+import com.digitalsubstrate.viper.dsm.DSMLiteralDomain;
+import com.digitalsubstrate.viper.dsm.DSMLiteralValue;
+
 import com.digitalsubstrate.viper.dsm.DSMStructureField;
 
 public final class TemplateStructureField {
@@ -58,6 +61,17 @@ public final class TemplateStructureField {
 
     public String getDefaultValue() {
         return defaultValue;
+    }
+
+    /**
+     * Whether the model declares a default value for this field. A field that declares none
+     * still has a {@code defaultValue} -- {@code {}}, the type's own -- so a template telling
+     * the two apart needs this.
+     */
+    public boolean getHasDefaultValue() {
+        return !(dsmStructureField.defaultValue == null
+                 || dsmStructureField.defaultValue instanceof DSMLiteralValue literal
+                    && literal.domain == DSMLiteralDomain.NONE);
     }
 
     // Predicates
