@@ -433,7 +433,7 @@ final class TypeConverter {
             elementTypeInNamespace = convertTypeInNamespace(nameSpace, typeSet.elementType);
             elementTypeSuffix = typeSuffix(typeSet.elementType);
             elementTypeViperValue = viperValue(typeSet.elementType);
-            bindingElementType = templateBindingType(typeSet.elementType);
+            bindingElementType = templateBindingType(nameSpace, typeSet.elementType);
             passBy = passByQualifier(typeSet.elementType);
         }
 
@@ -446,8 +446,8 @@ final class TypeConverter {
             elementTypeInNamespace = convertTypeInNamespace(nameSpace, typeMap.elementType);
             elementTypeSuffix = typeSuffix(typeMap.elementType);
             elementTypeViperValue = viperValue(typeMap.elementType);
-            bindingKeyType = templateBindingType(typeMap.keyType);
-            bindingElementType = templateBindingType(typeMap.elementType);
+            bindingKeyType = templateBindingType(nameSpace, typeMap.keyType);
+            bindingElementType = templateBindingType(nameSpace, typeMap.elementType);
             passBy = passByQualifier(typeMap.elementType);
         }
 
@@ -457,7 +457,7 @@ final class TypeConverter {
             elementTypeInNamespace = convertTypeInNamespace(nameSpace, typeXArray.elementType);
             elementTypeSuffix = typeSuffix(typeXArray.elementType);
             elementTypeViperValue = viperValue(typeXArray.elementType);
-            bindingElementType = templateBindingType(typeXArray.elementType);
+            bindingElementType = templateBindingType(nameSpace, typeXArray.elementType);
             passBy = passByQualifier(typeXArray.elementType);
         }
 

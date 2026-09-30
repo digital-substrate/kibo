@@ -32,4 +32,20 @@ public final class TemplateDefinitionsToolTest {
     assertEquals("simple_test_p3d", TemplateTool.lsc("SimpleTestP3D"));
     assertEquals("simple_test_3d", TemplateTool.lsc("SimpleTest3D"));
   }
+
+  @Test
+  public void snakeKeepsWhatIsAlreadySnakeCase() {
+    assertEquals("f_uint8", TemplateTool.snake("f_uint8"));
+    assertEquals("channel0", TemplateTool.snake("channel0"));
+    assertEquals("assign_material", TemplateTool.snake("assign_material"));
+    assertEquals("value", TemplateTool.snake("value"));
+  }
+
+  @Test
+  public void snakeConvertsCamelCaseAsLscDoes() {
+    assertEquals("vertex_keys", TemplateTool.snake("vertexKeys"));
+    assertEquals("properties_int_8", TemplateTool.snake("propertiesInt8"));
+    assertEquals("render_2d_attributes", TemplateTool.snake("render2DAttributes"));
+    assertEquals("f_e", TemplateTool.snake("f_E"));
+  }
 }

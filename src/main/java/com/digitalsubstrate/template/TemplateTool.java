@@ -59,4 +59,19 @@ public final class TemplateTool {
     public static String lsc(String s) {
         return l(sc(s));
     }
+
+    /**
+     * The snake_case name of a static symbol: a Python field, method or parameter.
+     *
+     * <p>A name the model already spells without a capital is kept as written:
+     * {@code f_uint8} stays {@code f_uint8}. {@link #lsc} would split it before the digit,
+     * which its rule requires for the names that travel -- the attachment pool's functions,
+     * the constants of the embedded module -- and which must stay identical to the runtime's.
+     * A static name travels nowhere, so it can keep what the author wrote; a name in
+     * camelCase still goes through {@link #lsc}, so {@code propertiesInt8} gives
+     * {@code properties_int_8}, as the attachment pool spells it.
+     */
+    public static String snake(String s) {
+        return s.chars().anyMatch(Character::isUpperCase) ? lsc(s) : s;
+    }
 }
