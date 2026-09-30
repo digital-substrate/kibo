@@ -195,16 +195,16 @@ public final class AppUtils {
     }
 
     /**
-     * In C++ the model's name (-n) is the namespace of all the generated infrastructure: the
-     * namespaces of the DSM and the function pools live under it, beside the model-wide code no
-     * namespace can claim -- its codec, its test support, its attachment pool. They share one
-     * scope, so a namespace or a pool spelled like one of those would merge into it, and two
-     * pools or a pool and a namespace of the same spelling would merge into each other. Refused
-     * here, when the model is read, rather than as a redefinition deep in a compile.
+     * In C++ the namespaces of the DSM and the function pools are all written under the model's
+     * name (-n), each in lower snake case -- the rule kibo applies itself. Two of them that the
+     * rule spells alike would merge into one C++ namespace: a pool and a namespace both called
+     * Tools, or two pools. Refused here, when the model is read, rather than as a redefinition deep
+     * in a compile.
+     *
+     * <p>Only what follows from kibo's own rule is checked. The names a template pack gives its
+     * model-wide code (a codec, a pool of attachments...) are the pack's, which kibo does not know:
+     * a clash with them is the pack's to declare and the project's to resolve.
      */
-    private static final java.util.Set<String> CPP_MODEL_SCOPE =
-            java.util.Set.of("codec", "test", "python_definitions", "attachment_pool");
-
     private static void checkNamesUnderModel(TemplateDefinitions definitions) throws Exception {
         final var seen = new java.util.HashMap<String, String>();
         final var names = new java.util.ArrayList<String[]>();
@@ -216,11 +216,6 @@ public final class AppUtils {
             names.add(new String[]{"attachment function pool", pool.getName()});
         for (var name : names) {
             final var cpp = TemplateTool.lsc(name[1]);
-            if (CPP_MODEL_SCOPE.contains(cpp))
-                throw new Exception(String.format(
-                    "the %s '%s' is written '%s::%s' in C++, which the model-wide code of '%s' "
-                    + "already uses. Rename it.", name[0], name[1], definitions.getNamespace(), cpp,
-                    definitions.getNamespace()));
             final var previous = seen.putIfAbsent(cpp, name[0] + " '" + name[1] + "'");
             if (previous != null)
                 throw new Exception(String.format(
