@@ -32,8 +32,8 @@ public interface TargetLayout {
     enum Scope { MODEL, UNIT }
 
     /** What a render is saved as, relative to {@code -o}, for a template file's base name. */
-    String outputFileName(Scope scope, String unit, String templateBaseName);
+    String outputFileName(Scope scope, String model, String unit, String templateBaseName);
 
     /** What a template writes to reach another artefact of this unit. */
-    String artefactPath(Scope scope, String unit, String artefact);
+    String artefactPath(Scope scope, String model, String unit, String artefact);
 }

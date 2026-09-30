@@ -26,17 +26,36 @@ public final class TemplateIncludePaths extends AbstractMap<String, String> {
 
     private final TargetLayout layout;
     private final TargetLayout.Scope scope;
+    private final String model;
     private final String unit;
+    private final boolean guard;
 
-    public TemplateIncludePaths(TargetLayout layout, TargetLayout.Scope scope, String unit) {
+    public TemplateIncludePaths(TargetLayout layout, TargetLayout.Scope scope, String model, String unit) {
+        this(layout, scope, model, unit, false);
+    }
+
+    private TemplateIncludePaths(TargetLayout layout, TargetLayout.Scope scope, String model, String unit,
+                                 boolean guard) {
         this.layout = layout;
         this.scope = scope;
+        this.model = model;
         this.unit = unit;
+        this.guard = guard;
+    }
+
+    /**
+     * The include guard of each artefact: its path with every separator an underscore --
+     * {@code <u.guard.Data>} for {@code <u.include.Data>}. Derived from the path so that the
+     * two cannot disagree, and a guard is as unique as the file it protects.
+     */
+    public TemplateIncludePaths guards() {
+        return new TemplateIncludePaths(layout, scope, model, unit, true);
     }
 
     @Override
     public String get(Object artefact) {
-        return layout.artefactPath(scope, unit, String.valueOf(artefact));
+        final var path = layout.artefactPath(scope, model, unit, String.valueOf(artefact));
+        return guard ? path.replaceAll("[^A-Za-z0-9_]", "_") : path;
     }
 
     @Override

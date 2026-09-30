@@ -34,9 +34,14 @@ public final class TemplateFunctionPool {
         return include;
     }
 
+    /** The include guard of each of this pool's artefacts: {@code <p.guard.Pool>}. */
+    public TemplateIncludePaths getGuard() {
+        return include.guards();
+    }
+
     public void setModel(TemplateDefinitions model, TargetLayout layout) {
         this.model = model;
-        this.include = new TemplateIncludePaths(layout, TargetLayout.Scope.UNIT, getName());
+        this.include = new TemplateIncludePaths(layout, TargetLayout.Scope.UNIT, model.getNamespace(), getName());
     }
 
     /**

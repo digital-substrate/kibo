@@ -47,7 +47,7 @@ public final class TemplateDefinitions {
     public TemplateDefinitions(String generated, String namespace, TargetLayout layout) {
         this.generated = generated;
         this.namespace = namespace;
-        this.include = new TemplateIncludePaths(layout, TargetLayout.Scope.MODEL, namespace);
+        this.include = new TemplateIncludePaths(layout, TargetLayout.Scope.MODEL, namespace, namespace);
     }
 
     public String getGenerated() {
@@ -65,6 +65,11 @@ public final class TemplateDefinitions {
      */
     public TemplateIncludePaths getInclude() {
         return include;
+    }
+
+    /** The include guard of each model-wide artefact: {@code <m.guard.Codec>}. */
+    public TemplateIncludePaths getGuard() {
+        return include.guards();
     }
 
     // Components

@@ -91,9 +91,9 @@ public final class AppUtils {
         return instance.render();
     }
 
-    private static void save(Target target, TargetLayout.Scope scope, String unit, Path template, Path output,
-                             String code, boolean debug) throws Exception {
-        final var filename = target.layout.outputFileName(scope, unit, outputFilePath(template).toString());
+    private static void save(Target target, TargetLayout.Scope scope, String model, String unit, Path template,
+                             Path output, String code, boolean debug) throws Exception {
+        final var filename = target.layout.outputFileName(scope, model, unit, outputFilePath(template).toString());
         final var filePath = Paths.get(output.toString(), filename);
         if (debug)
             System.out.printf("Save %s%n", filePath);
@@ -129,14 +129,14 @@ public final class AppUtils {
 
         for (var entry : new String[]{WHOLE_MODEL, MODEL})
             if (declares(group, entry, "m")) {
-                save(target, TargetLayout.Scope.MODEL, templateDefinitions.getNamespace(), template, output,
+                save(target, TargetLayout.Scope.MODEL, templateDefinitions.getNamespace(), templateDefinitions.getNamespace(), template, output,
                      render(group, entry, "m", templateDefinitions), debug);
                 rendered = true;
             }
 
         if (declares(group, PER_UNIT, "u")) {
             for (var nameSpace : templateDefinitions.nameSpaces)
-                save(target, TargetLayout.Scope.UNIT, nameSpace.getName(), template, output,
+                save(target, TargetLayout.Scope.UNIT, templateDefinitions.getNamespace(), nameSpace.getName(), template, output,
                      render(group, PER_UNIT, "u", nameSpace), debug);
             rendered = true;
         }
@@ -147,14 +147,14 @@ public final class AppUtils {
         // renders plausibly wrong output for half its inputs.
         if (declares(group, PER_POOL, "p")) {
             for (var pool : templateDefinitions.functionPools)
-                save(target, TargetLayout.Scope.UNIT, pool.getName(), template, output,
+                save(target, TargetLayout.Scope.UNIT, templateDefinitions.getNamespace(), pool.getName(), template, output,
                      render(group, PER_POOL, "p", pool), debug);
             rendered = true;
         }
 
         if (declares(group, PER_ATTACHMENT_POOL, "p")) {
             for (var pool : templateDefinitions.attachmentFunctionPools)
-                save(target, TargetLayout.Scope.UNIT, pool.getName(), template, output,
+                save(target, TargetLayout.Scope.UNIT, templateDefinitions.getNamespace(), pool.getName(), template, output,
                      render(group, PER_ATTACHMENT_POOL, "p", pool), debug);
             rendered = true;
         }

@@ -91,7 +91,7 @@ public class TemplateNameSpace {
     public TemplateNameSpace(NameSpace nameSpace, TemplateDefinitions model, TargetLayout layout) {
         this.nameSpace = nameSpace;
         this.model = model;
-        this.include = new TemplateIncludePaths(layout, TargetLayout.Scope.UNIT, nameSpace.name);
+        this.include = new TemplateIncludePaths(layout, TargetLayout.Scope.UNIT, model.getNamespace(), nameSpace.name);
     }
 
     /**
@@ -111,6 +111,11 @@ public class TemplateNameSpace {
     /** Where this unit's own artefacts are found: {@code <u.include.Data>}. */
     public TemplateIncludePaths getInclude() {
         return include;
+    }
+
+    /** The include guard of each of this unit's artefacts: {@code <u.guard.Data>}. */
+    public TemplateIncludePaths getGuard() {
+        return include.guards();
     }
 
     public String getName() {
