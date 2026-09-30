@@ -460,7 +460,11 @@ final class TypeConverter {
             passBy = passByQualifier(typeXArray.elementType);
         }
 
-        return new TemplateField(ctype, keyType, keyTypeInNamespace, keyTypeSuffix, elementType, elementTypeInNamespace, elementTypeSuffix, elementTypeViperValue, bindingKeyType, bindingElementType, passBy);
+        final var bindingKeySetType = type instanceof DSMTypeMap typeMap
+                                      ? templateBindingType(nameSpace, new DSMTypeSet(typeMap.keyType))
+                                      : null;
+        return new TemplateField(ctype, keyType, keyTypeInNamespace, keyTypeSuffix, elementType, elementTypeInNamespace, elementTypeSuffix, elementTypeViperValue, bindingKeyType, bindingElementType, passBy,
+                                 templateBindingType(nameSpace, type), bindingKeySetType);
     }
 
     TemplateBindingType templateBindingType(DSMType type) throws Exception {
@@ -556,6 +560,14 @@ final class TypeConverter {
         if (type instanceof DSMTypeKey typeKey)
             return bindingAnnotationInNamespace(nameSpace, typeKey.elementType);
 
+        if (type instanceof DSMTypeVec || type instanceof DSMTypeMat || type instanceof DSMTypeTuple
+            || type instanceof DSMTypeVector || type instanceof DSMTypeSet || type instanceof DSMTypeMap
+            || type instanceof DSMTypeXArray) {
+            final var declared = vocabulary.container(bindingType(type));
+            if (declared != null)
+                return declared;
+        }
+
         if (type instanceof DSMTypeVec typeVec)
             return vocabulary.list(bindingAnnotationInNamespace(nameSpace, typeVec.elementType));
 
@@ -612,46 +624,55 @@ final class TypeConverter {
         return result;
     }
 
+    /**
+     * The name of the generated class a type becomes in a delegating binding.
+     *
+     * <p>A named type is its namespace and its name ({@code Graph_VertexKey}). A container is
+     * its kind, then {@code _of_} and the names of what it holds, so that the name reads as the
+     * type and every boundary is marked: {@code Set_of_Graph_VertexKey},
+     * {@code Map_of_string_to_Graph_Color}, {@code Variant_of_string_or_Demo_StructureS},
+     * {@code Tuple_of_uint8_and_string}, {@code Vec2_of_float}, {@code Mat2x3_of_double}.
+     */
     private String bindingType(DSMType type) throws Exception {
         if (type instanceof DSMTypeKey typeKey) {
             return bindingType(typeKey.elementType);
         }
 
         if (type instanceof DSMTypeVec typeVec)
-            return String.format("Vec_%s_%d", bindingType(typeVec.elementType), typeVec.size);
+            return String.format("Vec%d_of_%s", typeVec.size, bindingType(typeVec.elementType));
 
         if (type instanceof DSMTypeMat typeMat)
-            return String.format("Mat_%s_%d_%d", bindingType(typeMat.elementType), typeMat.columns, typeMat.rows);
+            return String.format("Mat%dx%d_of_%s", typeMat.columns, typeMat.rows, bindingType(typeMat.elementType));
 
         if (type instanceof DSMTypeTuple typeTuple) {
             var memberSuffixes = new ArrayList<String>();
             for (var memberType : typeTuple.types)
                 memberSuffixes.add(bindingType(memberType));
 
-            return "Tuple_" + String.join("_", memberSuffixes);
+            return "Tuple_of_" + String.join("_and_", memberSuffixes);
         }
 
         if (type instanceof DSMTypeOptional typeOptional)
-            return String.format("Optional_%s", bindingType(typeOptional.elementType));
+            return String.format("Optional_of_%s", bindingType(typeOptional.elementType));
 
         if (type instanceof DSMTypeVector typeVector)
-            return String.format("Vector_%s", bindingType(typeVector.elementType));
+            return String.format("Vector_of_%s", bindingType(typeVector.elementType));
 
         if (type instanceof DSMTypeMap typeMap)
-            return String.format("Map_%s_to_%s", bindingType(typeMap.keyType), bindingType(typeMap.elementType));
+            return String.format("Map_of_%s_to_%s", bindingType(typeMap.keyType), bindingType(typeMap.elementType));
 
         if (type instanceof DSMTypeSet typeSet)
-            return String.format("Set_%s", bindingType(typeSet.elementType));
+            return String.format("Set_of_%s", bindingType(typeSet.elementType));
 
         if (type instanceof DSMTypeXArray typeXArray)
-            return String.format("XArray_%s", bindingType(typeXArray.elementType));
+            return String.format("XArray_of_%s", bindingType(typeXArray.elementType));
 
         if (type instanceof DSMTypeVariant typeVariant) {
             var memberSuffixes = new ArrayList<String>();
             for (var memberType : typeVariant.types)
                 memberSuffixes.add(bindingType(memberType));
 
-            return "Variant_" + String.join("_", memberSuffixes);
+            return "Variant_of_" + String.join("_or_", memberSuffixes);
         }
 
         if (type instanceof DSMTypeReference typeReference) {

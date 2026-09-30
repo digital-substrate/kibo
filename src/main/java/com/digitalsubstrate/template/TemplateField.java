@@ -12,6 +12,8 @@ public final class TemplateField {
     private final String elementTypeViperValue;
     private final TemplateBindingType bindingKeyType;
     private final TemplateBindingType bindingElementType;
+    private final TemplateBindingType bindingType;
+    private final TemplateBindingType bindingKeySetType;
     private final String passBy;
 
     public TemplateField(TemplateFieldType type,
@@ -25,6 +27,25 @@ public final class TemplateField {
                          TemplateBindingType bindingKeyType,
                          TemplateBindingType bindingElementType,
                          String passBy) {
+        this(type, keyType, keyTypeInNamespace, keyTypeSuffix, elementType, elementTypeInNamespace, elementTypeSuffix,
+             elementTypeViperValue, bindingKeyType, bindingElementType, passBy, null, null);
+    }
+
+    public TemplateField(TemplateFieldType type,
+                         String keyType,
+                         String keyTypeInNamespace,
+                         String keyTypeSuffix,
+                         String elementType,
+                         String elementTypeInNamespace,
+                         String elementTypeSuffix,
+                         String elementTypeViperValue,
+                         TemplateBindingType bindingKeyType,
+                         TemplateBindingType bindingElementType,
+                         String passBy,
+                         TemplateBindingType bindingType,
+                         TemplateBindingType bindingKeySetType) {
+        this.bindingType = bindingType;
+        this.bindingKeySetType = bindingKeySetType;
         this.type = type;
         this.keyType = keyType;
         this.keyTypeInNamespace = keyTypeInNamespace;
@@ -110,5 +131,18 @@ public final class TemplateField {
 
     public TemplateBindingType getBindingElementType() {
         return bindingElementType;
+    }
+
+    /** The container itself, seen through the binding: the generated class of its shape. */
+    public TemplateBindingType getBindingType() {
+        return bindingType;
+    }
+
+    /**
+     * For a map, the set of its keys, seen through the binding: what removing entries by key
+     * takes. Absent for any other container.
+     */
+    public TemplateBindingType getBindingKeySetType() {
+        return bindingKeySetType;
     }
 }

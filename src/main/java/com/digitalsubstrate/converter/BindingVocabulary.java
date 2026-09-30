@@ -59,4 +59,14 @@ public interface BindingVocabulary {
 
     /** Anything the model does not constrain. */
     String any();
+
+    /**
+     * How the target writes a container whose shape has a generated class of its own, given
+     * that class's name — or {@code null} when the binding spells containers by their shape
+     * ({@link #list}, {@link #map}, …) instead. A binding that generates a class per shape
+     * names the class, so that the element type travels with it.
+     */
+    default String container(String generatedClass) {
+        return null;
+    }
 }

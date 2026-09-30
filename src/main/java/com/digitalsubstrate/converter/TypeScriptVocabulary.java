@@ -103,4 +103,10 @@ final class TypeScriptVocabulary implements BindingVocabulary {
     public String any() {
         return "unknown";
     }
+
+    /** Every container shape is a class the package declares in its `containers` module. */
+    @Override
+    public String container(String generatedClass) {
+        return "containers." + generatedClass;
+    }
 }
