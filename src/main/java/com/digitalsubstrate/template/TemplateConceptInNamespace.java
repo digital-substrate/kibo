@@ -16,6 +16,15 @@ public class TemplateConceptInNamespace {
     }
 
     // Namespace
+    /**
+     * Whether the concept is declared in the namespace it is seen from. A module target can name a
+     * concept of its own unit directly; one declared in another unit may be a unit that imports
+     * this one.
+     */
+    public Boolean getIsLocal() {
+        return concept.getNamespace().equals(namespace);
+    }
+
     public String getNameInNamespace() {
         if (concept.getNamespace().equals(namespace))  {
             return concept.getName();
