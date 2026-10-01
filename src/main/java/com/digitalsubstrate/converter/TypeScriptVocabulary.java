@@ -81,7 +81,7 @@ final class TypeScriptVocabulary implements BindingVocabulary {
      */
     @Override
     public String optional(String element) {
-        return element + " | undefined";
+        return element.endsWith(" | undefined") ? element : element + " | undefined";
     }
 
     @Override

@@ -73,7 +73,7 @@ final class PythonVocabulary implements BindingVocabulary {
 
     @Override
     public String optional(String element) {
-        return String.format("%s | None", element);
+        return element.endsWith(" | None") ? element : element + " | None";
     }
 
     @Override

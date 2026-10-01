@@ -487,12 +487,12 @@ final class TypeConverter {
             if (vocabulary != null) {
                 binding.withInput(writeInput(nameSpace, type, false), writeInput(null, type, false));
                 if (isContainer(type) || type instanceof DSMTypeOptional)
-                    binding.withConstructorInput(nativeInput(null, type, true));
+                    binding.withConstructorInput(vocabulary.optional(nativeInput(null, type, true)));
                 if (type instanceof DSMTypeVariant typeVariant) {
                     final var members = new ArrayList<String>();
                     for (var member : typeVariant.types)
                         members.add(writeInput(null, member, true));
-                    binding.withConstructorInput(vocabulary.union(members));
+                    binding.withConstructorInput(vocabulary.optional(vocabulary.union(members)));
                 }
             }
             return binding;
@@ -539,7 +539,7 @@ final class TypeConverter {
     /** The host's own collection the runtime decodes into a container, or an optional's element. */
     private String nativeInput(NameSpace nameSpace, DSMType type, boolean deep) throws Exception {
         if (type instanceof DSMTypeOptional typeOptional)
-            return vocabulary.optional(writeInput(nameSpace, typeOptional.elementType, deep));
+            return writeInput(nameSpace, typeOptional.elementType, deep);
 
         if (type instanceof DSMTypeVector typeVector)
             return vocabulary.sequenceInput(writeInput(nameSpace, typeVector.elementType, deep));
