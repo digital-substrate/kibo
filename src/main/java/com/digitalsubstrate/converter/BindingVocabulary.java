@@ -60,6 +60,11 @@ public interface BindingVocabulary {
     /** Anything the model does not constrain. */
     String any();
 
+    /** What a write of an any accepts: whatever the runtime decodes. */
+    default String anyInput() {
+        return any();
+    }
+
     /**
      * How the target writes a container whose shape has a generated class of its own, given
      * that class's name — or {@code null} when the binding spells containers by their shape

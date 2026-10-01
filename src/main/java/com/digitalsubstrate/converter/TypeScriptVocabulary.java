@@ -101,6 +101,11 @@ final class TypeScriptVocabulary implements BindingVocabulary {
 
     @Override
     public String any() {
+        return "AnyValue";
+    }
+
+    @Override
+    public String anyInput() {
         return "unknown";
     }
 

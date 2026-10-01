@@ -474,7 +474,7 @@ final class TypeConverter {
     TemplateBindingType templateBindingType(NameSpace nameSpace, DSMType type) throws Exception {
         final var proxy = bindingType(type);
         final var typeSuffix = typeSuffix(type);
-        final var useProxy = needsProxy(proxy);
+        final var useProxy = needsProxy(proxy) || (vocabulary != null && isTypeAny(type));
         final var inNamespace = bindingTypeInNamespace(nameSpace, type);
         final var isNamed = isNamedType(type);
         final var annotation = bindingAnnotationInNamespace(nameSpace, type);
@@ -519,6 +519,17 @@ final class TypeConverter {
 
         if (isContainer(type) && (deep || isPrimitiveShape(type)))
             return vocabulary.union(java.util.List.of(annotation, nativeInput(nameSpace, type, deep)));
+
+        if (type instanceof DSMTypeVariant typeVariant) {
+            final var members = new ArrayList<String>();
+            members.add(annotation);
+            for (var member : typeVariant.types)
+                members.add(writeInput(nameSpace, member, deep));
+            return vocabulary.union(members);
+        }
+
+        if (isTypeAny(type))
+            return vocabulary.anyInput();
 
         return annotation;
     }
@@ -658,7 +669,8 @@ final class TypeConverter {
 
         if (type instanceof DSMTypeVec || type instanceof DSMTypeMat || type instanceof DSMTypeTuple
             || type instanceof DSMTypeVector || type instanceof DSMTypeSet || type instanceof DSMTypeMap
-            || type instanceof DSMTypeXArray || type instanceof DSMTypeOptional) {
+            || type instanceof DSMTypeXArray || type instanceof DSMTypeOptional
+            || type instanceof DSMTypeVariant) {
             final var declared = vocabulary.container(bindingType(type));
             if (declared != null)
                 return declared;

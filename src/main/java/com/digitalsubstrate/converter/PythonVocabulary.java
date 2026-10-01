@@ -93,6 +93,11 @@ final class PythonVocabulary implements BindingVocabulary {
 
     @Override
     public String any() {
+        return "AnyValue";
+    }
+
+    @Override
+    public String anyInput() {
         return "typing.Any";
     }
 
