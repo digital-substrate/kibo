@@ -81,6 +81,14 @@ public interface BindingVocabulary {
         return list(element);
     }
 
+    /**
+     * What an xarray field decodes from, or {@code null} when the binding the target requires
+     * decodes none: the host collection is then not announced for a field.
+     */
+    default String orderedInput(String element) {
+        return sequenceInput(element);
+    }
+
     /** What a set decodes from. */
     default String iterableInput(String element) {
         return list(element);

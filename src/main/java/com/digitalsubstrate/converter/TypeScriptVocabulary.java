@@ -114,6 +114,16 @@ final class TypeScriptVocabulary implements BindingVocabulary {
         return String.format("readonly (%s)[]", element);
     }
 
+    /**
+     * None: the Node binding the templates require (>= 1.2.13) decodes a written xarray from
+     * its projection, not from its elements, so an array is not announced for an xarray field.
+     * A declared xarray's constructor does take one.
+     */
+    @Override
+    public String orderedInput(String element) {
+        return null;
+    }
+
     @Override
     public String iterableInput(String element) {
         return String.format("readonly (%s)[] | ReadonlySet<%s>", element, element);

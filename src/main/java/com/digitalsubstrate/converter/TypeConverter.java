@@ -517,8 +517,10 @@ final class TypeConverter {
             return vocabulary.optional(vocabulary.union(java.util.List.of(
                 annotation, writeInput(nameSpace, typeOptional.elementType, deep))));
 
-        if (isContainer(type) && (deep || isPrimitiveShape(type)))
-            return vocabulary.union(java.util.List.of(annotation, nativeInput(nameSpace, type, deep)));
+        if (isContainer(type) && (deep || isPrimitiveShape(type))) {
+            final var hostCollection = nativeInput(nameSpace, type, deep);
+            return hostCollection == null ? annotation : vocabulary.union(java.util.List.of(annotation, hostCollection));
+        }
 
         if (type instanceof DSMTypeVariant typeVariant) {
             final var members = new ArrayList<String>();
@@ -543,7 +545,8 @@ final class TypeConverter {
             return vocabulary.sequenceInput(writeInput(nameSpace, typeVector.elementType, deep));
 
         if (type instanceof DSMTypeXArray typeXArray)
-            return vocabulary.sequenceInput(writeInput(nameSpace, typeXArray.elementType, deep));
+            return deep ? vocabulary.sequenceInput(writeInput(nameSpace, typeXArray.elementType, true))
+                        : vocabulary.orderedInput(writeInput(nameSpace, typeXArray.elementType, false));
 
         if (type instanceof DSMTypeVec typeVec)
             return vocabulary.sequenceInput(writeInput(nameSpace, typeVec.elementType, deep));
