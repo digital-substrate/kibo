@@ -98,6 +98,21 @@ final class PythonVocabulary implements BindingVocabulary {
 
     /** Every container shape is a class the package declares in its `containers` module. */
     @Override
+    public String sequenceInput(String element) {
+        return String.format("typing.Sequence[%s]", element);
+    }
+
+    @Override
+    public String iterableInput(String element) {
+        return String.format("typing.Iterable[%s]", element);
+    }
+
+    @Override
+    public String mapInput(String key, String element) {
+        return String.format("dict[%s, %s]", key, element);
+    }
+
+    @Override
     public String container(String generatedClass) {
         return "containers." + generatedClass;
     }

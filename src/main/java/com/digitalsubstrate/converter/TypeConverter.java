@@ -484,9 +484,17 @@ final class TypeConverter {
             final var binding = new TemplateBindingType(proxy, typeSuffix,
                                                         useProxy ? proxy : null,
                                                         useProxy ? inNamespace : null, useProxy, isNamed, annotation, qualified);
-            if (vocabulary != null && type instanceof DSMTypeOptional typeOptional)
-                binding.withInput(optionalInput(annotation, bindingAnnotationInNamespace(nameSpace, typeOptional.elementType)),
-                                  optionalInput(qualified, bindingAnnotationInNamespace(null, typeOptional.elementType)));
+            if (vocabulary != null) {
+                binding.withInput(writeInput(nameSpace, type, false), writeInput(null, type, false));
+                if (isContainer(type) || type instanceof DSMTypeOptional)
+                    binding.withConstructorInput(nativeInput(null, type, true));
+                if (type instanceof DSMTypeVariant typeVariant) {
+                    final var members = new ArrayList<String>();
+                    for (var member : typeVariant.types)
+                        members.add(writeInput(null, member, true));
+                    binding.withConstructorInput(vocabulary.union(members));
+                }
+            }
             return binding;
         }
 
@@ -494,9 +502,87 @@ final class TypeConverter {
                                        vocabulary.leaf(proxy), vocabulary.leaf(proxy), false, isNamed, annotation, qualified);
     }
 
-    /** An optional is read as itself, and written as itself, its element, or nothing. */
-    private String optionalInput(String optional, String element) {
-        return vocabulary.optional(vocabulary.union(java.util.List.of(optional, element)));
+    /**
+     * What a write of {@code type} accepts. A read hands back the runtime's own value; a write
+     * also takes what the runtime decodes into it: an optional its element or nothing, a
+     * container the host's own collection. A field takes that collection only when nothing
+     * in it is generated ({@code deep} false): a host collection of generated values would
+     * carry a wrong element unchecked until it reached the runtime, so it is refused. The
+     * constructor of a generated container ({@code deep} true) takes one, and unwraps it
+     * where it is built.
+     */
+    private String writeInput(NameSpace nameSpace, DSMType type, boolean deep) throws Exception {
+        final var annotation = bindingAnnotationInNamespace(nameSpace, type);
+        if (type instanceof DSMTypeOptional typeOptional)
+            return vocabulary.optional(vocabulary.union(java.util.List.of(
+                annotation, writeInput(nameSpace, typeOptional.elementType, deep))));
+
+        if (isContainer(type) && (deep || isPrimitiveShape(type)))
+            return vocabulary.union(java.util.List.of(annotation, nativeInput(nameSpace, type, deep)));
+
+        return annotation;
+    }
+
+    /** The host's own collection the runtime decodes into a container, or an optional's element. */
+    private String nativeInput(NameSpace nameSpace, DSMType type, boolean deep) throws Exception {
+        if (type instanceof DSMTypeOptional typeOptional)
+            return vocabulary.optional(writeInput(nameSpace, typeOptional.elementType, deep));
+
+        if (type instanceof DSMTypeVector typeVector)
+            return vocabulary.sequenceInput(writeInput(nameSpace, typeVector.elementType, deep));
+
+        if (type instanceof DSMTypeXArray typeXArray)
+            return vocabulary.sequenceInput(writeInput(nameSpace, typeXArray.elementType, deep));
+
+        if (type instanceof DSMTypeVec typeVec)
+            return vocabulary.sequenceInput(writeInput(nameSpace, typeVec.elementType, deep));
+
+        if (type instanceof DSMTypeMat typeMat)
+            return vocabulary.sequenceInput(vocabulary.sequenceInput(writeInput(nameSpace, typeMat.elementType, deep)));
+
+        if (type instanceof DSMTypeSet typeSet)
+            return vocabulary.iterableInput(writeInput(nameSpace, typeSet.elementType, deep));
+
+        if (type instanceof DSMTypeMap typeMap)
+            return vocabulary.mapInput(writeInput(nameSpace, typeMap.keyType, deep),
+                                       writeInput(nameSpace, typeMap.elementType, deep));
+
+        if (type instanceof DSMTypeTuple typeTuple) {
+            final var members = new ArrayList<String>();
+            for (var member : typeTuple.types)
+                members.add(writeInput(nameSpace, member, deep));
+            return vocabulary.sequenceInput(vocabulary.union(members));
+        }
+
+        throw new ConvertException(
+            String.format("nativeInput: type '%s' is not a container.", type.representation()));
+    }
+
+    private static boolean isContainer(DSMType type) {
+        return type instanceof DSMTypeVec || type instanceof DSMTypeMat || type instanceof DSMTypeTuple
+            || type instanceof DSMTypeVector || type instanceof DSMTypeSet || type instanceof DSMTypeMap
+            || type instanceof DSMTypeXArray;
+    }
+
+    /** Whether every leaf of the type is a primitive the host holds natively. */
+    private static boolean isPrimitiveShape(DSMType type) {
+        if (type instanceof DSMTypeVec typeVec)
+            return isPrimitiveShape(typeVec.elementType);
+        if (type instanceof DSMTypeMat typeMat)
+            return isPrimitiveShape(typeMat.elementType);
+        if (type instanceof DSMTypeTuple typeTuple)
+            return typeTuple.types.stream().allMatch(TypeConverter::isPrimitiveShape);
+        if (type instanceof DSMTypeOptional typeOptional)
+            return isPrimitiveShape(typeOptional.elementType);
+        if (type instanceof DSMTypeVector typeVector)
+            return isPrimitiveShape(typeVector.elementType);
+        if (type instanceof DSMTypeSet typeSet)
+            return isPrimitiveShape(typeSet.elementType);
+        if (type instanceof DSMTypeMap typeMap)
+            return isPrimitiveShape(typeMap.keyType) && isPrimitiveShape(typeMap.elementType);
+        if (type instanceof DSMTypeXArray typeXArray)
+            return isPrimitiveShape(typeXArray.elementType);
+        return type instanceof DSMTypeReference reference && reference.domain == DSMTypeReferenceDomain.PRIMITIVE;
     }
 
     /** Whether a unit declares this type, rather than it being built from others. */

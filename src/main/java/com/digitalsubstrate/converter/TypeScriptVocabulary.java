@@ -104,6 +104,21 @@ final class TypeScriptVocabulary implements BindingVocabulary {
         return "unknown";
     }
 
+    @Override
+    public String sequenceInput(String element) {
+        return String.format("readonly (%s)[]", element);
+    }
+
+    @Override
+    public String iterableInput(String element) {
+        return String.format("readonly (%s)[] | ReadonlySet<%s>", element, element);
+    }
+
+    @Override
+    public String mapInput(String key, String element) {
+        return String.format("ReadonlyMap<%s, %s> | readonly (readonly [%s, %s])[]", key, element, key, element);
+    }
+
     /** Every container shape is a class the package declares in its `containers` module. */
     @Override
     public String container(String generatedClass) {

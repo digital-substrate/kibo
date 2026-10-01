@@ -39,6 +39,7 @@ public final class TemplateBindingType {
     private final String qualified;
     private String input;
     private String inputQualified;
+    private String constructorInput;
 
     public TemplateBindingType(String proxy, String typeSuffix, String type, String typeInNamespace,
                                boolean useProxy) {
@@ -98,6 +99,20 @@ public final class TemplateBindingType {
     public TemplateBindingType withInput(String input, String inputQualified) {
         this.input = input;
         this.inputQualified = inputQualified;
+        return this;
+    }
+
+    /**
+     * What the constructor of a generated container class takes besides an instance of
+     * itself: the host's own collection, whose generated elements it unwraps, so that the
+     * runtime checks every element where the container is built.
+     */
+    public String getConstructorInput() {
+        return constructorInput;
+    }
+
+    public TemplateBindingType withConstructorInput(String constructorInput) {
+        this.constructorInput = constructorInput;
         return this;
     }
 

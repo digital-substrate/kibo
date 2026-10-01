@@ -66,6 +66,26 @@ public interface BindingVocabulary {
      * ({@link #list}, {@link #map}, …) instead. A binding that generates a class per shape
      * names the class, so that the element type travels with it.
      */
+    // ── how the target writes the host's own collection that the runtime decodes ──
+    //
+    // A write takes the generated class, and also what the runtime decodes into it: these
+    // spell that native form, by the kinds of collection the runtime accepts.
+
+    /** A host sequence: what a vector, an xarray, a tuple, a vec or a mat column decodes from. */
+    default String sequenceInput(String element) {
+        return list(element);
+    }
+
+    /** What a set decodes from. */
+    default String iterableInput(String element) {
+        return list(element);
+    }
+
+    /** What a map decodes from. */
+    default String mapInput(String key, String element) {
+        return map(key, element);
+    }
+
     default String container(String generatedClass) {
         return null;
     }
