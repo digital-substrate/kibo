@@ -37,6 +37,8 @@ public final class TemplateBindingType {
     private final boolean isNamed;
     private final String annotation;
     private final String qualified;
+    private String input;
+    private String inputQualified;
 
     public TemplateBindingType(String proxy, String typeSuffix, String type, String typeInNamespace,
                                boolean useProxy) {
@@ -79,6 +81,24 @@ public final class TemplateBindingType {
 
     public String getQualified() {
         return qualified;
+    }
+
+    /**
+     * The annotation a write accepts, when it is wider than what a read returns: a read hands
+     * back the runtime's own value, a write also takes what the runtime decodes into it.
+     */
+    public String getInput() {
+        return input != null ? input : annotation;
+    }
+
+    public String getInputQualified() {
+        return inputQualified != null ? inputQualified : qualified;
+    }
+
+    public TemplateBindingType withInput(String input, String inputQualified) {
+        this.input = input;
+        this.inputQualified = inputQualified;
+        return this;
     }
 
     public String getProxy() {

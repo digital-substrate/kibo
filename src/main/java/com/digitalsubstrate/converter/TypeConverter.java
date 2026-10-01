@@ -480,13 +480,23 @@ final class TypeConverter {
         final var annotation = bindingAnnotationInNamespace(nameSpace, type);
         final var qualified = bindingAnnotationInNamespace(null, type);
 
-        if (useProxy || vocabulary == null)
-            return new TemplateBindingType(proxy, typeSuffix,
-                                           useProxy ? proxy : null,
-                                           useProxy ? inNamespace : null, useProxy, isNamed, annotation, qualified);
+        if (useProxy || vocabulary == null) {
+            final var binding = new TemplateBindingType(proxy, typeSuffix,
+                                                        useProxy ? proxy : null,
+                                                        useProxy ? inNamespace : null, useProxy, isNamed, annotation, qualified);
+            if (vocabulary != null && type instanceof DSMTypeOptional typeOptional)
+                binding.withInput(optionalInput(annotation, bindingAnnotationInNamespace(nameSpace, typeOptional.elementType)),
+                                  optionalInput(qualified, bindingAnnotationInNamespace(null, typeOptional.elementType)));
+            return binding;
+        }
 
         return new TemplateBindingType(proxy, typeSuffix,
                                        vocabulary.leaf(proxy), vocabulary.leaf(proxy), false, isNamed, annotation, qualified);
+    }
+
+    /** An optional is read as itself, and written as itself, its element, or nothing. */
+    private String optionalInput(String optional, String element) {
+        return vocabulary.optional(vocabulary.union(java.util.List.of(optional, element)));
     }
 
     /** Whether a unit declares this type, rather than it being built from others. */
@@ -562,7 +572,7 @@ final class TypeConverter {
 
         if (type instanceof DSMTypeVec || type instanceof DSMTypeMat || type instanceof DSMTypeTuple
             || type instanceof DSMTypeVector || type instanceof DSMTypeSet || type instanceof DSMTypeMap
-            || type instanceof DSMTypeXArray) {
+            || type instanceof DSMTypeXArray || type instanceof DSMTypeOptional) {
             final var declared = vocabulary.container(bindingType(type));
             if (declared != null)
                 return declared;
