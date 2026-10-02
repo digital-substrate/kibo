@@ -67,4 +67,13 @@ public final class TemplateTool {
         }
         return out.toString();
     }
+
+    /**
+     * Text as the body of a Python triple-quoted docstring: its lines stay lines, and only what
+     * would end the docstring or start an escape is escaped.
+     */
+    public static String docstring(String s) {
+        String escaped = s.replace("\\", "\\\\").replace("\"\"\"", "\\\"\\\"\\\"");
+        return escaped.endsWith("\"") ? escaped.substring(0, escaped.length() - 1) + "\\\"" : escaped;
+    }
 }

@@ -18,6 +18,10 @@ templates it renders.
   return and a tab escaped. A model's documentation spans lines and holds quotes; written raw
   into a literal, it ended the literal early and the generated file no longer compiled. A text
   without any of the five renders as before. The same format kibo 2 has.
+- **The `docstring` format** (`<doc;format="docstring">`): text as the body of a Python
+  triple-quoted docstring — its lines kept, a backslash and a `"""` escaped, and a final quote
+  that would merge with the closing delimiter escaped. A model's documentation holding any of
+  them ended the generated docstring early. The same format kibo 2 has.
 
 ### Fixed
 

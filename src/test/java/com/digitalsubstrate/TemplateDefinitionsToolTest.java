@@ -91,4 +91,12 @@ public final class TemplateDefinitionsToolTest {
     assertEquals("say \\\"hi\\\"", TemplateTool.string("say \"hi\""));
     assertEquals("a\\\\b", TemplateTool.string("a\\b"));
   }
+
+  @Test
+  public void docstringKeepsLinesAndEscapesItsDelimiter() {
+    assertEquals("one\ntwo", TemplateTool.docstring("one\ntwo"));
+    assertEquals("a \\\"\\\"\\\" b", TemplateTool.docstring("a \"\"\" b"));
+    assertEquals("ends with \\\"", TemplateTool.docstring("ends with \""));
+    assertEquals("a\\\\b", TemplateTool.docstring("a\\b"));
+  }
 }
