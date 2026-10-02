@@ -46,12 +46,16 @@ it there rather than relying on whatever `mvn` a given machine happens to have.
 
 ```bash
 java -jar target/kibo-X.Y.Z.jar \
-    -c [cpp | python] \
+    -c [cpp | python | typescript] \
     -n [namespace] \
     -d [definitions.dsm.json] \
     -t [template_directory_or_file] \
     -o [output_directory]
 ```
+
+kibo renders one template per run. To generate a whole project — features, embedded
+definitions, runtime — from a `kibo.toml`, use
+[kibo-project](https://github.com/digital-substrate/kibo-project), which drives kibo.
 
 For details, see the user-facing documentation:
 
