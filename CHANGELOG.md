@@ -34,6 +34,13 @@ against.
   moved and migrates with zero edits — checked on a third-party C++ pack rendered by
   1.2.11 and by 2.0.0, identical but for the banner.
 
+- **Formats that carry a model's documentation into generated code**: `string`, the body of
+  a double-quoted literal valid in C++, TypeScript and Python (a backslash, a quote, a newline,
+  a carriage return and a tab escaped; the 1.2 line has it too, after 1.2.12); `docstring`,
+  the body of a Python triple-quoted docstring, its lines kept; `comment`, the body of a
+  `/** */` block, which it cannot close early. Written raw, a documentation that spans lines
+  or holds quotes ended a literal early and the generated file no longer compiled.
+
 ### Changed
 
 - **`--converter` selects a target, and a target knows how its binding spells types.** It
