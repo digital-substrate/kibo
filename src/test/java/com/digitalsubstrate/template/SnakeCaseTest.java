@@ -65,6 +65,17 @@ public final class SnakeCaseTest {
     }
 
     @Test
+    public void aWordPythonReservesTakesAnUnderscore() {
+        final var snake = SnakeCase.standard();
+        assertEquals("annotations_", snake.of("Annotations"));
+        assertEquals("from_", snake.of("from"));
+        assertEquals("class_", snake.of("Class"));
+        assertEquals("ANNOTATIONS", snake.upper("Annotations"));
+        assertEquals("AND", snake.upper("and"));
+        assertEquals("annotation", snake.of("Annotation"));
+    }
+
+    @Test
     public void upperIsTheSameProjection() {
         final var snake = SnakeCase.standard();
         assertEquals("P3D_BRIDGE", snake.upper("P3DBridge"));

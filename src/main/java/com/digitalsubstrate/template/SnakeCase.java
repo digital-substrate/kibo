@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The snake_case of a static name in a generated package: a Python field, method, parameter,
@@ -29,6 +30,12 @@ import java.util.Map;
  * {@code UInt}, {@code UUId}, {@code XArray} — and a project adds the words only its author can
  * split ({@code IPv4}, {@code YCoCg}); a project may also rename a whole name.
  *
+ * <p>A projection that lands on a word Python reserves — a keyword, or a {@code __future__}
+ * feature such as {@code annotations}, which a generated module imports — takes a trailing
+ * underscore, as PEP 8 recommends: a namespace {@code Annotations} gives the module
+ * {@code annotations_}, a field {@code from} the attribute {@code from_}. The uppercase form needs
+ * none.
+ *
  * <p>The rule was measured on every DSM model at hand rather than chosen on hard cases: of 3,604
  * distinct names it changes 18 against the previous one, each for the better, and collides
  * nowhere. It is not the wire's: names the runtime computes ({@code Definitions.inject()}) keep
@@ -37,6 +44,14 @@ import java.util.Map;
 public final class SnakeCase {
 
     public static final List<String> BUILTIN_ATOMS = List.of("UInt", "UUId", "XArray");
+
+    /** Python's keywords and __future__ features: a name spelled as one takes a trailing underscore. */
+    static final Set<String> RESERVED = Set.of(
+        "and", "as", "assert", "async", "await", "break", "class", "continue", "def", "del", "elif",
+        "else", "except", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda",
+        "nonlocal", "not", "or", "pass", "raise", "return", "try", "while", "with", "yield",
+        "annotations", "absolute_import", "division", "generators", "generator_stop", "nested_scopes",
+        "print_function", "unicode_literals", "with_statement", "barry_as_FLUFL");
 
     private final List<String> atoms;
     private final Map<String, String> renames;
@@ -64,6 +79,16 @@ public final class SnakeCase {
         if (renamed != null)
             return renamed;
 
+        final var projected = project(name);
+        return RESERVED.contains(projected) ? projected + "_" : projected;
+    }
+
+    public String upper(String name) {
+        final var renamed = renames.get(name);
+        return (renamed != null ? renamed : project(name)).toUpperCase(Locale.ROOT);
+    }
+
+    private String project(String name) {
         if (name.chars().noneMatch(Character::isUpperCase))
             return name;
 
@@ -75,10 +100,6 @@ public final class SnakeCase {
             out.append(segment(segments[k]));
         }
         return out.toString();
-    }
-
-    public String upper(String name) {
-        return of(name).toUpperCase(Locale.ROOT);
     }
 
     // The class each character is read as: an atom reads as one capitalised word, so the rules
