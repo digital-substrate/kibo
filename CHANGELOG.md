@@ -21,6 +21,12 @@ against.
 
 ### Added
 
+- **`snake` names a static symbol by one rule, measured on every model at hand.** A short
+  number stays with its word (`vec3_curves`, `doc_int8`), a long one stands alone
+  (`map_size_1024`), a unit is a word (`render_2d_attributes`); the DSM's `UInt`, `UUId` and
+  `XArray` are never split; `usnake` is its uppercase. `--atom` and `--rename` carry what only
+  a project knows, and two names spelled alike in one scope stop the generation. `lsc` and
+  `usc` keep the rule the runtime computes. Package directories, Python and TypeScript, follow `snake`.
 - **`MIGRATING.md` — moving a template pack from Template Model 1 to 2.** The
   Template Model is kibo's public surface, consumed by packs Digital Substrate does
   not enumerate, and 2.0.0 renames part of it without aliases. The guide lists every

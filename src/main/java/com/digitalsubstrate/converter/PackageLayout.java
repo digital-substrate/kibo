@@ -32,7 +32,7 @@ public final class PackageLayout implements TargetLayout {
     public String outputFileName(Scope scope, String model, String unit, String templateBaseName) {
         return scope == Scope.MODEL
             ? templateBaseName
-            : TemplateTool.lsc(unit) + "/" + templateBaseName;
+            : TemplateTool.snake(unit) + "/" + templateBaseName;
     }
 
     /**
@@ -52,7 +52,7 @@ public final class PackageLayout implements TargetLayout {
      */
     @Override
     public String artefactPath(Scope scope, String model, String unit, String artefact) {
-        final var module = TemplateTool.lsc(String.valueOf(artefact));
-        return scope == Scope.MODEL ? module : TemplateTool.lsc(unit) + "." + module;
+        final var module = TemplateTool.snake(String.valueOf(artefact));
+        return scope == Scope.MODEL ? module : TemplateTool.snake(unit) + "." + module;
     }
 }

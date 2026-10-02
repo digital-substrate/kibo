@@ -42,9 +42,9 @@ public final class TemplateDefinitionsToolTest {
   }
 
   @Test
-  public void snakeConvertsCamelCaseAsLscDoes() {
+  public void snakeConvertsCamelCase() {
     assertEquals("vertex_keys", TemplateTool.snake("vertexKeys"));
-    assertEquals("properties_int_8", TemplateTool.snake("propertiesInt8"));
+    assertEquals("properties_int8", TemplateTool.snake("propertiesInt8"));
     assertEquals("render_2d_attributes", TemplateTool.snake("render2DAttributes"));
     assertEquals("f_e", TemplateTool.snake("f_E"));
   }

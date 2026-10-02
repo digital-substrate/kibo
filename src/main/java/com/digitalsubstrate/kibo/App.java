@@ -2,6 +2,9 @@ package com.digitalsubstrate.kibo;
 
 import com.beust.jcommander.JCommander;
 import com.digitalsubstrate.converter.Target;
+import com.digitalsubstrate.template.NameCollisions;
+import com.digitalsubstrate.template.SnakeCase;
+import com.digitalsubstrate.template.TemplateTool;
 import com.digitalsubstrate.viper.dsm.DSMDefinitions;
 import com.digitalsubstrate.viper.dsm.DSMDefinitionsJsonDecoder;
 
@@ -10,6 +13,7 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public final class App {
@@ -55,6 +59,29 @@ public final class App {
     static void generate(Target target, String generated, DSMDefinitions dsmDefinitions, Options options) throws Exception {
         generateLog(options);
         AppUtils.generate(target, generated, dsmDefinitions, options.namespace, options.template, options.output, options.log);
+    }
+
+    // Naming
+    static SnakeCase fatalNaming(Options options) {
+        final var renames = new LinkedHashMap<String, String>();
+        for (var rename : options.renames) {
+            final var at = rename.indexOf('=');
+            if (at <= 0 || at == rename.length() - 1) {
+                System.err.printf("--rename %s: expected Name=snake_name.%n", rename);
+                System.exit(1);
+            }
+            renames.put(rename.substring(0, at), rename.substring(at + 1));
+        }
+        return SnakeCase.of(options.atoms, renames);
+    }
+
+    static void fatalNameCollisions(DSMDefinitions definitions) {
+        final var collisions = NameCollisions.find(definitions);
+        if (collisions.isEmpty())
+            return;
+        for (var collision : collisions)
+            System.err.println(collision);
+        System.exit(1);
     }
 
     // Fatal Error
@@ -103,6 +130,10 @@ public final class App {
 
         final var data = fatalReadBinaryFile(options.definitions.toString());
         final var definitions = fatalDecodeDefinitions(data);
+
+        TemplateTool.setNaming(fatalNaming(options));
+        if (options.converter.equals("python") || options.converter.equals("typescript"))
+            fatalNameCollisions(definitions);
 
         switch (options.converter) {
             case "cpp", "python", "typescript" -> generate(Target.of(options.converter), generated, definitions, options);

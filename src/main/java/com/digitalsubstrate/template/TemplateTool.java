@@ -60,19 +60,26 @@ public final class TemplateTool {
         return l(sc(s));
     }
 
+    /** The projection of this run: the built-in one, or the project's (its atoms and renames). */
+    private static SnakeCase naming = SnakeCase.standard();
+
+    public static void setNaming(SnakeCase snakeCase) {
+        naming = snakeCase;
+    }
+
     /**
-     * The snake_case name of a static symbol: a Python field, method or parameter.
+     * The snake_case name of a static symbol in a generated package — see {@link SnakeCase}.
      *
-     * <p>A name the model already spells without a capital is kept as written:
-     * {@code f_uint8} stays {@code f_uint8}. {@link #lsc} would split it before the digit,
-     * which its rule requires for the names that travel -- the attachment pool's functions,
-     * the constants of the embedded module -- and which must stay identical to the runtime's.
-     * A static name travels nowhere, so it can keep what the author wrote; a name in
-     * camelCase still goes through {@link #lsc}, so {@code propertiesInt8} gives
-     * {@code properties_int_8}, as the attachment pool spells it.
+     * <p>A static name travels nowhere, so it follows its own rule rather than {@link #lsc},
+     * which must stay identical to what the runtime computes for {@code Definitions.inject()}.
      */
     public static String snake(String s) {
-        return s.chars().anyMatch(Character::isUpperCase) ? lsc(s) : s;
+        return naming.of(s);
+    }
+
+    /** {@link #snake} uppercased: an enumeration member, a module-level constant. */
+    public static String usnake(String s) {
+        return naming.upper(s);
     }
 
     /**
