@@ -46,4 +46,25 @@ public final class TemplateTool {
     public static String lsc(String s) {
         return l(sc(s));
     }
+
+    /**
+     * Text as the body of a double-quoted string literal, valid in C++, TypeScript and Python.
+     *
+     * <p>A model's documentation can span lines and hold quotes; written raw into a literal,
+     * it ends the literal early and the generated file no longer compiles.
+     */
+    public static String string(String s) {
+        StringBuilder out = new StringBuilder(s.length());
+        for (char c : s.toCharArray()) {
+            switch (c) {
+                case '\\' -> out.append("\\\\");
+                case '"' -> out.append("\\\"");
+                case '\n' -> out.append("\\n");
+                case '\r' -> out.append("\\r");
+                case '\t' -> out.append("\\t");
+                default -> out.append(c);
+            }
+        }
+        return out.toString();
+    }
 }

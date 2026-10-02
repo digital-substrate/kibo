@@ -84,4 +84,11 @@ public final class TemplateDefinitionsToolTest {
     for (final var vector : SNAKE_CASE_VECTORS)
       assertEquals(vector[0], vector[1], TemplateTool.lsc(vector[0]));
   }
+
+  @Test
+  public void stringEscapesWhatEndsALiteral() {
+    assertEquals("one\\ntwo", TemplateTool.string("one\ntwo"));
+    assertEquals("say \\\"hi\\\"", TemplateTool.string("say \"hi\""));
+    assertEquals("a\\\\b", TemplateTool.string("a\\b"));
+  }
 }

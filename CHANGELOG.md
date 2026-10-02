@@ -11,6 +11,14 @@ templates it renders.
 
 ## [Unreleased]
 
+### Added
+
+- **The `string` format** (`<doc;format="string">`): text as the body of a double-quoted
+  literal, valid in C++, TypeScript and Python — a backslash, a quote, a newline, a carriage
+  return and a tab escaped. A model's documentation spans lines and holds quotes; written raw
+  into a literal, it ended the literal early and the generated file no longer compiled. A text
+  without any of the five renders as before. The same format kibo 2 has.
+
 ### Fixed
 
 - **An attachment carried no namespace dependency, so the namespace order it implies was

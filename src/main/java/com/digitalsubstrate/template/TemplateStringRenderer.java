@@ -18,6 +18,7 @@ public final class TemplateStringRenderer implements AttributeRenderer<String> {
             case "usc" -> TemplateTool.usc(s);
             case "lsc" -> TemplateTool.lsc(s);
             case "sc" -> TemplateTool.sc(s);
+            case "string" -> TemplateTool.string(s);
             default -> s;
         };
 
