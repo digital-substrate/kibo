@@ -111,6 +111,16 @@ public final class TemplateConcept {
         return strictDescendantsInNamespace;
     }
 
+    /**
+     * Whether a strict descendant lives in another namespace. The DSM keeps namespaces acyclic,
+     * and a descendant's namespace depends on its parent's: the parent's generated code must not
+     * name it. A template naming every concept a key may designate names the local ones only,
+     * and widens to the base key class when this is true.
+     */
+    public Boolean getHasForeignDescendants() {
+        return getStrictDescendantsInNamespace().stream().anyMatch(d -> !d.getIsLocal());
+    }
+
     private void collectDescendants(TemplateConcept concept, ArrayList<TemplateConcept> acc) {
         acc.add(concept);
         for (TemplateConcept child : concept.children) {
