@@ -115,13 +115,12 @@ final class TypeScriptVocabulary implements BindingVocabulary {
     }
 
     /**
-     * None: the Node binding the templates require (>= 1.2.13) decodes a written xarray from
-     * its projection, not from its elements, so an array is not announced for an xarray field.
-     * A declared xarray's constructor does take one.
+     * The list of its elements: the Node binding the templates require (>= 1.2.14) decodes a
+     * written xarray from them, as Python does.
      */
     @Override
     public String orderedInput(String element) {
-        return null;
+        return sequenceInput(element);
     }
 
     @Override
