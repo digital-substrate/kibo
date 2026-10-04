@@ -93,6 +93,9 @@ against.
 
 ### Fixed
 
+- **A template declaring both `main(m)` and `model(m)` is refused**: the two render to the same
+  file, and the second silently replaced the first.
+
 - **The set of an attachment's keys is named `set<key<Concept>>`**: its `dsmType` read
   `set<Concept>`, a set of concepts, which is not a DSM type. Its suffix and the classes named
   after it are unchanged.

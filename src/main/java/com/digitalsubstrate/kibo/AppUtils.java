@@ -129,6 +129,10 @@ public final class AppUtils {
         final var group = group(template, diagnostics);
         var rendered = false;
 
+        // main and model write the same file: declaring both would render the second over the first.
+        if (declares(group, WHOLE_MODEL, "m") && declares(group, MODEL, "m"))
+            throw new Exception(template + " declares both main(m) and model(m), which render to the same file: keep one.");
+
         for (var entry : new String[]{WHOLE_MODEL, MODEL})
             if (declares(group, entry, "m")) {
                 save(target, TargetLayout.Scope.MODEL, templateDefinitions.getNamespace(), templateDefinitions.getNamespace(), template, output,
