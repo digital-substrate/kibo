@@ -53,16 +53,13 @@ against.
   `usc` keep the rule the runtime computes. Package directories, Python and TypeScript, follow `snake`.
 - **`MIGRATING.md` — moving a template pack from Template Model 1 to 2.** The
   Template Model is kibo's public surface, consumed by packs Digital Substrate does
-  not enumerate, and 2.0.0 renames part of it without aliases. The guide lists every
-  accessor that moved and what replaces it, and gives the rule that tells an author
-  when they are done: a Template Model migration does not change what a pack emits,
-  so regenerating before and after must diff empty apart from the generator banner.
-  A non-empty diff means the migration is incomplete, not that the generator changed
-  its mind.
-
-  It also states which packs are affected at all. A native target reads nothing that
-  moved and migrates with zero edits — checked on a third-party C++ pack rendered by
-  1.2.11 and by 2.0.0, identical but for the banner.
+  not enumerate, and 2.0.0 changes part of it without aliases. The guide lists every
+  accessor that was renamed, and every value that reads differently under the same
+  accessor (below, under Changed), with what a template does about each; an author
+  regenerates before and after, and accounts for each difference of the diff by one
+  of them. The list is measured: a probe reading every scalar accessor of Template
+  Model 1 is rendered by kibo 1.2 and, migrated, by kibo 2, and every difference must
+  be one the guide lists.
 
 - **Formats that carry a model's documentation into generated code**: `string`, the body of
   a double-quoted literal valid in C++, TypeScript and Python (a backslash, a quote, a newline,
@@ -114,6 +111,20 @@ against.
   **Breaking, with no compatibility aliases.** The first-party templates move with it; a
   template outside this repository must be adapted. The render diagnostics below exist so
   that such a template reports what stopped resolving instead of silently emitting less.
+
+- **Values that read differently under the same accessor.** **Breaking** for a template
+  pack, native targets included; `MIGRATING.md` gives each with what a template does about
+  it. A C++ type names its namespace in lower snake case (`Demo::StructureS` is
+  `demo::StructureS`), in `type`, `typeInNamespace`, `elementType`, `keyType`, a member's
+  `type` and the `*InNamespace` lists; the untyped key lives in the infrastructure
+  namespace (`::<infrastructure>::AnyConceptKey`); `parentNameInNamespace` and an
+  attachment's `representation` qualify a name of another namespace, which Model 1 wrote
+  as if it were local. On the binding side, a container class is named after what it holds
+  (`Map_of_int8_to_string`, `Vec2_of_uint8`); a concept's or a club's `bindingType.type` is
+  its key class; `any` is a proxy (`Any`); a binding accessor is empty under a native target,
+  where Model 1 returned Python spellings. `dsmType` spells a set of keys as the DSM does,
+  `set<key<Demo::ConceptA>>`. A namespace lists a parent concept before its children, and
+  the container function lists follow the C++ spelling of their type.
 
 ### Fixed
 
