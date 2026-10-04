@@ -21,6 +21,30 @@ against.
 
 ### Added
 
+- **A template renders once per scope it declares.** Besides `main(m)`, a template may declare
+  `model(m)` (once for the model), `unit(u)` (once per DSM namespace), `pool(p)` and
+  `attachment_pool(p)` (once per pool); an entry counts only if it takes that argument. Each
+  output is named by the target's layout: in C++ a flat directory of files prefixed by the
+  namespace path they declare (`<model>_<unit>_<template>`), in Python and TypeScript a package
+  where a unit is a directory.
+- **What a unit needs to be generated on its own.** A namespace or a pool carries `include` and
+  `guard`, maps naming any other artefact as the layout writes it, its `dependencies` on other
+  units (`types`, `attachments`, `functions`, `all`) and its `model`; a namespace carries its
+  attachments grouped by the concept they are keyed on (`attachmentScopes`) and `exported`. A
+  concept says whether a descendant lives in another namespace (`hasForeignDescendants`) and
+  spells its parent from the unit (`parentBindingInNamespace`); a concept seen from a namespace
+  says whether it is declared there (`isLocal`); an attachment names its concept's scope
+  (`conceptScope`); a field spells its key and element types from the unit
+  (`keyTypeInNamespace`, `elementTypeInNamespace`) and a structure field says whether it has a
+  default (`hasDefaultValue`).
+- **`TemplateBindingType` writes a type as a binding's type checker needs it**: `annotation`
+  from inside the unit, `qualified` from outside every unit, `input` / `inputQualified` where a
+  write accepts more than a read returns, `constructorInput` for a container's constructor,
+  `typeInNamespace`, and `isNamed` for a type a unit declares.
+- **A model whose outputs would collide is refused before rendering**: a namespace carrying the
+  model's own name, two C++ namespaces or pools spelled alike, two names one Python or
+  TypeScript scope spells alike in snake_case.
+
 - **`snake` names a static symbol by one rule, measured on every model at hand.** A short
   number stays with its word (`vec3_curves`, `doc_int8`), a long one stands alone
   (`map_size_1024`), a unit is a word (`render_2d_attributes`); the DSM's `UInt`, `UUId` and
