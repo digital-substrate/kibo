@@ -22,7 +22,7 @@ class Options {
     @Parameter(names = {"--namespace", "-n"}, description = "an identifier for code encapsulation.", required = true)
     String namespace;
 
-    @Parameter(names = {"--converter", "-c"}, description = "Specify the converter: cpp|python.", required = true)
+    @Parameter(names = {"--converter", "-c"}, description = "Specify the converter: cpp|python|typescript.", required = true)
     String converter;
 
     @Parameter(names = {"--dsm", "-d"}, description = "DSM Definitions *.dsm.json.", required = true)

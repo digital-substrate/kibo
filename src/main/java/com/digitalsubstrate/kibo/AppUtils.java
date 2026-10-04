@@ -115,11 +115,13 @@ public final class AppUtils {
      * {@code ValueHexdigest} belong to the model, and only its concepts and structures
      * belong to a unit.
      *
-     * <p>A template declaring none of the three is an error rather than an empty file.
-     * StringTemplate answers a missing template with the empty string, and a generator
-     * that writes a plausible short file is worse than one that stops.
+     * <p>{@code pool(p)} and {@code attachment_pool(p)} render once per function pool and
+     * per attachment function pool.
+     *
+     * @return whether the template declared an entry; the caller decides what a template
+     * declaring none means.
      */
-    public static void renderAndSave(Target target, TemplateDefinitions templateDefinitions, Path template, Path output, boolean debug) throws Exception {
+    private static boolean renderAndSave(Target target, TemplateDefinitions templateDefinitions, Path template, Path output, boolean debug) throws Exception {
         if (debug)
             System.out.println("Render " + template);
 
@@ -160,15 +162,30 @@ public final class AppUtils {
         }
 
         diagnostics.summarize();
-
-        if (!rendered)
-            throw new Exception(template + " declares no entry: expected main(m), model(m) or namespace(u).");
+        return rendered;
     }
 
-    public static void renderAndSave(Target target, TemplateDefinitions templateDefinitions, ArrayList<Path> templates, Path output, boolean debug) throws Exception {
+    private static final String ENTRIES = "main(m), model(m), unit(u), pool(p) or attachment_pool(p)";
+
+    /**
+     * Render what {@code -t} points at.
+     *
+     * <p>A file {@code -t} names that declares no entry is an error rather than an empty
+     * file: StringTemplate answers a missing template with the empty string, and a generator
+     * that writes a plausible short file is worse than one that stops. In a directory, such a
+     * file is one the others import — a pack's banner — and is skipped; a directory where no
+     * file declares an entry is the same error.
+     */
+    public static void renderAndSave(Target target, TemplateDefinitions templateDefinitions, Path template, ArrayList<Path> templates,
+                                     Path output, boolean debug) throws Exception {
         Files.createDirectories(output);
-        for (var template : templates)
-            renderAndSave(target, templateDefinitions, template, output, debug);
+        var any = false;
+        for (var file : templates)
+            any |= renderAndSave(target, templateDefinitions, file, output, debug);
+        if (!any) {
+            final var what = Files.isDirectory(template) ? "no template in " + template + " declares an entry" : template + " declares no entry";
+            throw new Exception(what + ": expected " + ENTRIES + ".");
+        }
     }
 
     /**
@@ -230,6 +247,6 @@ public final class AppUtils {
         checkNamespaceDoesNotShadowModel(templateDefinitions);
         if (target == Target.CPP)
             checkNamesUnderModel(templateDefinitions);
-        renderAndSave(target, templateDefinitions, AppUtils.collectTemplates(template), output, debug);
+        renderAndSave(target, templateDefinitions, template, AppUtils.collectTemplates(template), output, debug);
     }
 }

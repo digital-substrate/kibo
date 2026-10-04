@@ -185,8 +185,11 @@ final class EntityConverter {
     }
 
     private TemplateAttachedKeyType convertAttachmentKeyType(NameSpace nameSpace, DSMTypeReference dsmKeyType) throws Exception {
+        // An attachment is keyed on a concept; the set of its keys is a set<key<Concept>>, which
+        // its DSM name says.
+        final var keySet = new DSMTypeSet(new DSMTypeKey(dsmKeyType));
         if (binding.needsDerivedContainerProxies())
-            functionRegistrar.registerFunctionForContainer(new DSMTypeSet(dsmKeyType));
+            functionRegistrar.registerFunctionForContainer(keySet);
         final var type = typeConverter.convertType(dsmKeyType);
         final var typeInNamespace = typeConverter.convertTypeInNamespace(nameSpace, dsmKeyType);
         final var typeSuffix = typeConverter.typeSuffix(dsmKeyType);
@@ -194,7 +197,7 @@ final class EntityConverter {
         final var bindingType = typeConverter.templateBindingType(nameSpace, dsmKeyType);
 
         final var bindingKeySetType = binding.needsDerivedContainerProxies()
-                                      ? typeConverter.templateBindingType(nameSpace, new DSMTypeSet(dsmKeyType))
+                                      ? typeConverter.templateBindingType(nameSpace, keySet)
                                       : null;
         return new TemplateAttachedKeyType(dsmKeyType.typeName, type, typeInNamespace, typeSuffix, viperValue, bindingType,
                                            bindingKeySetType);

@@ -70,8 +70,8 @@ against.
 
   `TemplateType`, one member of a tuple or a variant, now carries `dsmType`, `type` and
   `bindingType` together, so a member is described the same way a container is.
-  `getBindingMembers()` on `TemplateTupleFunction` and `TemplateVariantFunction` was the
-  parallel list that made that impossible, and is removed.
+  `getPythonMembers()` on `TemplateTupleFunction` and `TemplateVariantFunction` was the
+  parallel list that made that impossible, and is removed: `getMembers()` is the one list.
 
 - **The binding-side accessors say which space they name, and hold nothing of a language.**
   `TemplatePythonType` carried the handle on the generated proxy — its class name, the
@@ -80,8 +80,7 @@ against.
 
   It is now `TemplateBindingType`, reached through `getBindingType()`. `getType()` stays but
   answers for the target being generated. The companion accessors follow: `getPythonElementType` → `getBindingElementType`,
-  `getPythonKeyType` → `getBindingKeyType`, `getPythonMembers` → `getBindingMembers`,
-  `getReturnPythonType` → `getReturnBindingType`.
+  `getPythonKeyType` → `getBindingKeyType`, `getReturnPythonType` → `getReturnBindingType`.
 
   `TemplateVecFunction.getPythonTupleType()` and `TemplateMatFunction`'s
   `getPythonTupleType()` / `getPythonColumnType()` built a *Python* annotation inside the
@@ -93,6 +92,14 @@ against.
   that such a template reports what stopped resolving instead of silently emitting less.
 
 ### Fixed
+
+- **The set of an attachment's keys is named `set<key<Concept>>`**: its `dsmType` read
+  `set<Concept>`, a set of concepts, which is not a DSM type. Its suffix and the classes named
+  after it are unchanged.
+
+- **`-t` naming a directory renders the templates in it that declare an entry**, and skips a
+  file the others import, a pack's banner: rendering a pack's directory stopped on it. A file
+  `-t` names that declares no entry is still an error, and its message names the five entries.
 
 - **An attachment carried no namespace dependency, so the namespace order it implies was
   not held.** `DSMNameSpaceDependency` collected the edges of concepts, clubs and
