@@ -9,15 +9,21 @@ Kibo carries its own version line (declared in `pom.xml`), independent from
 the DSM language contract it consumes and from any runtime targeted by the
 templates it renders.
 
-## [Unreleased] — 2.0.0
+## [Unreleased]
 
-A **breaking rename of the Template Model's binding-side accessors**: the model now
-names the three type spaces it serves, and the delegating templates stop carrying lookup
-tables. Alongside it, a TypeScript surface fix, template render diagnostics and build
-tooling. The DSM language is unchanged; what changes for template authors is the model
-API they read. Generated output changes only where a comment, a repr or a message named
-a type — and in the headers, which now state the runtime each target is generated
-against.
+## [2.0.0] - 2026-10-05
+
+**Template Model 2.** The model names the three spaces a type lives in — the DSM's, the
+target's native one, and the binding's — and the accessors that describe a type as the
+binding sees it are renamed for it (`pythonType` becomes `bindingType`, …). A template can
+render once per scope it declares: the model, each DSM namespace, each pool. The DSM
+language is unchanged.
+
+**Breaking for every template pack.** The renames have no aliases, and some values read
+differently under the same accessors — how a C++ type names its namespace, how a container
+class is named, what a binding type answers for a concept or for `any` — so a pack's output
+changes even once renamed. `MIGRATING.md` lists both, and the method that accounts for
+every difference.
 
 ### Added
 
