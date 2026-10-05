@@ -161,6 +161,43 @@ every difference.
   `TemplateNameSpace` and its attachments reached only the templates that walk the flat
   list, never those that walk namespace by namespace.
 
+## [1.2.13] - 2026-10-05
+
+Two formats that carry a model's documentation into generated code, and two fixes to the
+namespace dependency graph. The DSM language and the Template Model are unchanged; the
+generated output changes only where a template takes up a format, or where a namespace was
+emitted before one it depends on.
+
+### Added
+
+- **The `string` format** (`<doc;format="string">`): text as the body of a double-quoted
+  literal, valid in C++, TypeScript and Python — a backslash, a quote, a newline, a carriage
+  return and a tab escaped. A model's documentation spans lines and holds quotes; written raw
+  into a literal, it ended the literal early and the generated file no longer compiled. A text
+  without any of the five renders as before. The same format kibo 2 has.
+- **The `docstring` format** (`<doc;format="docstring">`): text as the body of a Python
+  triple-quoted docstring — its lines kept, a backslash and a `"""` escaped, and a final quote
+  that would merge with the closing delimiter escaped. A model's documentation holding any of
+  them ended the generated docstring early. The same format kibo 2 has.
+
+### Fixed
+
+- **An attachment carried no namespace dependency, so the namespace order it implies was
+  not held.** `DSMNameSpaceDependency` collected the edges of concepts, clubs and
+  structures and skipped attachments entirely, although an attachment names two types: the
+  concept it is keyed on and its document type. A namespace whose only reference to
+  another was through an attachment therefore had no edge, and the topological sort was
+  free to emit it first — a wrong include order on input that is perfectly acyclic, with
+  nothing to say so, since the sort does not detect cycles and is not meant to. Both
+  positions now go through `collectType`, so they follow the same rule as a structure
+  field: the global namespace is not a dependency, and `key<any_concept>` names none.
+
+- **A namespace holding only attachments was not known at all.** `DSMDefinitionsInspector`
+  registered the type names of concepts, clubs, enumerations and structures, but not of
+  attachments. Such a namespace was missing from `getNameSpaces()`, so it received no
+  `TemplateNameSpace` and its attachments reached only the templates that walk the flat
+  list, never those that walk namespace by namespace.
+
 ## [1.2.12] - 2026-09-10
 
 A TypeScript surface fix, template render diagnostics, and build tooling. The DSM
