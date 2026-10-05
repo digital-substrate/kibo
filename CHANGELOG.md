@@ -11,6 +11,11 @@ templates it renders.
 
 ## [Unreleased]
 
+### Deprecated
+
+- **This line, kibo 1.** It receives fixes only, for the life of the LTS-1.2 line; new
+  projects use kibo 2, on `main`. Nothing it generates changes.
+
 ## [1.2.13] - 2026-10-05
 
 Two formats that carry a model's documentation into generated code, and two fixes to the

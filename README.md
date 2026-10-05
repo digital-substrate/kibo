@@ -1,5 +1,10 @@
 # kibo
 
+> **Deprecated.** This is the `LTS-1.2` branch: kibo 1, which exposes Template Model 1. It is
+> deprecated and receives fixes only, for the life of the LTS-1.2 line. New projects use the
+> kibo 2 line, on `main`; moving a project is covered by
+> [the migration guides](https://docs.digitalsubstrate.io/kibo/migrating.html).
+
 Code generator for the DSM language ecosystem. Kibo is a thin bridge between
 DSM and [StringTemplate](https://www.stringtemplate.org/): it reads a
 DSM definitions file, exposes a Template Model to `.stg` files, and
