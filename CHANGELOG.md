@@ -11,6 +11,13 @@ templates it renders.
 
 ## [Unreleased]
 
+## [1.2.13] - 2026-10-05
+
+Two formats that carry a model's documentation into generated code, and two fixes to the
+namespace dependency graph. The DSM language and the Template Model are unchanged; the
+generated output changes only where a template takes up a format, or where a namespace was
+emitted before one it depends on.
+
 ### Added
 
 - **The `string` format** (`<doc;format="string">`): text as the body of a double-quoted
