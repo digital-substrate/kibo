@@ -1,5 +1,8 @@
 # kibo
 
+> This is the kibo 2 line. The kibo 1 line — kibo 1, which exposes Template Model 1, on the `LTS-1.2` branch — is
+> deprecated: it receives fixes only, for the life of the LTS-1.2 line.
+
 Code generator for the DSM language ecosystem. Kibo is a thin bridge between
 DSM and [StringTemplate](https://www.stringtemplate.org/): it reads a
 DSM definitions file, exposes a Template Model to `.stg` files, and
