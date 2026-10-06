@@ -27,8 +27,10 @@ public final class TemplateTool {
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
+    /** The first letter lowered; a name the pack declared for its own code takes a trailing underscore. */
     public static String lf(String s) {
-        return Character.toLowerCase(s.charAt(0)) + s.substring(1);
+        final var lowered = Character.toLowerCase(s.charAt(0)) + s.substring(1);
+        return naming.isDeclared(lowered) ? lowered + "_" : lowered;
     }
 
     public static String sc(String s) {
@@ -75,6 +77,11 @@ public final class TemplateTool {
      */
     public static String snake(String s) {
         return naming.of(s);
+    }
+
+    /** The snake_case of one of the pack's own artefacts, which its declared names do not escape. */
+    public static String snakeArtefact(String s) {
+        return naming.ofArtefact(s);
     }
 
     /** {@link #snake} uppercased: an enumeration member, a module-level constant. */

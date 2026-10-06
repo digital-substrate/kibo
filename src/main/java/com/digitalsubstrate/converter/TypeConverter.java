@@ -640,9 +640,10 @@ final class TypeConverter {
                     final var bare = typeReference.typeName.name
                                    + (typeReference.domain == DSMTypeReferenceDomain.CONCEPT
                                       || typeReference.domain == DSMTypeReferenceDomain.CLUB ? "Key" : "");
+                    // The unit's module as the package lays it out (PackageLayout), escape included.
                     yield nameSpace != null && unit.equals(nameSpace)
                         ? bare
-                        : TemplateTool.lsc(unit.name) + "." + bare;
+                        : TemplateTool.snake(unit.name) + "." + bare;
                 }
                 default -> bindingType(type);
             };

@@ -25,15 +25,13 @@ import java.util.function.Function;
  * Two DSM names that a package spells alike, scope by scope.
  *
  * <p>The snake_case of a static name is a projection, and two names can meet: {@code f_E} and
- * {@code f_e} in one structure, a namespace {@code Containers} and the package's
- * {@code containers} module. Rendering would then write one name over the other, and the
+ * {@code f_e} in one structure, two namespaces {@code ModelA} and {@code Model_A}. A name
+ * meeting one of the template pack's own ({@code --reserve}) is not a collision: it takes a
+ * trailing underscore. Rendering would then write one name over the other, and the
  * generated code would be wrong without a word. Each scope is checked before anything is
  * rendered, and a collision names both DSM names and the way out: a rename in the project.
  */
 public final class NameCollisions {
-
-    /** The modules every package declares at its root, beside the namespaces and pools. */
-    static final List<String> ROOT_MODULES = List.of("containers", "definitions", "resources", "pools");
 
     private NameCollisions() {}
 
@@ -52,7 +50,6 @@ public final class NameCollisions {
         for (var n : namespaces) root.add(new String[]{"namespace " + n, n});
         for (var p : definitions.functionPools) root.add(new String[]{"pool " + p.name, p.name});
         for (var p : definitions.attachmentFunctionPools) root.add(new String[]{"pool " + p.name, p.name});
-        for (var m : ROOT_MODULES) root.add(0, new String[]{"the package's own module " + m, m});
         checkLabelled(found, "the package root", root, snake);
 
         for (DSMStructure s : definitions.structures)
@@ -102,7 +99,7 @@ public final class NameCollisions {
         final Map<String, String> seen = new LinkedHashMap<>();
         final Set<String> reported = new LinkedHashSet<>();
         for (var entry : entries) {
-            final var projected = entry[0].startsWith("the package's own module ") ? entry[1] : projection.apply(entry[1]);
+            final var projected = projection.apply(entry[1]);
             final var other = seen.putIfAbsent(projected, entry[0]);
             if (other != null && !other.equals(entry[0]) && reported.add(projected))
                 found.add(scope + ": " + other + " and " + entry[0] + " are both spelled " + projected

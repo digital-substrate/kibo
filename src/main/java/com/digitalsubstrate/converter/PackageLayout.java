@@ -52,7 +52,7 @@ public final class PackageLayout implements TargetLayout {
      */
     @Override
     public String artefactPath(Scope scope, String model, String unit, String artefact) {
-        final var module = TemplateTool.snake(String.valueOf(artefact));
+        final var module = TemplateTool.snakeArtefact(String.valueOf(artefact));
         return scope == Scope.MODEL ? module : TemplateTool.snake(unit) + "." + module;
     }
 }

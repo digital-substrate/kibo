@@ -17,6 +17,19 @@ templates it renders.
   already what `format="usnake"` makes of it (`RGB`, `E`). StringTemplate cannot compare two
   strings, so a template that writes a constant in upper snake case beside the type could not
   tell that the two would take one name.
+- **`--reserve NAME`**, repeatable: a name the template pack's own code takes in this target. A
+  DSM name spelled as one of them — in `snake` or `lf` — takes a trailing underscore, as a Python
+  keyword does, instead of taking its place: a field `wrap_value` would mask the proxy's method, a
+  namespace `Containers` replace the package's `containers` module. kibo-project passes the names
+  the pack declares (`reserved` in its `features.json`); the pack's own artefacts keep their names.
+
+### Changed
+
+- **kibo knows no pack's names.** The four module names it refused a namespace or a pool to take
+  (`containers`, `definitions`, `resources`, `pools`) were one pack's; they are now that pack's to
+  declare. Run without `--reserve`, kibo no longer refuses them.
+- A binding annotation names another unit's module as the package lays it out (`snake`), escape
+  included, where it used `lsc`; the two agree on every model at hand.
 
 ## [2.0.1] - 2026-10-06
 

@@ -39,4 +39,7 @@ class Options {
 
     @Parameter(names = "--rename", description = "A DSM name and the snake_case it takes, as Name=snake_name; repeatable.")
     List<String> renames = new ArrayList<>();
+
+    @Parameter(names = "--reserve", description = "A name the template pack's own code takes in this target; a DSM name spelled as it takes a trailing underscore; repeatable.")
+    List<String> reserved = new ArrayList<>();
 }

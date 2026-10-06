@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -91,5 +92,25 @@ public final class SnakeCaseTest {
             assertEquals(name, true, TemplateTool.isUpperSnake(name));
         for (var name : List.of("Rgb", "Colour", "rgb", "IPv4", "RGBColor", "Http2"))
             assertEquals(name, false, TemplateTool.isUpperSnake(name));
+    }
+
+    // A name the pack's own code takes, declared with --reserve: a DSM name spelled as it is escaped,
+    // in snake_case and in lowerCamel; the pack's own artefacts keep their names.
+    @Test
+    public void aNameThePackDeclaresTakesAnUnderscore() {
+        TemplateTool.setNaming(SnakeCase.of(List.of(), Map.of(), Set.of("wrap_value", "containers", "equals")));
+        try {
+            assertEquals("wrap_value_", TemplateTool.snake("wrapValue"));
+            assertEquals("wrap_value_", TemplateTool.snake("wrap_value"));
+            assertEquals("containers_", TemplateTool.snake("Containers"));
+            assertEquals("equals_", TemplateTool.lf("equals"));
+            assertEquals("equals_", TemplateTool.lf("Equals"));
+            assertEquals("containers", TemplateTool.snakeArtefact("containers"));
+            assertEquals("WRAP_VALUE", TemplateTool.usnake("wrapValue"));
+            assertEquals("unwrap_value", TemplateTool.snake("unwrapValue"));
+            assertEquals("class_", TemplateTool.snake("class"));
+        } finally {
+            TemplateTool.setNaming(SnakeCase.standard());
+        }
     }
 }

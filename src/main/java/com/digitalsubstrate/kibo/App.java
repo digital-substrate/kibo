@@ -73,7 +73,7 @@ public final class App {
             }
             renames.put(rename.substring(0, at), rename.substring(at + 1));
         }
-        return SnakeCase.of(options.atoms, renames);
+        return SnakeCase.of(options.atoms, renames, new java.util.LinkedHashSet<>(options.reserved));
     }
 
     static void fatalNameCollisions(DSMDefinitions definitions) {
