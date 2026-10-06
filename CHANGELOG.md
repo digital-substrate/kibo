@@ -11,6 +11,8 @@ templates it renders.
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-10-06
+
 ### Added
 
 - **`nameIsUpperSnake`** on concepts, clubs, enumerations and structures: whether the name is

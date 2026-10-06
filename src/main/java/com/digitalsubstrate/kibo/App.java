@@ -143,7 +143,7 @@ public final class App {
     public static void main(String[] argv) throws Exception {
 
         final var APP = "kibo";
-        final var VERSION = "2.0.1";
+        final var VERSION = "2.0.2";
         final var GENERATOR = APP + "-" + VERSION + ".jar";
         final var options = new Options();
         final var jCommander = JCommander.newBuilder().addObject(options).build();
