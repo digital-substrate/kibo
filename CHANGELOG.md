@@ -11,6 +11,13 @@ templates it renders.
 
 ## [Unreleased]
 
+### Added
+
+- **`nameIsUpperSnake`** on concepts, clubs, enumerations and structures: whether the name is
+  already what `format="usnake"` makes of it (`RGB`, `E`). StringTemplate cannot compare two
+  strings, so a template that writes a constant in upper snake case beside the type could not
+  tell that the two would take one name.
+
 ## [2.0.1] - 2026-10-06
 
 ### Added

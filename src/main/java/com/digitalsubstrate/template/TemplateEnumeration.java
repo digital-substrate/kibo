@@ -36,6 +36,15 @@ public final class TemplateEnumeration {
         return dsmEnumeration.typeName.name;
     }
 
+    /**
+     * Whether the name is already what {@code format="usnake"} makes of it ({@code RGB},
+     * {@code E}): a name written that way for something else — a constant beside the type —
+     * would be the type's own name.
+     */
+    public boolean getNameIsUpperSnake() {
+        return TemplateTool.isUpperSnake(getName());
+    }
+
     // Runtime Id
     public String getRuntimeId() {
         return dsmEnumeration.runtimeId.toString().toLowerCase();

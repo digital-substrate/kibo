@@ -82,6 +82,11 @@ public final class TemplateTool {
         return naming.upper(s);
     }
 
+    /** Whether {@link #usnake} leaves the name as it is: {@code RGB}, {@code E}, not {@code Rgb}. */
+    public static boolean isUpperSnake(String s) {
+        return usnake(s).equals(s);
+    }
+
     /**
      * Text as the body of a double-quoted string literal, valid in C++, TypeScript and Python.
      *

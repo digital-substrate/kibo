@@ -38,6 +38,15 @@ public final class TemplateClub {
         return dsmClub.typeName.name;
     }
 
+    /**
+     * Whether the name is already what {@code format="usnake"} makes of it ({@code RGB},
+     * {@code E}): a name written that way for something else — a constant beside the type —
+     * would be the type's own name.
+     */
+    public boolean getNameIsUpperSnake() {
+        return TemplateTool.isUpperSnake(getName());
+    }
+
     // Runtime Id
     public String getRuntimeId() {
         return dsmClub.runtimeId.toString().toLowerCase();

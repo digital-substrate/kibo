@@ -82,4 +82,14 @@ public final class SnakeCaseTest {
         assertEquals("DOC_UINT8", snake.upper("docUInt8"));
         assertEquals("A", snake.upper("a"));
     }
+
+    // A type whose name is already upper snake case meets a constant spelled with usnake.
+    @Test
+    public void aNameAlreadyUpperSnakeIsTold() {
+        TemplateTool.setNaming(SnakeCase.standard());
+        for (var name : List.of("RGB", "E", "S", "R_G_B", "HTTP2"))
+            assertEquals(name, true, TemplateTool.isUpperSnake(name));
+        for (var name : List.of("Rgb", "Colour", "rgb", "IPv4", "RGBColor", "Http2"))
+            assertEquals(name, false, TemplateTool.isUpperSnake(name));
+    }
 }
