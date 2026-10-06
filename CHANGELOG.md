@@ -11,6 +11,8 @@ templates it renders.
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-10-06
+
 ### Added
 
 - **`-t` is repeatable.** Several templates — files or directories — render in one run, one JVM
