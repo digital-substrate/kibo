@@ -52,11 +52,12 @@ java -jar target/kibo-X.Y.Z.jar \
     -c [cpp | python | typescript] \
     -n [namespace] \
     -d [definitions.dsm.json] \
-    -t [template_directory_or_file] \
+    -t [template_file_or_directory] [-t ...] \
     -o [output_directory]
 ```
 
-kibo renders one template per run. To generate a whole project — features, embedded
+kibo renders every template it is given — a file, a directory of templates, or several `-t` —
+in one run, one after the other. To generate a whole project — features, embedded
 definitions, runtime — from a `kibo.toml`, use
 [kibo-project](https://github.com/digital-substrate/kibo-project), which drives kibo.
 

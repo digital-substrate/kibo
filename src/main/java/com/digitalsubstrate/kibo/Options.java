@@ -28,8 +28,8 @@ class Options {
     @Parameter(names = {"--dsm", "-d"}, description = "DSM Definitions *.dsm.json.", required = true)
     Path definitions;
 
-    @Parameter(names = {"--template", "-t"}, description = "Template directory or file.", required = true)
-    Path template;
+    @Parameter(names = {"--template", "-t"}, description = "A template file or a directory of templates; repeatable: all are rendered in one run.", required = true)
+    List<String> templates = new ArrayList<>();
 
     @Parameter(names = {"--output", "-o"}, description = "Output directory or file.", required = true)
     Path output;

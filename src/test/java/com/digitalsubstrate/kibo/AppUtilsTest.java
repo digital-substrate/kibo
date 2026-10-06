@@ -9,6 +9,7 @@ import com.digitalsubstrate.viper.dsm.DSMDefinitions;
 import org.junit.Test;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.assertTrue;
@@ -32,7 +33,7 @@ public final class AppUtilsTest {
     public void aNameSpaceCarryingTheModelsNameIsRefused() {
         try {
             AppUtils.generate(Target.of("cpp"), "", withNameSpace("Shadow"), "Shadow",
-                              Path.of("."), Path.of("."), false);
+                              List.of(Path.of(".")), Path.of("."), false);
             fail("expected the shadowing namespace to be refused");
         } catch (Exception e) {
             assertTrue(e.getMessage(), e.getMessage().contains("Shadow"));
@@ -44,7 +45,7 @@ public final class AppUtilsTest {
     public void aNameSpaceOfAnotherNameIsNotRefused() throws Exception {
         try {
             AppUtils.generate(Target.of("cpp"), "", withNameSpace("Unit"), "Model",
-                              Path.of("no-such-template-directory"), Path.of("."), false);
+                              List.of(Path.of("no-such-template-directory")), Path.of("."), false);
         } catch (Exception e) {
             assertTrue("refused for the wrong reason: " + e.getMessage(),
                        !e.getMessage().contains("same files"));

@@ -52,13 +52,14 @@ public final class App {
             System.out.printf("Render '%s' for '%s' with '%s' in '%s'%n",
                     options.converter,
                     options.namespace,
-                    options.template.toString(),
+                    String.join(", ", options.templates),
                     options.output.toString());
     }
 
     static void generate(Target target, String generated, DSMDefinitions dsmDefinitions, Options options) throws Exception {
         generateLog(options);
-        AppUtils.generate(target, generated, dsmDefinitions, options.namespace, options.template, options.output, options.log);
+        AppUtils.generate(target, generated, dsmDefinitions, options.namespace,
+                          options.templates.stream().map(Path::of).toList(), options.output, options.log);
     }
 
     // Naming

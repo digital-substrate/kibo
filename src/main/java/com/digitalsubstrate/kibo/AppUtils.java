@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 public final class AppUtils {
 
@@ -172,23 +173,29 @@ public final class AppUtils {
     private static final String ENTRIES = "main(m), model(m), unit(u), pool(p) or attachment_pool(p)";
 
     /**
-     * Render what {@code -t} points at.
+     * Render what each {@code -t} points at, all in this run.
      *
      * <p>A file {@code -t} names that declares no entry is an error rather than an empty
      * file: StringTemplate answers a missing template with the empty string, and a generator
      * that writes a plausible short file is worse than one that stops. In a directory, such a
      * file is one the others import — a pack's banner — and is skipped; a directory where no
      * file declares an entry is the same error.
+     *
+     * <p>The templates are rendered one after the other. They share the Template Model, whose
+     * accessors compute some of their values on first read, and none of them guards against a
+     * second thread reading at the same time.
      */
-    public static void renderAndSave(Target target, TemplateDefinitions templateDefinitions, Path template, ArrayList<Path> templates,
+    public static void renderAndSave(Target target, TemplateDefinitions templateDefinitions, List<Path> templates,
                                      Path output, boolean debug) throws Exception {
         Files.createDirectories(output);
-        var any = false;
-        for (var file : templates)
-            any |= renderAndSave(target, templateDefinitions, file, output, debug);
-        if (!any) {
-            final var what = Files.isDirectory(template) ? "no template in " + template + " declares an entry" : template + " declares no entry";
-            throw new Exception(what + ": expected " + ENTRIES + ".");
+        for (var template : templates) {
+            var any = false;
+            for (var file : collectTemplates(template))
+                any |= renderAndSave(target, templateDefinitions, file, output, debug);
+            if (!any) {
+                final var what = Files.isDirectory(template) ? "no template in " + template + " declares an entry" : template + " declares no entry";
+                throw new Exception(what + ": expected " + ENTRIES + ".");
+            }
         }
     }
 
@@ -246,11 +253,11 @@ public final class AppUtils {
     }
 
     public static void generate(Target target, String generated, DSMDefinitions dsmDefinitions, String namespace,
-                                Path template, Path output, boolean debug) throws Exception {
+                                List<Path> templates, Path output, boolean debug) throws Exception {
         final var templateDefinitions = new Converter(generated, dsmDefinitions, namespace, target).convert();
         checkNamespaceDoesNotShadowModel(templateDefinitions);
         if (target == Target.CPP)
             checkNamesUnderModel(templateDefinitions);
-        renderAndSave(target, templateDefinitions, template, AppUtils.collectTemplates(template), output, debug);
+        renderAndSave(target, templateDefinitions, templates, output, debug);
     }
 }

@@ -11,6 +11,13 @@ templates it renders.
 
 ## [Unreleased]
 
+### Added
+
+- **`-t` is repeatable.** Several templates — files or directories — render in one run, one JVM
+  instead of one per template; a single `-t` behaves as before. A generation that rendered its
+  templates one run each (kibo-project did, 32 runs for one model in three targets) spends its
+  time starting the JVM, not rendering.
+
 ## [2.0.0] - 2026-10-05
 
 **Template Model 2.** The model names the three spaces a type lives in — the DSM's, the
