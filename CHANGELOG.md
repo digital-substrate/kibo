@@ -17,19 +17,27 @@ templates it renders.
   already what `format="usnake"` makes of it (`RGB`, `E`). StringTemplate cannot compare two
   strings, so a template that writes a constant in upper snake case beside the type could not
   tell that the two would take one name.
-- **`--reserve NAME`**, repeatable: a name the template pack's own code takes in this target. A
-  DSM name spelled as one of them — in `snake` or `lf` — takes a trailing underscore, as a Python
-  keyword does, instead of taking its place: a field `wrap_value` would mask the proxy's method, a
-  namespace `Containers` replace the package's `containers` module. kibo-project passes the names
-  the pack declares (`reserved` in its `features.json`); the pack's own artefacts keep their names.
+- **`--reserve KIND:name`**, repeatable: a name the template pack's own code takes in this target,
+  for one family of names (`field:wrap_value`, `namespace:containers`). A DSM name of that family
+  meeting one stops the generation, naming the element, the target and the directive to write:
+  a field `wrap_value` would mask the proxy's method, a namespace `Containers` replace the
+  package's `containers` module. kibo renames nothing; kibo-project passes what the pack
+  declares (`reserved` in its `features.json`).
+- **`--spell Name=identifier`**, repeatable: how this target spells a DSM name it cannot take — a
+  field `class` in C++, a field `wrap_value` in Python. Every identifier of the target follows
+  it, the types kibo computes included; the DSM name stays the one sent to the runtime.
+  kibo-project passes `[names.<language>.rename]`.
+- **`dsmName`** on every named entity of the Template Model: the DSM name, for what is sent to
+  the runtime. **`name` is the target's spelling**: the DSM name unless `--spell` says otherwise,
+  so a template that never meets a respelled name sees no change.
 
 ### Changed
 
 - **kibo knows no pack's names.** The four module names it refused a namespace or a pool to take
   (`containers`, `definitions`, `resources`, `pools`) were one pack's; they are now that pack's to
   declare. Run without `--reserve`, kibo no longer refuses them.
-- A binding annotation names another unit's module as the package lays it out (`snake`), escape
-  included, where it used `lsc`; the two agree on every model at hand.
+- A binding annotation names another unit's module as the package lays it out (`snake`), where
+  it used `lsc`; the two agree on every model at hand.
 
 ## [2.0.1] - 2026-10-06
 

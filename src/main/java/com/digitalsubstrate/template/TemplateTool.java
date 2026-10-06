@@ -12,7 +12,23 @@ public final class TemplateTool {
      * already applied in one place and not the others, so it is named here once.
      */
     public static String typeName(String name) {
-        return name.equals(DSMLexicon.AnyConcept) ? "AnyConcept" : uf(name);
+        return name.equals(DSMLexicon.AnyConcept) ? "AnyConcept" : uf(spell(name));
+    }
+
+    /** What the project and the pack say about names, for the target of this run. */
+    private static TargetNames targetNames = TargetNames.none();
+
+    public static void setTargetNames(TargetNames names) {
+        targetNames = names;
+    }
+
+    public static TargetNames targetNames() {
+        return targetNames;
+    }
+
+    /** How the target of this run spells a DSM name. */
+    public static String spell(String dsmName) {
+        return targetNames.spell(dsmName);
     }
 
     public static String u(String s) {
@@ -27,10 +43,8 @@ public final class TemplateTool {
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
-    /** The first letter lowered; a name the pack declared for its own code takes a trailing underscore. */
     public static String lf(String s) {
-        final var lowered = Character.toLowerCase(s.charAt(0)) + s.substring(1);
-        return naming.isDeclared(lowered) ? lowered + "_" : lowered;
+        return Character.toLowerCase(s.charAt(0)) + s.substring(1);
     }
 
     public static String sc(String s) {
@@ -77,11 +91,6 @@ public final class TemplateTool {
      */
     public static String snake(String s) {
         return naming.of(s);
-    }
-
-    /** The snake_case of one of the pack's own artefacts, which its declared names do not escape. */
-    public static String snakeArtefact(String s) {
-        return naming.ofArtefact(s);
     }
 
     /** {@link #snake} uppercased: an enumeration member, a module-level constant. */

@@ -31,10 +31,16 @@ public final class TemplateClub {
 
     // Namespace
     public String getNamespace() {
-        return dsmClub.typeName.nameSpace.name;
+        return TemplateTool.spell(dsmClub.typeName.nameSpace.name);
     }
 
+    /** The name as this target spells it: the DSM name, unless the project spells it otherwise. */
     public String getName() {
+        return TemplateTool.spell(dsmClub.typeName.name);
+    }
+
+    /** The DSM name, the one the runtime knows: write it where a name is sent to the runtime. */
+    public String getDsmName() {
         return dsmClub.typeName.name;
     }
 

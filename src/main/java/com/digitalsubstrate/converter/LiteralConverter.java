@@ -170,7 +170,7 @@ final class LiteralConverter {
                     return String.format("Viper::UUId::parse(\"%s\")", literalValue.value);
                 }
                 case ENUMERATION_CASE -> {
-                    return String.format("%s::%s", typeReference.typeName.name, TemplateTool.uf(literalValue.value));
+                    return String.format("%s::%s", TemplateTool.spell(typeReference.typeName.name), TemplateTool.uf(literalValue.value));
                 }
             }
         }

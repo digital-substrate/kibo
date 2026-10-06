@@ -27,7 +27,13 @@ public final class TemplateFunction {
         this.returnBindingType = returnBindingType;
     }
 
+    /** The name as this target spells it: the DSM name, unless the project spells it otherwise. */
     public String getName() {
+        return TemplateTool.spell(this.dsmFunction.prototype.name);
+    }
+
+    /** The DSM name, the one the runtime knows: write it where a name is sent to the runtime. */
+    public String getDsmName() {
         return this.dsmFunction.prototype.name;
     }
 

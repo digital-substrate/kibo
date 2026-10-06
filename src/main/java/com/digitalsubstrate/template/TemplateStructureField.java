@@ -51,7 +51,13 @@ public final class TemplateStructureField {
         return dsmStructureField;
     }
 
+    /** The name as this target spells it: the DSM name, unless the project spells it otherwise. */
     public String getName() {
+        return TemplateTool.spell(dsmStructureField.name);
+    }
+
+    /** The DSM name, the one the runtime knows: write it where a name is sent to the runtime. */
+    public String getDsmName() {
         return dsmStructureField.name;
     }
 

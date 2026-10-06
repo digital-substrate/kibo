@@ -69,10 +69,16 @@ public final class TemplateAttachment {
 
     // Namespace
     public String getNamespace() {
-        return dsmAttachment.typeName.nameSpace.name;
+        return TemplateTool.spell(dsmAttachment.typeName.nameSpace.name);
     }
 
+    /** The name as this target spells it: the DSM name, unless the project spells it otherwise. */
     public String getName() {
+        return TemplateTool.spell(dsmAttachment.typeName.name);
+    }
+
+    /** The DSM name, the one the runtime knows: write it where a name is sent to the runtime. */
+    public String getDsmName() {
         return dsmAttachment.typeName.name;
     }
 

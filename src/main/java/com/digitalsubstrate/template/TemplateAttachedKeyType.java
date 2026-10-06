@@ -39,7 +39,7 @@ public final class TemplateAttachedKeyType {
 
     // Namespace
     public String getNamespace() {
-        return typeName.nameSpace.name;
+        return TemplateTool.spell(typeName.nameSpace.name);
     }
 
     public String getName() {

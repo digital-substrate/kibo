@@ -196,12 +196,12 @@ final class TypeConverter {
                 }
                 case ENUMERATION, STRUCTURE -> {
                     if (typeReference.typeName.nameSpace.equals(nameSpace))
-                        return typeReference.typeName.name;
+                        return TemplateTool.spell(typeReference.typeName.name);
                     return cppQualified(typeReference.typeName);
                 }
                 case CONCEPT, CLUB -> {
                     if (typeReference.typeName.nameSpace.name.equals(nameSpace.name))
-                        return String.format("%sKey", typeReference.typeName.name);
+                        return String.format("%sKey", TemplateTool.spell(typeReference.typeName.name));
                     return String.format("%sKey", cppQualified(typeReference.typeName));
                 }
                 case ANY_CONCEPT -> {
@@ -327,18 +327,18 @@ final class TypeConverter {
      */
     static String cppQualified(TypeName typeName) {
         if (typeName.nameSpace.isGlobal())
-            return typeName.name;
-        return TemplateTool.lsc(typeName.nameSpace.name) + "::" + typeName.name;
+            return TemplateTool.spell(typeName.name);
+        return TemplateTool.lsc(TemplateTool.spell(typeName.nameSpace.name)) + "::" + TemplateTool.spell(typeName.name);
     }
 
     String typeSuffixForKey(TypeName typeName) {
-        return String.format("_%s_%sKey", typeName.nameSpace.name, typeName.name);
+        return String.format("_%s_%sKey", TemplateTool.spell(typeName.nameSpace.name), TemplateTool.spell(typeName.name));
     }
 
     String typeSuffix(TypeName typeName) {
         if (typeName.nameSpace.isGlobal())
-            return String.format("_%s", typeName.name);
-        return String.format("_%s_%s", typeName.nameSpace.name, typeName.name);
+            return String.format("_%s", TemplateTool.spell(typeName.name));
+        return String.format("_%s_%s", TemplateTool.spell(typeName.nameSpace.name), TemplateTool.spell(typeName.name));
     }
 
     String viperPrimitiveValue(String name) throws Exception {
@@ -637,13 +637,13 @@ final class TypeConverter {
             return switch (typeReference.domain) {
                 case ENUMERATION, STRUCTURE, CONCEPT, CLUB -> {
                     final var unit = typeReference.typeName.nameSpace;
-                    final var bare = typeReference.typeName.name
+                    final var bare = TemplateTool.spell(typeReference.typeName.name)
                                    + (typeReference.domain == DSMTypeReferenceDomain.CONCEPT
                                       || typeReference.domain == DSMTypeReferenceDomain.CLUB ? "Key" : "");
                     // The unit's module as the package lays it out (PackageLayout), escape included.
                     yield nameSpace != null && unit.equals(nameSpace)
                         ? bare
-                        : TemplateTool.snake(unit.name) + "." + bare;
+                        : TemplateTool.snake(TemplateTool.spell(unit.name)) + "." + bare;
                 }
                 default -> bindingType(type);
             };
@@ -793,10 +793,10 @@ final class TypeConverter {
                     return typeReference.typeName.name;
                 }
                 case ENUMERATION, STRUCTURE -> {
-                    return typeReference.typeName.nameSpace.name + "_" + typeReference.typeName.name;
+                    return TemplateTool.spell(typeReference.typeName.nameSpace.name) + "_" + TemplateTool.spell(typeReference.typeName.name);
                 }
                 case CONCEPT, CLUB -> {
-                    return typeReference.typeName.nameSpace.name + "_" + typeReference.typeName.name + "Key";
+                    return TemplateTool.spell(typeReference.typeName.nameSpace.name) + "_" + TemplateTool.spell(typeReference.typeName.name) + "Key";
                 }
                 case ANY_CONCEPT -> {
                     return "AnyConceptKey";

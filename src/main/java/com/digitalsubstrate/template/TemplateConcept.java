@@ -130,10 +130,16 @@ public final class TemplateConcept {
 
     // Namespace
     public String getNamespace() {
-        return dsmConcept.typeName.nameSpace.name;
+        return TemplateTool.spell(dsmConcept.typeName.nameSpace.name);
     }
 
+    /** The name as this target spells it: the DSM name, unless the project spells it otherwise. */
     public String getName() {
+        return TemplateTool.spell(dsmConcept.typeName.name);
+    }
+
+    /** The DSM name, the one the runtime knows: write it where a name is sent to the runtime. */
+    public String getDsmName() {
         return dsmConcept.typeName.name;
     }
 

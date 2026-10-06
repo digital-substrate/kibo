@@ -36,10 +36,16 @@ public final class TemplateStructure {
 
     // Namespace
     public String getNamespace() {
-        return dsmStructure.typeName.nameSpace.name;
+        return TemplateTool.spell(dsmStructure.typeName.nameSpace.name);
     }
 
+    /** The name as this target spells it: the DSM name, unless the project spells it otherwise. */
     public String getName() {
+        return TemplateTool.spell(dsmStructure.typeName.name);
+    }
+
+    /** The DSM name, the one the runtime knows: write it where a name is sent to the runtime. */
+    public String getDsmName() {
         return dsmStructure.typeName.name;
     }
 

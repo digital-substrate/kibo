@@ -55,9 +55,8 @@ public final class SnakeCase {
 
     private final List<String> atoms;
     private final Map<String, String> renames;
-    private final Set<String> declared;
 
-    private SnakeCase(List<String> atoms, Map<String, String> renames, Set<String> declared) {
+    private SnakeCase(List<String> atoms, Map<String, String> renames) {
         final var all = new ArrayList<>(BUILTIN_ATOMS);
         for (var atom : atoms)
             if (!atom.isEmpty() && !all.contains(atom))
@@ -65,29 +64,14 @@ public final class SnakeCase {
         all.sort(Comparator.comparingInt(String::length).reversed());
         this.atoms = List.copyOf(all);
         this.renames = Map.copyOf(renames);
-        this.declared = Set.copyOf(declared);
     }
 
     public static SnakeCase standard() {
-        return new SnakeCase(List.of(), Map.of(), Set.of());
+        return new SnakeCase(List.of(), Map.of());
     }
 
     public static SnakeCase of(List<String> atoms, Map<String, String> renames) {
-        return new SnakeCase(atoms, renames, Set.of());
-    }
-
-    /**
-     * With the names the template pack's own code takes in this target ({@code --reserve}): a DSM
-     * name spelled as one of them takes a trailing underscore, as a Python keyword does, so that it
-     * does not take the place of the pack's — a field {@code wrap_value} beside the proxy's method.
-     */
-    public static SnakeCase of(List<String> atoms, Map<String, String> renames, Set<String> declared) {
-        return new SnakeCase(atoms, renames, declared);
-    }
-
-    /** Whether the pack declared this name for its own code. */
-    public boolean isDeclared(String name) {
-        return declared.contains(name);
+        return new SnakeCase(atoms, renames);
     }
 
     public String of(String name) {
@@ -95,15 +79,6 @@ public final class SnakeCase {
         if (renamed != null)
             return renamed;
 
-        final var projected = project(name);
-        return RESERVED.contains(projected) || declared.contains(projected) ? projected + "_" : projected;
-    }
-
-    /**
-     * The name of one of the pack's own artefacts ({@code containers}, {@code data}): the names the
-     * pack declares are its own, so they are not escaped here.
-     */
-    public String ofArtefact(String name) {
         final var projected = project(name);
         return RESERVED.contains(projected) ? projected + "_" : projected;
     }

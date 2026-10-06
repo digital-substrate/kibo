@@ -3,7 +3,9 @@ package com.digitalsubstrate.kibo;
 import com.beust.jcommander.JCommander;
 import com.digitalsubstrate.converter.Target;
 import com.digitalsubstrate.template.NameCollisions;
+import com.digitalsubstrate.template.ReservedNames;
 import com.digitalsubstrate.template.SnakeCase;
+import com.digitalsubstrate.template.TargetNames;
 import com.digitalsubstrate.template.TemplateTool;
 import com.digitalsubstrate.viper.dsm.DSMDefinitions;
 import com.digitalsubstrate.viper.dsm.DSMDefinitionsJsonDecoder;
@@ -14,6 +16,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.List;
 
 public final class App {
@@ -73,7 +78,40 @@ public final class App {
             }
             renames.put(rename.substring(0, at), rename.substring(at + 1));
         }
-        return SnakeCase.of(options.atoms, renames, new java.util.LinkedHashSet<>(options.reserved));
+        return SnakeCase.of(options.atoms, renames);
+    }
+
+    static TargetNames fatalTargetNames(Options options) {
+        final var spellings = new LinkedHashMap<String, String>();
+        for (var spelling : options.spellings) {
+            final var at = spelling.indexOf('=');
+            if (at <= 0 || at == spelling.length() - 1) {
+                System.err.printf("--spell %s: expected Name=identifier.%n", spelling);
+                System.exit(1);
+            }
+            spellings.put(spelling.substring(0, at), spelling.substring(at + 1));
+        }
+        final var reserved = new LinkedHashMap<String, Set<String>>();
+        for (var entry : options.reserved) {
+            final var at = entry.indexOf(':');
+            final var kind = at > 0 ? entry.substring(0, at) : "";
+            if (!TargetNames.KINDS.contains(kind) || at == entry.length() - 1) {
+                System.err.printf("--reserve %s: expected KIND:name, KIND one of %s.%n", entry,
+                                  String.join(", ", new TreeSet<>(TargetNames.KINDS)));
+                System.exit(1);
+            }
+            reserved.computeIfAbsent(kind, k -> new LinkedHashSet<>()).add(entry.substring(at + 1));
+        }
+        return TargetNames.of(spellings, reserved);
+    }
+
+    static void fatalReservedNames(DSMDefinitions definitions, String target) {
+        final var found = ReservedNames.find(definitions, target);
+        if (found.isEmpty())
+            return;
+        for (var line : found)
+            System.err.println(line);
+        System.exit(1);
     }
 
     static void fatalNameCollisions(DSMDefinitions definitions) {
@@ -133,6 +171,8 @@ public final class App {
         final var definitions = fatalDecodeDefinitions(data);
 
         TemplateTool.setNaming(fatalNaming(options));
+        TemplateTool.setTargetNames(fatalTargetNames(options));
+        fatalReservedNames(definitions, options.converter);
         if (options.converter.equals("python") || options.converter.equals("typescript"))
             fatalNameCollisions(definitions);
 
