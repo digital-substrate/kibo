@@ -41,6 +41,10 @@ final class TemplateNameSpaceView {
         return render(get(name).dependencies.attachments);
     }
 
+    String attachmentFieldDependenciesOf(String name) {
+        return render(get(name).dependencies.attachmentFields);
+    }
+
     int positionOf(String name) {
         return nameSpaces.indexOf(get(name));
     }

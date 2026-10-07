@@ -137,6 +137,11 @@ refers to.
 **In a type position** — a signature, an annotation, a declaration — use the target's spelling:
 `bindingType.type`, or `bindingType.proxy` where you build a *name* rather than write a type.
 
+**From the model** — `main(m)` or `model(m)`, a file rendered once at the package root rather
+than inside a unit — a type a unit declares is written with its module: `bindingType.qualified`
+(`model_a.MaterialKey`). `bindingType.type` there is the binding's flat name, which no module
+declares.
+
 **In a comment, a docstring, a `repr` or an exception message** — use `dsmType`. Every such
 message in a generated file guards a runtime type comparison, and a runtime type is a DSM type;
 the DSM name is what whoever wrote the model recognises, and it reads the same whatever the
@@ -160,6 +165,9 @@ take up when it wants to:
   `pool(p)` and `attachment_pool(p)` once per pool. A namespace becomes a unit of generated
   code — a module, a header — with its dependencies, its include guard and its attachments
   grouped by the concept they are keyed on.
+- **Dependencies by what an artefact emits**: `u.dependencies.types`, `u.dependencies.attachments`,
+  and `u.dependencies.attachmentFields` for an attachments artefact that addresses a document field
+  by field, whose setters name the fields' types.
 - **Formats** that carry a model's documentation into generated code (`string`, `docstring`,
   `comment`) and one snake_case rule for static names (`snake`, `usnake`).
 

@@ -13,7 +13,9 @@ import java.util.ArrayList;
  *
  * <p>So an artefact asks for the dependencies of <em>what it emits</em>:
  * {@code <u.dependencies.types:…>} in a types template,
- * {@code <u.dependencies.attachments:…>} in an attachments one. {@code all} is the union,
+ * {@code <u.dependencies.attachments:…>} in an attachments one, or
+ * {@code <u.dependencies.attachmentFields:…>} when that artefact addresses the document's fields.
+ * {@code all} is the union,
  * which is what the emission order is built on — that is a property of the namespace, not
  * of any one artefact.
  *
@@ -30,6 +32,13 @@ public final class TemplateDependencies {
 
     /** Reached by an attachment's key or document type. */
     public final ArrayList<TemplateNameSpace> attachments = new ArrayList<>();
+    /**
+     * Reached by an attachment's key or document type and, when the document is a structure,
+     * by that structure's fields: what an artefact that addresses the document field by field
+     * names. A superset of {@code attachments}, kept apart so that an artefact addressing the
+     * document whole includes nothing its fields alone reach.
+     */
+    public final ArrayList<TemplateNameSpace> attachmentFields = new ArrayList<>();
 
     /** Reached by a function's parameters or return type. A pool's dependencies. */
     public final ArrayList<TemplateNameSpace> functions = new ArrayList<>();
@@ -43,6 +52,9 @@ public final class TemplateDependencies {
 
     public ArrayList<TemplateNameSpace> getAttachments() {
         return attachments;
+    }
+    public ArrayList<TemplateNameSpace> getAttachmentFields() {
+        return attachmentFields;
     }
 
     public ArrayList<TemplateNameSpace> getFunctions() {

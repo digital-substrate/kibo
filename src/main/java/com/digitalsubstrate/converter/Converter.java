@@ -179,6 +179,7 @@ public final class Converter {
             // Topological order guarantees each dependency is already built.
             fill(templateNameSpace.dependencies.types, nameSpaceDependency.typeDependencies(nameSpace), byNameSpace);
             fill(templateNameSpace.dependencies.attachments, nameSpaceDependency.attachmentDependencies(nameSpace), byNameSpace);
+            fill(templateNameSpace.dependencies.attachmentFields, nameSpaceDependency.attachmentFieldDependencies(nameSpace), byNameSpace);
             fill(templateNameSpace.dependencies.all, nameSpaceDependency.dependencies(nameSpace), byNameSpace);
 
             for (var e : definitions.concepts)

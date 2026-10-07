@@ -101,6 +101,35 @@ public final class TemplateNameSpaceDependencyTest {
         assertEquals("[A, B]", view.dependenciesOf("C"));
     }
 
+    /** An attachment in {@code home}, on {@code home}'s own concept, documented by {@code structure}. */
+    private static DSMAttachment attachmentDocumentedBy(NameSpace home, String name, String ownConcept,
+                                                        NameSpace structureNameSpace, String structure) {
+        return new DSMAttachment(
+                new TypeName(home, name),
+                new DSMTypeReference(new TypeName(home, ownConcept), DSMTypeReferenceDomain.CONCEPT),
+                new DSMTypeReference(new TypeName(structureNameSpace, structure), DSMTypeReferenceDomain.STRUCTURE),
+                "", UUID.randomUUID());
+    }
+
+    @Test
+    public void addressingTheDocumentsFieldsReachesWhatTheFieldsName() throws Exception {
+        final var definitions = new DSMDefinitions();
+        definitions.concepts.add(concept(A, "CA"));
+        definitions.concepts.add(concept(B, "CB"));
+        definitions.concepts.add(concept(C, "CC"));
+
+        // C's attachment is documented by B's structure, whose field names A's concept: the key
+        // and the document reach B; a setter of that field names A as well.
+        definitions.structures.add(referencing(B, "SB", A, "CA"));
+        definitions.attachments.add(attachmentDocumentedBy(C, "doc", "CC", B, "SB"));
+
+        final var view = convert(definitions);
+        assertEquals("[B]", view.attachmentDependenciesOf("C"));
+        assertEquals("[A, B]", view.attachmentFieldDependenciesOf("C"));
+        assertEquals("[A, B]", view.dependenciesOf("C"));
+        assertTrue("what the fields reach is built first", view.positionOf("A") < view.positionOf("C"));
+    }
+
     @Test
     public void aNameSpaceThatReachesNothingCarriesNothing() throws Exception {
         final var definitions = new DSMDefinitions();

@@ -35,7 +35,7 @@ final class EntityConverter {
         this.binding = binding;
     }
 
-    ArrayList<TemplateEnumeration> convertEnumerations() {
+    ArrayList<TemplateEnumeration> convertEnumerations() throws Exception {
         final var result = new ArrayList<TemplateEnumeration>();
         for (var enumeration : definitions.enumerations)
             result.add(convertEnumeration(enumeration));
@@ -43,11 +43,12 @@ final class EntityConverter {
         return result;
     }
 
-    private TemplateEnumeration convertEnumeration(DSMEnumeration enumeration) {
+    private TemplateEnumeration convertEnumeration(DSMEnumeration enumeration) throws Exception {
         final var type = TypeConverter.cppQualified(enumeration.typeName);
         final var typeSuffix = typeConverter.typeSuffix(enumeration.typeName);
 
-        return new TemplateEnumeration(enumeration, type, typeSuffix);
+        return new TemplateEnumeration(enumeration, type, typeSuffix)
+            .withQualified(typeConverter.bindingAnnotationInNamespace(null, enumeration.typeReference));
     }
 
     ArrayList<TemplateStructure> convertStructures() throws Exception {
@@ -67,7 +68,8 @@ final class EntityConverter {
         final var type = TypeConverter.cppQualified(structure.typeName);
         final var typeSuffix = typeConverter.typeSuffix(structure.typeName);
         final var isMovable = typeConverter.isStructureMovable(structure);
-        TemplateStructure result = new TemplateStructure(structure, type, typeSuffix, isMovable);
+        TemplateStructure result = new TemplateStructure(structure, type, typeSuffix, isMovable)
+            .withQualified(typeConverter.bindingAnnotationInNamespace(null, structure.typeReference));
         result.getFields().addAll(convertStructureFields(structure.typeName.nameSpace, structure.fields));
 
         return result;
@@ -126,14 +128,15 @@ final class EntityConverter {
         return result;
     }
 
-    private TemplateConcept convertConcept(DSMConcept concept) {
+    private TemplateConcept convertConcept(DSMConcept concept) throws Exception {
         final var type = typeConverter.typeForKey(concept.typeName);
         final var typeSuffix = typeConverter.typeSuffixForKey(concept.typeName);
         final var attachments = attachmentByConcept.get(concept.typeName);
         if (attachments != null)
             attachments.sort(Comparator.comparing(TemplateAttachment::getIdentifier));
 
-        return new TemplateConcept(concept, type, typeSuffix, attachments);
+        return new TemplateConcept(concept, type, typeSuffix, attachments)
+            .withQualified(typeConverter.bindingAnnotationInNamespace(null, new DSMTypeKey(concept.typeReference)));
     }
 
     ArrayList<TemplateClub> convertClubs() throws Exception {
@@ -159,7 +162,8 @@ final class EntityConverter {
         }
         members.sort(Comparator.comparing(TemplateConcept::getName));
 
-        return new TemplateClub(club, type, typeSuffix, members);
+        return new TemplateClub(club, type, typeSuffix, members)
+            .withQualified(typeConverter.bindingAnnotationInNamespace(null, new DSMTypeKey(club.typeReference)));
     }
 
     ArrayList<TemplateAttachment> convertAttachments(ArrayList<DSMAttachment> attachments) throws Exception {

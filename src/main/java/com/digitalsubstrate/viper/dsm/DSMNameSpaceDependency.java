@@ -14,6 +14,7 @@ public class DSMNameSpaceDependency {
     private final HashMap<NameSpace, HashSet<NameSpace>> dependencyByNameSpace = new HashMap<>();
     private final HashMap<NameSpace, HashSet<NameSpace>> typeDependencyByNameSpace = new HashMap<>();
     private final HashMap<NameSpace, HashSet<NameSpace>> attachmentDependencyByNameSpace = new HashMap<>();
+    private final HashMap<NameSpace, HashSet<NameSpace>> attachmentFieldDependencyByNameSpace = new HashMap<>();
 
     /**
      * Add to {@code dependencies} every namespace {@code type} names, other than the
@@ -151,11 +152,21 @@ public class DSMNameSpaceDependency {
                 if (attachment.typeName.nameSpace.equals(nameSpace))
                     collectAttachment(nameSpace, attachment, byAttachments);
 
+            // An artefact that addresses a document field by field names each field's type,
+            // which can belong to a namespace neither the key nor the document reaches.
+            final var byAttachmentFields = new HashSet<>(byAttachments);
+            for (var attachment : inspector.getDefinitions().attachments)
+                if (attachment.typeName.nameSpace.equals(nameSpace)
+                    && attachment.documentType instanceof DSMTypeReference reference
+                    && reference.domain == DSMTypeReferenceDomain.STRUCTURE)
+                    collectStructure(nameSpace, inspector.getStructures().get(reference.typeName), byAttachmentFields);
+
             final var all = new HashSet<>(byTypes);
-            all.addAll(byAttachments);
+            all.addAll(byAttachmentFields);
 
             typeDependencyByNameSpace.put(nameSpace, byTypes);
             attachmentDependencyByNameSpace.put(nameSpace, byAttachments);
+            attachmentFieldDependencyByNameSpace.put(nameSpace, byAttachmentFields);
             dependencyByNameSpace.put(nameSpace, all);
         }
     }
@@ -168,6 +179,14 @@ public class DSMNameSpaceDependency {
     /** What the attachments of {@code nameSpace} reach: their key and document types. */
     public HashSet<NameSpace> attachmentDependencies(NameSpace nameSpace) {
         return attachmentDependencyByNameSpace.getOrDefault(nameSpace, new HashSet<>());
+    }
+
+    /**
+     * What the attachments of {@code nameSpace} reach when addressed field by field: their key
+     * and document types and, for a document that is a structure, its fields' types.
+     */
+    public HashSet<NameSpace> attachmentFieldDependencies(NameSpace nameSpace) {
+        return attachmentFieldDependencyByNameSpace.getOrDefault(nameSpace, new HashSet<>());
     }
 
     public HashSet<NameSpace> dependencies(NameSpace nameSpace) {

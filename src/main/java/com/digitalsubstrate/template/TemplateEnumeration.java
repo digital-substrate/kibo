@@ -6,6 +6,7 @@ import com.digitalsubstrate.viper.dsm.DSMEnumerationCase;
 import java.util.ArrayList;
 
 public final class TemplateEnumeration {
+    private String qualified;
 
     private final DSMEnumeration dsmEnumeration;
     private final String type;
@@ -89,11 +90,23 @@ public final class TemplateEnumeration {
     }
 
     // Binding
+    /**
+     * The type as the binding writes it. This unit declares it, so from inside it the type is
+     * written bare: the one case where the two spellings follow from each other with nothing
+     * more to know. {@code qualified} is the converter's, written from outside every unit and
+     * so qualified by its module, as for a field that names the type; a native binding has no
+     * binding space and none to give.
+     */
     public TemplateBindingType getBindingType() {
-        // This unit declares this type, so from inside it the type is written bare: the one
-        // case where the two spellings follow from each other with nothing more to know.
         final var name = dsmEnumeration.typeName.name;
         final var proxy = dsmEnumeration.typeName.nameSpace.name + "_" + name;
-        return new TemplateBindingType(proxy, typeSuffix, proxy, name, true, true);
+        final var bare = name;
+        return new TemplateBindingType(proxy, typeSuffix, proxy, bare, true, true, bare,
+                                       qualified != null ? qualified : bare);
+    }
+
+    public TemplateEnumeration withQualified(String qualified) {
+        this.qualified = qualified;
+        return this;
     }
 }

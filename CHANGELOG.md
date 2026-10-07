@@ -11,6 +11,18 @@ templates it renders.
 
 ## [Unreleased]
 
+### Added
+
+- **`dependencies.attachmentFields`**: the units an attachments artefact reaches when it addresses
+  a document field by field — the key, the document and that structure's fields. A field setter
+  could name a type whose module nothing imported.
+
+### Fixed
+
+- **A type a unit declares is qualified by its module from the model**: `bindingType.qualified` of
+  a concept, club, enumeration or structure read `MaterialKey` where its documentation promises
+  `model_a.MaterialKey`, so a template rendered at the package root wrote a name that resolved nowhere.
+
 ## [2.0.2] - 2026-10-06
 
 ### Added
