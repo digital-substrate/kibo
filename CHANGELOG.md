@@ -16,6 +16,8 @@ templates it renders.
 - **`dependencies.attachmentFields`**: the units an attachments artefact reaches when it addresses
   a document field by field — the key, the document and that structure's fields. A field setter
   could name a type whose module nothing imported.
+- **`strictAncestorsInNamespace`** on a concept: every ancestor, the parent first, named from the
+  concept's namespace. A key widened implicitly to its parent only; 1.2 widened it to any ancestor.
 
 ### Fixed
 

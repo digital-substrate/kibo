@@ -113,6 +113,19 @@ public final class TemplateConcept {
     }
 
     /**
+     * Every ancestor, the parent first and the root last, each named as seen from this
+     * concept's namespace. An ancestor is declared before its descendants and in a namespace
+     * this one depends on, so a descendant's generated code can name every one of them -- a key
+     * widens to any ancestor, not only to its parent.
+     */
+    public ArrayList<TemplateConceptInNamespace> getStrictAncestorsInNamespace() {
+        final var ancestors = new ArrayList<TemplateConceptInNamespace>();
+        for (var ancestor = parent; ancestor != null; ancestor = ancestor.parent)
+            ancestors.add(new TemplateConceptInNamespace(ancestor, getNamespace()));
+        return ancestors;
+    }
+
+    /**
      * Whether a strict descendant lives in another namespace. The DSM keeps namespaces acyclic,
      * and a descendant's namespace depends on its parent's: the parent's generated code must not
      * name it. A template naming every concept a key may designate names the local ones only,
