@@ -18,17 +18,6 @@ templates it renders.
   could name a type whose module nothing imported.
 - **`strictAncestorsInNamespace`** on a concept: every ancestor, the parent first, named from the
   concept's namespace. A key widened implicitly to its parent only; 1.2 widened it to any ancestor.
-
-### Fixed
-
-- **A type a unit declares is qualified by its module from the model**: `bindingType.qualified` of
-  a concept, club, enumeration or structure read `MaterialKey` where its documentation promises
-  `model_a.MaterialKey`, so a template rendered at the package root wrote a name that resolved nowhere.
-
-## [2.0.2] - 2026-10-06
-
-### Added
-
 - **`nameIsUpperSnake`** on concepts, clubs, enumerations and structures: whether the name is
   already what `format="usnake"` makes of it (`RGB`, `E`). StringTemplate cannot compare two
   strings, so a template that writes a constant in upper snake case beside the type could not
@@ -46,6 +35,10 @@ templates it renders.
 - **`dsmName`** on every named entity of the Template Model: the DSM name, for what is sent to
   the runtime. **`name` is the target's spelling**: the DSM name unless `--spell` says otherwise,
   so a template that never meets a respelled name sees no change.
+- **`-t` is repeatable.** Several templates — files or directories — render in one run, one JVM
+  instead of one per template; a single `-t` behaves as before. A generation that rendered its
+  templates one run each (kibo-project did, 32 runs for one model in three targets) spends its
+  time starting the JVM, not rendering.
 
 ### Changed
 
@@ -55,14 +48,11 @@ templates it renders.
 - A binding annotation names another unit's module as the package lays it out (`snake`), where
   it used `lsc`; the two agree on every model at hand.
 
-## [2.0.1] - 2026-10-06
+### Fixed
 
-### Added
-
-- **`-t` is repeatable.** Several templates — files or directories — render in one run, one JVM
-  instead of one per template; a single `-t` behaves as before. A generation that rendered its
-  templates one run each (kibo-project did, 32 runs for one model in three targets) spends its
-  time starting the JVM, not rendering.
+- **A type a unit declares is qualified by its module from the model**: `bindingType.qualified` of
+  a concept, club, enumeration or structure read `MaterialKey` where its documentation promises
+  `model_a.MaterialKey`, so a template rendered at the package root wrote a name that resolved nowhere.
 
 ## [2.0.0] - 2026-10-05
 
