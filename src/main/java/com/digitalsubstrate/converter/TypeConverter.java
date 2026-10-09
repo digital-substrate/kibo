@@ -79,6 +79,40 @@ final class TypeConverter {
         return false;
     }
 
+    // A set's element or a map's key that std::less orders as IEEE 754 does -- a float or a double
+    // outside any structure -- has no order once a NaN is present, and the tree is undefined: the
+    // container takes Viper::StaticLess, which orders every NaN as one datum below every number.
+    // A structure's operator< is the generated one, already an order.
+    static boolean ordersAsIEEE(DSMType type) {
+        if (type instanceof DSMTypeReference typeReference)
+            return typeReference.domain == DSMTypeReferenceDomain.PRIMITIVE
+                   && (typeReference.typeName.name.equals(DSMLexicon.Float)
+                       || typeReference.typeName.name.equals(DSMLexicon.Double));
+        if (type instanceof DSMTypeVec typeVec)
+            return ordersAsIEEE(typeVec.elementType);
+        if (type instanceof DSMTypeMat typeMat)
+            return ordersAsIEEE(typeMat.elementType);
+        if (type instanceof DSMTypeOptional typeOptional)
+            return ordersAsIEEE(typeOptional.elementType);
+        if (type instanceof DSMTypeVector typeVector)
+            return ordersAsIEEE(typeVector.elementType);
+        if (type instanceof DSMTypeSet typeSet)
+            return ordersAsIEEE(typeSet.elementType);
+        if (type instanceof DSMTypeXArray typeXArray)
+            return ordersAsIEEE(typeXArray.elementType);
+        if (type instanceof DSMTypeMap typeMap)
+            return ordersAsIEEE(typeMap.keyType) || ordersAsIEEE(typeMap.elementType);
+        if (type instanceof DSMTypeTuple typeTuple)
+            return typeTuple.types.stream().anyMatch(TypeConverter::ordersAsIEEE);
+        if (type instanceof DSMTypeVariant typeVariant)
+            return typeVariant.types.stream().anyMatch(TypeConverter::ordersAsIEEE);
+        return false;
+    }
+
+    private static String comparator(DSMType element) {
+        return ordersAsIEEE(element) ? ", Viper::StaticLess" : "";
+    }
+
     String convertType(DSMType type) throws ConvertException {
         if (type instanceof DSMTypeKey typeKey)
             return convertType(typeKey.elementType);
@@ -104,10 +138,11 @@ final class TypeConverter {
             return String.format("std::vector<%s>", convertType(typeVector.elementType));
 
         if (type instanceof DSMTypeSet typeSet)
-            return String.format("std::set<%s>", convertType(typeSet.elementType));
+            return String.format("std::set<%s%s>", convertType(typeSet.elementType), comparator(typeSet.elementType));
 
         if (type instanceof DSMTypeMap typeMap)
-            return String.format("std::map<%s, %s>", convertType(typeMap.keyType), convertType(typeMap.elementType));
+            return String.format("std::map<%s, %s%s>", convertType(typeMap.keyType), convertType(typeMap.elementType),
+                                 comparator(typeMap.keyType));
 
         if (type instanceof DSMTypeVariant typeVariant) {
             final var memberTypes = new ArrayList<String>();
@@ -171,12 +206,14 @@ final class TypeConverter {
             return String.format("std::vector<%s>", convertTypeInNamespace(nameSpace, typeVector.elementType));
 
         if (type instanceof DSMTypeSet typeSet)
-            return String.format("std::set<%s>", convertTypeInNamespace(nameSpace, typeSet.elementType));
+            return String.format("std::set<%s%s>", convertTypeInNamespace(nameSpace, typeSet.elementType),
+                                 comparator(typeSet.elementType));
 
         if (type instanceof DSMTypeMap typeMap)
-            return String.format("std::map<%s, %s>",
+            return String.format("std::map<%s, %s%s>",
                     convertTypeInNamespace(nameSpace, typeMap.keyType),
-                    convertTypeInNamespace(nameSpace, typeMap.elementType));
+                    convertTypeInNamespace(nameSpace, typeMap.elementType),
+                    comparator(typeMap.keyType));
 
         if (type instanceof DSMTypeVariant typeVariant) {
             var memberTypes = new ArrayList<String>();
@@ -463,8 +500,11 @@ final class TypeConverter {
         final var bindingKeySetType = type instanceof DSMTypeMap typeMap
                                       ? templateBindingType(nameSpace, new DSMTypeSet(typeMap.keyType))
                                       : null;
-        return new TemplateField(ctype, keyType, keyTypeInNamespace, keyTypeSuffix, elementType, elementTypeInNamespace, elementTypeSuffix, elementTypeViperValue, bindingKeyType, bindingElementType, passBy,
-                                 templateBindingType(nameSpace, type), bindingKeySetType);
+        final var field = new TemplateField(ctype, keyType, keyTypeInNamespace, keyTypeSuffix, elementType, elementTypeInNamespace, elementTypeSuffix, elementTypeViperValue, bindingKeyType, bindingElementType, passBy,
+                                            templateBindingType(nameSpace, type), bindingKeySetType);
+        if (type instanceof DSMTypeMap typeMap)
+            field.withKeySetType(convertType(new DSMTypeSet(typeMap.keyType)));
+        return field;
     }
 
     TemplateBindingType templateBindingType(DSMType type) throws Exception {

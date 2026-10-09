@@ -15,6 +15,7 @@ public final class TemplateField {
     private final TemplateBindingType bindingType;
     private final TemplateBindingType bindingKeySetType;
     private final String passBy;
+    private String keySetType = "<None>";
 
     public TemplateField(TemplateFieldType type,
                          String keyType,
@@ -91,6 +92,20 @@ public final class TemplateField {
 
     public String getKeyType() {
         return keyType;
+    }
+
+    /**
+     * The C++ type of a set of this map's keys, as a map field's {@code subtract} takes it: the
+     * set orders its keys as the map does ({@code Viper::StaticLess} for a key holding a
+     * floating-point value).
+     */
+    public String getKeySetType() {
+        return keySetType;
+    }
+
+    public TemplateField withKeySetType(String keySetType) {
+        this.keySetType = keySetType;
+        return this;
     }
 
     /**

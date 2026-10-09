@@ -13,6 +13,8 @@ templates it renders.
 
 ### Added
 
+- **`keySetType`** on a map field: the C++ type of a set of its keys, as a map's `subtract` takes
+  it, with the comparator the map orders its keys by.
 - **`dependencies.attachmentFields`**: the units an attachments artefact reaches when it addresses
   a document field by field — the key, the document and that structure's fields. A field setter
   could name a type whose module nothing imported.
@@ -42,6 +44,10 @@ templates it renders.
 
 ### Changed
 
+- **A C++ set or map whose element or key holds a floating-point value outside any structure
+  takes `Viper::StaticLess`** (`std::set<double, Viper::StaticLess>`): `std::less` orders such a
+  value as IEEE 754 does, no order once a NaN is present, and the tree is undefined. A structure's
+  `operator<`, a key or an integer keeps `std::less`. `MIGRATING.md`, row 11.
 - **kibo knows no pack's names.** The four module names it refused a namespace or a pool to take
   (`containers`, `definitions`, `resources`, `pools`) were one pack's; they are now that pack's to
   declare. Run without `--reserve`, kibo no longer refuses them.
