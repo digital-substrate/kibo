@@ -11,8 +11,6 @@ templates it renders.
 
 ## [Unreleased]
 
-## [2.0.2] - 2026-10-06
-
 ### Added
 
 - **`nameIsUpperSnake`** on concepts, clubs, enumerations and structures: whether the name is
@@ -32,6 +30,10 @@ templates it renders.
 - **`dsmName`** on every named entity of the Template Model: the DSM name, for what is sent to
   the runtime. **`name` is the target's spelling**: the DSM name unless `--spell` says otherwise,
   so a template that never meets a respelled name sees no change.
+- **`-t` is repeatable.** Several templates — files or directories — render in one run, one JVM
+  instead of one per template; a single `-t` behaves as before. A generation that rendered its
+  templates one run each (kibo-project did, 32 runs for one model in three targets) spends its
+  time starting the JVM, not rendering.
 
 ### Changed
 
@@ -40,15 +42,6 @@ templates it renders.
   declare. Run without `--reserve`, kibo no longer refuses them.
 - A binding annotation names another unit's module as the package lays it out (`snake`), where
   it used `lsc`; the two agree on every model at hand.
-
-## [2.0.1] - 2026-10-06
-
-### Added
-
-- **`-t` is repeatable.** Several templates — files or directories — render in one run, one JVM
-  instead of one per template; a single `-t` behaves as before. A generation that rendered its
-  templates one run each (kibo-project did, 32 runs for one model in three targets) spends its
-  time starting the JVM, not rendering.
 
 ## [2.0.0] - 2026-10-05
 
