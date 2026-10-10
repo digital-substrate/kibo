@@ -11,6 +11,9 @@ templates it renders.
 
 ## [Unreleased]
 
+What changes from kibo 1.2.13, for a template pack moving to 2.0; `MIGRATING.md` has the
+renames, the values that read differently, and the method that accounts for every difference.
+
 **Template Model 2.** The model names the three spaces a type lives in — the DSM's, the
 target's native one, and the binding's — and the accessors that describe a type as the
 binding sees it are renamed for it (`pythonType` becomes `bindingType`, …). A template can
@@ -27,7 +30,8 @@ every difference.
 
 - **A template renders once per scope it declares.** Besides `main(m)`, a template may declare
   `model(m)` (once for the model), `unit(u)` (once per DSM namespace), `pool(p)` and
-  `attachment_pool(p)` (once per pool); an entry counts only if it takes that argument. Each
+  `attachment_pool(p)` (once per pool); an entry counts only if it takes that argument, and a
+  template declaring both `main(m)` and `model(m)`, which render to one file, is refused. Each
   output is named by the target's layout: in C++ a flat directory of files prefixed by the
   namespace path they declare (`<model>_<unit>_<template>`), in Python and TypeScript a package
   where a unit is a directory.
@@ -65,18 +69,13 @@ every difference.
   Model 1 is rendered by kibo 1.2 and, migrated, by kibo 2, and every difference must
   be one the guide lists.
 
-- **Formats that carry a model's documentation into generated code**: `string`, the body of
-  a double-quoted literal valid in C++, TypeScript and Python (a backslash, a quote, a newline,
-  a carriage return and a tab escaped; the 1.2 line has it too, after 1.2.12); `docstring`,
-  the body of a Python triple-quoted docstring, its lines kept; `comment`, the body of a
-  `/** */` block, which it cannot close early. Written raw, a documentation that spans lines
-  or holds quotes ended a literal early and the generated file no longer compiled.
+- **The `comment` format**: a model's documentation as the body of a `/** */` block, which it
+  cannot close early. `string` and `docstring` are as 1.2.13 has them.
 
 - **`keySetType`** on a map field: the C++ type of a set of its keys, as a map's `subtract` takes
   it, with the comparator the map orders its keys by.
 - **`dependencies.attachmentFields`**: the units an attachments artefact reaches when it addresses
-  a document field by field — the key, the document and that structure's fields. A field setter
-  could name a type whose module nothing imported.
+  a document field by field — the key, the document and that structure's fields.
 - **`strictAncestorsInNamespace`** on a concept: every ancestor, the parent first, named from the
   concept's namespace, so that a key widens to any ancestor, as it did in 1.2.
 - **`nameIsUpperSnake`** on concepts, clubs, enumerations and structures: whether the name is
@@ -158,39 +157,13 @@ every difference.
   `set<key<Demo::ConceptA>>`. A namespace lists a parent concept before its children, and
   the container function lists follow the C++ spelling of their type.
 
+- **`-t` naming a directory renders the templates in it that declare an entry**, and skips a
+  file the others import, a pack's banner; 1.2 rendered every file. A file `-t` names that
+  declares no entry is an error, and its message names the five entries.
 - **A C++ set or map whose element or key holds a floating-point value outside any structure
   takes `Viper::StaticLess`** (`std::set<double, Viper::StaticLess>`): `std::less` orders such a
   value as IEEE 754 does, no order once a NaN is present, and the tree is undefined. A structure's
   `operator<`, a key or an integer keeps `std::less`. `MIGRATING.md`, row 11.
-
-### Fixed
-
-- **A template declaring both `main(m)` and `model(m)` is refused**: the two render to the same
-  file, and the second silently replaced the first.
-
-- **The set of an attachment's keys is named `set<key<Concept>>`**: its `dsmType` read
-  `set<Concept>`, a set of concepts, which is not a DSM type. Its suffix and the classes named
-  after it are unchanged.
-
-- **`-t` naming a directory renders the templates in it that declare an entry**, and skips a
-  file the others import, a pack's banner: rendering a pack's directory stopped on it. A file
-  `-t` names that declares no entry is still an error, and its message names the five entries.
-
-- **An attachment carried no namespace dependency, so the namespace order it implies was
-  not held.** `DSMNameSpaceDependency` collected the edges of concepts, clubs and
-  structures and skipped attachments entirely, although an attachment names two types: the
-  concept it is keyed on and its document type. A namespace whose only reference to
-  another was through an attachment therefore had no edge, and the topological sort was
-  free to emit it first — a wrong include order on input that is perfectly acyclic, with
-  nothing to say so, since the sort does not detect cycles and is not meant to. Both
-  positions now go through `collectType`, so they follow the same rule as a structure
-  field: the global namespace is not a dependency, and `key<any_concept>` names none.
-
-- **A namespace holding only attachments was not known at all.** `DSMDefinitionsInspector`
-  registered the type names of concepts, clubs, enumerations and structures, but not of
-  attachments. Such a namespace was missing from `getNameSpaces()`, so it received no
-  `TemplateNameSpace` and its attachments reached only the templates that walk the flat
-  list, never those that walk namespace by namespace.
 
 ## [1.2.13] - 2026-10-05
 
