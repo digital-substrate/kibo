@@ -11,57 +11,6 @@ templates it renders.
 
 ## [Unreleased]
 
-### Added
-
-- **`keySetType`** on a map field: the C++ type of a set of its keys, as a map's `subtract` takes
-  it, with the comparator the map orders its keys by.
-- **`dependencies.attachmentFields`**: the units an attachments artefact reaches when it addresses
-  a document field by field — the key, the document and that structure's fields. A field setter
-  could name a type whose module nothing imported.
-- **`strictAncestorsInNamespace`** on a concept: every ancestor, the parent first, named from the
-  concept's namespace. A key widened implicitly to its parent only; 1.2 widened it to any ancestor.
-- **`nameIsUpperSnake`** on concepts, clubs, enumerations and structures: whether the name is
-  already what `format="usnake"` makes of it (`RGB`, `E`). StringTemplate cannot compare two
-  strings, so a template that writes a constant in upper snake case beside the type could not
-  tell that the two would take one name.
-- **`--reserve KIND:name`**, repeatable: a name the template pack's own code takes in this target,
-  for one family of names (`field:wrap_value`, `namespace:containers`). A DSM name of that family
-  meeting one stops the generation, naming the element, the target and the directive to write:
-  a field `wrap_value` would mask the proxy's method, a namespace `Containers` replace the
-  package's `containers` module. kibo renames nothing; kibo-project passes what the pack
-  declares (`reserved` in its `features.json`).
-- **`--spell Name=identifier`**, repeatable: how this target spells a DSM name it cannot take — a
-  field `class` in C++, a field `wrap_value` in Python. Every identifier of the target follows
-  it, the types kibo computes included; the DSM name stays the one sent to the runtime.
-  kibo-project passes `[names.<language>.rename]`.
-- **`dsmName`** on every named entity of the Template Model: the DSM name, for what is sent to
-  the runtime. **`name` is the target's spelling**: the DSM name unless `--spell` says otherwise,
-  so a template that never meets a respelled name sees no change.
-- **`-t` is repeatable.** Several templates — files or directories — render in one run, one JVM
-  instead of one per template; a single `-t` behaves as before. A generation that rendered its
-  templates one run each (kibo-project did, 32 runs for one model in three targets) spends its
-  time starting the JVM, not rendering.
-
-### Changed
-
-- **A C++ set or map whose element or key holds a floating-point value outside any structure
-  takes `Viper::StaticLess`** (`std::set<double, Viper::StaticLess>`): `std::less` orders such a
-  value as IEEE 754 does, no order once a NaN is present, and the tree is undefined. A structure's
-  `operator<`, a key or an integer keeps `std::less`. `MIGRATING.md`, row 11.
-- **kibo knows no pack's names.** The four module names it refused a namespace or a pool to take
-  (`containers`, `definitions`, `resources`, `pools`) were one pack's; they are now that pack's to
-  declare. Run without `--reserve`, kibo no longer refuses them.
-- A binding annotation names another unit's module as the package lays it out (`snake`), where
-  it used `lsc`; the two agree on every model at hand.
-
-### Fixed
-
-- **A type a unit declares is qualified by its module from the model**: `bindingType.qualified` of
-  a concept, club, enumeration or structure read `MaterialKey` where its documentation promises
-  `model_a.MaterialKey`, so a template rendered at the package root wrote a name that resolved nowhere.
-
-## [2.0.0] - 2026-10-05
-
 **Template Model 2.** The model names the three spaces a type lives in — the DSM's, the
 target's native one, and the binding's — and the accessors that describe a type as the
 binding sees it are renamed for it (`pythonType` becomes `bindingType`, …). A template can
@@ -123,6 +72,34 @@ every difference.
   `/** */` block, which it cannot close early. Written raw, a documentation that spans lines
   or holds quotes ended a literal early and the generated file no longer compiled.
 
+- **`keySetType`** on a map field: the C++ type of a set of its keys, as a map's `subtract` takes
+  it, with the comparator the map orders its keys by.
+- **`dependencies.attachmentFields`**: the units an attachments artefact reaches when it addresses
+  a document field by field — the key, the document and that structure's fields. A field setter
+  could name a type whose module nothing imported.
+- **`strictAncestorsInNamespace`** on a concept: every ancestor, the parent first, named from the
+  concept's namespace, so that a key widens to any ancestor, as it did in 1.2.
+- **`nameIsUpperSnake`** on concepts, clubs, enumerations and structures: whether the name is
+  already what `format="usnake"` makes of it (`RGB`, `E`). StringTemplate cannot compare two
+  strings, so a template that writes a constant in upper snake case beside the type could not
+  tell that the two would take one name.
+- **`--reserve KIND:name`**, repeatable: a name the template pack's own code takes in this target,
+  for one family of names (`field:wrap_value`, `namespace:containers`). A DSM name of that family
+  meeting one stops the generation, naming the element, the target and the directive to write:
+  a field `wrap_value` would mask the proxy's method, a namespace `Containers` replace the
+  package's `containers` module. kibo renames nothing; kibo-project passes what the pack
+  declares (`reserved` in its `features.json`).
+- **`--spell Name=identifier`**, repeatable: how this target spells a DSM name it cannot take — a
+  field `class` in C++, a field `wrap_value` in Python. Every identifier of the target follows
+  it, the types kibo computes included; the DSM name stays the one sent to the runtime.
+  kibo-project passes `[names.<language>.rename]`.
+- **`dsmName`** on every named entity of the Template Model: the DSM name, for what is sent to
+  the runtime. **`name` is the target's spelling**: the DSM name unless `--spell` says otherwise,
+  so a template that never meets a respelled name sees no change.
+- **`-t` is repeatable.** Several templates — files or directories — render in one run, one JVM
+  instead of one per template. A generation that renders its templates one run each (32 runs for
+  one model in three targets) spends its time starting the JVM, not rendering.
+
 ### Changed
 
 - **`--converter` selects a target, and a target knows how its binding spells types.** It
@@ -180,6 +157,11 @@ every difference.
   where Model 1 returned Python spellings. `dsmType` spells a set of keys as the DSM does,
   `set<key<Demo::ConceptA>>`. A namespace lists a parent concept before its children, and
   the container function lists follow the C++ spelling of their type.
+
+- **A C++ set or map whose element or key holds a floating-point value outside any structure
+  takes `Viper::StaticLess`** (`std::set<double, Viper::StaticLess>`): `std::less` orders such a
+  value as IEEE 754 does, no order once a NaN is present, and the tree is undefined. A structure's
+  `operator<`, a key or an integer keeps `std::less`. `MIGRATING.md`, row 11.
 
 ### Fixed
 
