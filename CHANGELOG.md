@@ -11,6 +11,8 @@ templates it renders.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-10
+
 What changes from kibo 1.2.13, for a template pack moving to 2.0; `MIGRATING.md` has the
 renames, the values that read differently, and the method that accounts for every difference.
 
