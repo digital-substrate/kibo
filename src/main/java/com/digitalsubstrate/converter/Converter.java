@@ -6,7 +6,11 @@ import com.digitalsubstrate.viper.dsm.*;
 
 import java.util.Comparator;
 import com.digitalsubstrate.viper.NameSpace;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public final class Converter {
     private final DSMStructureDependency structureDependency;
@@ -113,7 +117,72 @@ public final class Converter {
         // Create NameSpaces
         final var nameSpaceDependency = fillNameSpaces(result);
         fillPoolDependencies(result, nameSpaceDependency);
+        checkTypeNames();
         return result;
+    }
+
+    /**
+     * Stop on two types of the model written alike, and on a project's name for a type the model
+     * does not have.
+     *
+     * <p>A type's name is its class in a delegating binding and, after a {@code _}, its type
+     * suffix in every target, so a shared name is a shared helper everywhere. The arity of a
+     * tuple and a variant rules out the shared names of a nested list; a DSM name holding the
+     * separators ({@code A_and_N_B}) can still produce one. kibo does not pick a name for it:
+     * a mark that depends on the rest of the model would move to another type when one is
+     * added. It names the types and the directive that names one of them, with a name proposed.
+     */
+    private void checkTypeNames() throws Exception {
+        final var reached = new ArrayList<DSMType>(functionRegistrar.containerTypes());
+        for (var structure : definitions.structures)
+            reached.add(structure.typeReference);
+        for (var enumeration : definitions.enumerations)
+            reached.add(enumeration.typeReference);
+        for (var concept : definitions.concepts)
+            reached.add(concept.typeReference);
+        for (var club : definitions.clubs)
+            reached.add(club.typeReference);
+
+        final var bySuffix = new TreeMap<String, TreeSet<String>>();
+        final var identities = new HashSet<String>();
+        for (var type : reached) {
+            final var identity = TypeConverter.identity(type);
+            identities.add(TargetNames.withoutSpaces(identity));
+            bySuffix.computeIfAbsent(typeConverter.typeSuffix(type), suffix -> new TreeSet<>()).add(identity);
+        }
+
+        final var found = new ArrayList<String>();
+        for (var named : TemplateTool.targetNames().namedTypes())
+            if (!identities.contains(named))
+                found.add(String.format("--type-name %s: the model has no such type. Write the type as the "
+                                        + "DSM does, for instance tuple<App::Point, float>.", named));
+
+        for (var entry : bySuffix.entrySet()) {
+            if (entry.getValue().size() < 2)
+                continue;
+            final var name = entry.getKey().substring(1);
+            final var lines = new StringBuilder(String.format("%d types are written %s:", entry.getValue().size(), name));
+            for (var identity : entry.getValue())
+                lines.append("\n  ").append(identity);
+            lines.append("\nName all but one of them, in kibo.toml:\n  [names.types]");
+            final var options = new ArrayList<String>();
+            var rank = 0;
+            for (var identity : entry.getValue()) {
+                if (++rank == 1)
+                    continue;
+                var mark = rank;
+                while (bySuffix.containsKey("_" + name + "_" + mark))
+                    mark++;
+                final var proposed = name + "_" + mark;
+                lines.append(String.format("%n  \"%s\" = \"%s\"", identity, proposed));
+                options.add(String.format("--type-name \"%s=%s\"", identity, proposed));
+            }
+            lines.append("\nor kibo's ").append(String.join(" ", options));
+            found.add(lines.toString());
+        }
+
+        if (!found.isEmpty())
+            throw new TypeNamesException(String.join("\n", found));
     }
 
     /** How many parents a concept has above it. A parent is always shallower than its child. */

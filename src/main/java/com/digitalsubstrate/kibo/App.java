@@ -2,6 +2,7 @@ package com.digitalsubstrate.kibo;
 
 import com.beust.jcommander.JCommander;
 import com.digitalsubstrate.converter.Target;
+import com.digitalsubstrate.converter.TypeNamesException;
 import com.digitalsubstrate.template.NameCollisions;
 import com.digitalsubstrate.template.ReservedNames;
 import com.digitalsubstrate.template.SnakeCase;
@@ -102,7 +103,16 @@ public final class App {
             }
             reserved.computeIfAbsent(kind, k -> new LinkedHashSet<>()).add(entry.substring(at + 1));
         }
-        return TargetNames.of(spellings, reserved);
+        final var typeNames = new LinkedHashMap<String, String>();
+        for (var typeName : options.typeNames) {
+            final var at = typeName.lastIndexOf('=');
+            if (at <= 0 || at == typeName.length() - 1) {
+                System.err.printf("--type-name %s: expected type=Name.%n", typeName);
+                System.exit(1);
+            }
+            typeNames.put(typeName.substring(0, at).trim(), typeName.substring(at + 1).trim());
+        }
+        return TargetNames.of(spellings, reserved, typeNames);
     }
 
     static void fatalReservedNames(DSMDefinitions definitions, String target) {
@@ -177,7 +187,15 @@ public final class App {
             fatalNameCollisions(definitions);
 
         switch (options.converter) {
-            case "cpp", "python", "typescript" -> generate(Target.of(options.converter), generated, definitions, options);
+            case "cpp", "python", "typescript" -> {
+                try {
+                    generate(Target.of(options.converter), generated, definitions, options);
+                } catch (TypeNamesException e) {
+                    for (var line : e.getMessage().split("\n"))
+                        System.err.println("kibo: " + line);
+                    System.exit(1);
+                }
+            }
             default -> {
             }
         }

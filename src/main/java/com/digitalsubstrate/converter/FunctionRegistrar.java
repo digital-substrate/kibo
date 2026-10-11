@@ -6,6 +6,11 @@ import com.digitalsubstrate.viper.dsm.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * The container shapes a model reaches, each once. A shape is keyed by its identity, the type as
+ * the DSM writes it, not by its name: two types written alike stay two entries, for
+ * {@link Converter} to report.
+ */
 final class FunctionRegistrar {
     final HashMap<String, DSMTypeVec> vecFunctions = new HashMap<>();
     final HashMap<String, DSMTypeMat> matFunctions = new HashMap<>();
@@ -27,6 +32,21 @@ final class FunctionRegistrar {
         this.binding = binding;
     }
 
+    /** Every container shape registered, whatever its kind. */
+    ArrayList<DSMType> containerTypes() {
+        final var result = new ArrayList<DSMType>();
+        result.addAll(vecFunctions.values());
+        result.addAll(matFunctions.values());
+        result.addAll(tupleFunctions.values());
+        result.addAll(optionalFunctions.values());
+        result.addAll(vectorFunctions.values());
+        result.addAll(setFunctions.values());
+        result.addAll(mapFunctions.values());
+        result.addAll(xarrayFunctions.values());
+        result.addAll(variantFunctions.values());
+        return result;
+    }
+
     void registerFunctionForStructures() throws Exception {
         for (var structure : definitions.structures)
             registerFunctionForStructure(structure);
@@ -40,52 +60,52 @@ final class FunctionRegistrar {
     void registerFunctionForContainer(DSMType type) throws Exception {
 
         if (type instanceof DSMTypeVec typeVec) {
-            final var key = typeConverter.typeSuffix(typeVec);
+            final var key = TypeConverter.identity(typeVec);
             vecFunctions.put(key, typeVec);
             registerFunctionForContainer(typeVec.elementType);
 
         } else if (type instanceof DSMTypeMat typeMat) {
-            final var key = typeConverter.typeSuffix(typeMat);
+            final var key = TypeConverter.identity(typeMat);
             matFunctions.put(key, typeMat);
             registerFunctionForContainer(typeMat.elementType);
 
         } else if (type instanceof DSMTypeTuple typeTuple) {
-            final var key = typeConverter.typeSuffix(typeTuple);
+            final var key = TypeConverter.identity(typeTuple);
             tupleFunctions.put(key, typeTuple);
             for (var memberType : typeTuple.types)
                 registerFunctionForContainer(memberType);
 
         } else if (type instanceof DSMTypeOptional typeOptional) {
-            final var key = typeConverter.typeSuffix(typeOptional);
+            final var key = TypeConverter.identity(typeOptional);
             optionalFunctions.put(key, typeOptional);
             registerFunctionForContainer(typeOptional.elementType);
 
         } else if (type instanceof DSMTypeVector typeVector) {
-            final var key = typeConverter.typeSuffix(typeVector);
+            final var key = TypeConverter.identity(typeVector);
             vectorFunctions.put(key, typeVector);
             registerFunctionForContainer(typeVector.elementType);
 
         } else if (type instanceof DSMTypeSet typeSet) {
-            final var key = typeConverter.typeSuffix(typeSet);
+            final var key = TypeConverter.identity(typeSet);
             setFunctions.put(key, typeSet);
             registerFunctionForContainer(typeSet.elementType);
 
         } else if (type instanceof DSMTypeMap typeMap) {
-            final var key = typeConverter.typeSuffix(typeMap);
+            final var key = TypeConverter.identity(typeMap);
             mapFunctions.put(key, typeMap);
             registerFunctionForContainer(typeMap.keyType);
             registerFunctionForContainer(typeMap.elementType);
             registerFunctionForContainer(new DSMTypeSet(typeMap.keyType));
 
         } else if (type instanceof DSMTypeXArray typeXArray) {
-            final var key = typeConverter.typeSuffix(typeXArray);
+            final var key = TypeConverter.identity(typeXArray);
             xarrayFunctions.put(key, typeXArray);
             registerFunctionForContainer(typeXArray.elementType);
             if (binding.needsDerivedContainerProxies())
                 registerFunctionForContainer(new DSMTypeVector(typeXArray.elementType));
 
         } else if (type instanceof DSMTypeVariant typeVariant) {
-            final var key = typeConverter.typeSuffix(typeVariant);
+            final var key = TypeConverter.identity(typeVariant);
             variantFunctions.put(key, typeVariant);
             for (var memberType : typeVariant.types)
                 registerFunctionForContainer(memberType);

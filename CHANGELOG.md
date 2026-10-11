@@ -54,6 +54,14 @@ every difference.
 - **A model whose outputs would collide is refused before rendering**: a namespace carrying the
   model's own name, two C++ namespaces or pools spelled alike, two names one Python or
   TypeScript scope spells alike in snake_case.
+- **Two types of a model never share a name.** A type's name is its class in a delegating
+  binding and, after a `_`, its type suffix in every target. A tuple and a variant say how
+  many members follow (`Tuple2_of_int64_and_float`), so a nested one reads one way: Model 1
+  wrote `tuple<tuple<int64, float>, float>` and `tuple<tuple<int64, float, float>>` alike,
+  and kept one helper for the two. A DSM name holding the separators (`A_and_N_B`) can still
+  make two types alike; kibo then stops, names both and the directive that names one of
+  them, with a name proposed: `--type-name "type=Name"`, the type written as the DSM writes
+  it.
 
 - **`snake` names a static symbol by one rule, measured on every model at hand.** A short
   number stays with its word (`vec3_curves`, `doc_int8`), a long one stands alone
@@ -149,11 +157,13 @@ every difference.
   pack, native targets included; `MIGRATING.md` gives each with what a template does about
   it. A C++ type names its namespace in lower snake case (`Demo::StructureS` is
   `demo::StructureS`), in `type`, `typeInNamespace`, `elementType`, `keyType`, a member's
-  `type` and the `*InNamespace` lists; the untyped key lives in the infrastructure
-  namespace (`::<infrastructure>::AnyConceptKey`); `parentNameInNamespace` and an
-  attachment's `representation` qualify a name of another namespace, which Model 1 wrote
-  as if it were local. On the binding side, a container class is named after what it holds
-  (`Map_of_int8_to_string`, `Vec2_of_uint8`); a concept's or a club's `bindingType.type` is
+  `type` and the `*InNamespace` lists; `AnyConceptKey`, the key of `any_concept`, lives in
+  the infrastructure namespace (`::<infrastructure>::AnyConceptKey`);
+  `parentNameInNamespace` and an attachment's `representation` qualify a name of another
+  namespace, which Model 1 wrote as if it were local. A type suffix is `_` and the type's
+  name, in every target (`_Vector_of_float`, `_Any`). On the binding side, a container class
+  is named after what it holds (`Map_of_int8_to_string`, `Vec2_of_uint8`,
+  `Tuple2_of_uint8_and_string`); a concept's or a club's `bindingType.type` is
   its key class; `any` is a proxy (`Any`); a binding accessor is empty under a native target,
   where Model 1 returned Python spellings. `dsmType` spells a set of keys as the DSM does,
   `set<key<Demo::ConceptA>>`. A namespace lists a parent concept before its children, and

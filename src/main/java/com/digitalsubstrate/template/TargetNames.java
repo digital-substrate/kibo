@@ -16,6 +16,10 @@ import java.util.Set;
  *
  * <p>{@code spell} is the name every identifier of the target uses; the DSM name stays the one the
  * runtime knows ({@code dsmName} in the Template Model).
+ *
+ * <p>{@code typeName} is the name the project gives a type that another type of the model would
+ * otherwise share ({@code --type-name}, {@code [names.types]} in kibo-project): its class and its
+ * type suffix, in every target. The type is written as the DSM writes it; spaces do not count.
  */
 public final class TargetNames {
 
@@ -25,25 +29,50 @@ public final class TargetNames {
 
     private final Map<String, String> spellings;
     private final Map<String, Set<String>> reserved;
+    private final Map<String, String> typeNames;
 
-    private TargetNames(Map<String, String> spellings, Map<String, Set<String>> reserved) {
+    private TargetNames(Map<String, String> spellings, Map<String, Set<String>> reserved,
+                        Map<String, String> typeNames) {
         this.spellings = Map.copyOf(spellings);
+        final var named = new LinkedHashMap<String, String>();
+        typeNames.forEach((type, name) -> named.put(withoutSpaces(type), name));
+        this.typeNames = java.util.Collections.unmodifiableMap(named);
         final var copy = new LinkedHashMap<String, Set<String>>();
         reserved.forEach((kind, names) -> copy.put(kind, Set.copyOf(names)));
         this.reserved = Map.copyOf(copy);
     }
 
     public static TargetNames none() {
-        return new TargetNames(Map.of(), Map.of());
+        return new TargetNames(Map.of(), Map.of(), Map.of());
     }
 
     public static TargetNames of(Map<String, String> spellings, Map<String, Set<String>> reserved) {
-        return new TargetNames(spellings, reserved);
+        return new TargetNames(spellings, reserved, Map.of());
+    }
+
+    public static TargetNames of(Map<String, String> spellings, Map<String, Set<String>> reserved,
+                                 Map<String, String> typeNames) {
+        return new TargetNames(spellings, reserved, typeNames);
+    }
+
+    /** A type as the DSM writes it, without its spaces: how a directive and a type are compared. */
+    public static String withoutSpaces(String dsmType) {
+        return dsmType.replaceAll("\\s+", "");
     }
 
     /** How the target spells a DSM name: as the project says, or as declared. */
     public String spell(String dsmName) {
         return spellings.getOrDefault(dsmName, dsmName);
+    }
+
+    /** The name the project gives a type, written as the DSM writes it, or null. */
+    public String typeName(String dsmType) {
+        return typeNames.get(withoutSpaces(dsmType));
+    }
+
+    /** The types the project names, without their spaces. */
+    public Set<String> namedTypes() {
+        return typeNames.keySet();
     }
 
     /** The names the pack's own code takes in this target, for one family of names. */

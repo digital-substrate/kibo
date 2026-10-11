@@ -5,7 +5,7 @@ import com.digitalsubstrate.viper.dsm.DSMLexicon;
 public final class TemplateTool {
 
     /**
-     * How the untyped concept is spelled in generated C++.
+     * How {@code any_concept} is spelled in generated C++.
      *
      * <p>The DSM calls it {@code any_concept}, and the usual capitalisation of a model name
      * would give {@code Any_concept} — legal, and read by nobody as a type. The rule was

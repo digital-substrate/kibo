@@ -45,4 +45,7 @@ class Options {
 
     @Parameter(names = "--spell", description = "How this target spells a DSM name, as Name=identifier; the DSM name stays the one sent to the runtime; repeatable.")
     List<String> spellings = new ArrayList<>();
+
+    @Parameter(names = "--type-name", splitter = WholeValue.class, description = "The name of a type, as type=Name, the type written as the DSM writes it (tuple<App::A, float>): its class and its type suffix, in every target; for two types the model would write alike; repeatable.")
+    List<String> typeNames = new ArrayList<>();
 }

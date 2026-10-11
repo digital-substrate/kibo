@@ -21,7 +21,7 @@ final class TypeConverter {
     private final BindingVocabulary vocabulary;
 
     /**
-     * Where the untyped key lives, spelled so that it resolves from anywhere.
+     * Where the key of any concept lives, spelled so that it resolves from anywhere.
      *
      * <p>{@code key<any_concept>} has no namespace of the model behind it, so nothing
      * qualified it and the bare name came out. That resolves inside a file wrapped in the
@@ -290,66 +290,14 @@ final class TypeConverter {
         return qualifier;
     }
 
+    /**
+     * The neutral symbol of a type, which keys the helpers generated once per shape: {@code _}
+     * and the type's name ({@link #bindingType}), the same string, so that the two cannot
+     * disagree and one check covers both ({@code _int64}, {@code _App_UserKey},
+     * {@code _Vector_of_float}, {@code _Tuple2_of_int64_and_float}).
+     */
     String typeSuffix(DSMType type) throws Exception {
-        if (type instanceof DSMTypeKey typeKey) {
-            return typeSuffix(typeKey.elementType);
-        }
-
-        if (type instanceof DSMTypeVec typeVec)
-            return String.format("_vec%d%s", typeVec.size, typeSuffix(typeVec.elementType));
-
-        if (type instanceof DSMTypeMat typeMat)
-            return String.format("_mat%dx%d%s", typeMat.columns, typeMat.rows, typeSuffix(typeMat.elementType));
-
-        if (type instanceof DSMTypeTuple typeTuple) {
-            final var memberSuffixes = new ArrayList<String>();
-            for (var memberType : typeTuple.types)
-                memberSuffixes.add(typeSuffix(memberType));
-
-            return "_tuple" + String.join("", memberSuffixes);
-        }
-
-        if (type instanceof DSMTypeOptional typeOptional)
-            return String.format("_optional%s", typeSuffix(typeOptional.elementType));
-
-        if (type instanceof DSMTypeVector typeVector)
-            return String.format("_vector%s", typeSuffix(typeVector.elementType));
-
-        if (type instanceof DSMTypeMap typeMap)
-            return String.format("_map%s_to%s", typeSuffix(typeMap.keyType), typeSuffix(typeMap.elementType));
-
-        if (type instanceof DSMTypeSet typeSet)
-            return String.format("_set%s", typeSuffix(typeSet.elementType));
-
-        if (type instanceof DSMTypeXArray typeXArray)
-            return String.format("_xarray%s", typeSuffix(typeXArray.elementType));
-
-        if (type instanceof DSMTypeVariant typeVariant) {
-            var memberSuffixes = new ArrayList<String>();
-            for (var memberType : typeVariant.types)
-                memberSuffixes.add(typeSuffix(memberType));
-
-            return "_variant" + String.join("", memberSuffixes);
-        }
-
-        if (type instanceof DSMTypeReference typeReference) {
-            switch (typeReference.domain) {
-                case PRIMITIVE, ENUMERATION, STRUCTURE -> {
-                    return typeSuffix(typeReference.typeName);
-                }
-                case CONCEPT, CLUB -> {
-                    return typeSuffixForKey(typeReference.typeName);
-                }
-                case ANY_CONCEPT -> {
-                    return "_AnyConceptKey";
-                }
-                case ANY -> {
-                    return "_any";
-                }
-            }
-        }
-
-        throw new ConvertException(String.format("typeSuffix: Type '%s' not handled.", type.representation()));
+        return "_" + bindingType(type);
     }
 
     String typeForKey(TypeName typeName) {
@@ -368,14 +316,62 @@ final class TypeConverter {
         return TemplateTool.lsc(TemplateTool.spell(typeName.nameSpace.name)) + "::" + TemplateTool.spell(typeName.name);
     }
 
-    String typeSuffixForKey(TypeName typeName) {
-        return String.format("_%s_%sKey", TemplateTool.spell(typeName.nameSpace.name), TemplateTool.spell(typeName.name));
+    /**
+     * A type as the DSM writes it, the same however the model reached it: a key is
+     * {@code key<App::User>} whether it came as a key or as an attachment's concept. Two types
+     * are the same type when their identities are equal; a project names a type by it
+     * ({@code --type-name}).
+     */
+    static String identity(DSMType type) {
+        if (type instanceof DSMTypeKey typeKey)
+            return keyIdentity(typeKey.elementType);
+
+        if (type instanceof DSMTypeReference typeReference)
+            return switch (typeReference.domain) {
+                case CONCEPT, CLUB, ANY_CONCEPT -> keyIdentity(typeReference);
+                default -> typeReference.representation();
+            };
+
+        if (type instanceof DSMTypeVec typeVec)
+            return DSMLexicon.Vec + "<" + identity(typeVec.elementType) + ", " + typeVec.size + ">";
+
+        if (type instanceof DSMTypeMat typeMat)
+            return DSMLexicon.Mat + "<" + identity(typeMat.elementType) + ", " + typeMat.columns + ", " + typeMat.rows + ">";
+
+        if (type instanceof DSMTypeTuple typeTuple)
+            return DSMLexicon.Tuple + "<" + identities(typeTuple.types) + ">";
+
+        if (type instanceof DSMTypeOptional typeOptional)
+            return DSMLexicon.Optional + "<" + identity(typeOptional.elementType) + ">";
+
+        if (type instanceof DSMTypeVector typeVector)
+            return DSMLexicon.Vector + "<" + identity(typeVector.elementType) + ">";
+
+        if (type instanceof DSMTypeSet typeSet)
+            return DSMLexicon.Set + "<" + identity(typeSet.elementType) + ">";
+
+        if (type instanceof DSMTypeMap typeMap)
+            return DSMLexicon.Map + "<" + identity(typeMap.keyType) + ", " + identity(typeMap.elementType) + ">";
+
+        if (type instanceof DSMTypeXArray typeXArray)
+            return DSMLexicon.XArray + "<" + identity(typeXArray.elementType) + ">";
+
+        if (type instanceof DSMTypeVariant typeVariant)
+            return DSMLexicon.Variant + "<" + identities(typeVariant.types) + ">";
+
+        return type.representation();
     }
 
-    String typeSuffix(TypeName typeName) {
-        if (typeName.nameSpace.isGlobal())
-            return String.format("_%s", TemplateTool.spell(typeName.name));
-        return String.format("_%s_%s", TemplateTool.spell(typeName.nameSpace.name), TemplateTool.spell(typeName.name));
+    private static String keyIdentity(DSMType element) {
+        return DSMLexicon.Key + "<" + (element instanceof DSMTypeReference reference
+                                       ? reference.representation() : identity(element)) + ">";
+    }
+
+    private static String identities(ArrayList<DSMType> types) {
+        final var result = new ArrayList<String>();
+        for (var type : types)
+            result.add(identity(type));
+        return String.join(", ", result);
     }
 
     String viperPrimitiveValue(String name) throws Exception {
@@ -777,15 +773,26 @@ final class TypeConverter {
     }
 
     /**
-     * The name of the generated class a type becomes in a delegating binding.
+     * The name of a type: the generated class it becomes in a delegating binding, and, after a
+     * {@code _}, its type suffix.
      *
      * <p>A named type is its namespace and its name ({@code Graph_VertexKey}). A container is
      * its kind, then {@code _of_} and the names of what it holds, so that the name reads as the
      * type and every boundary is marked: {@code Set_of_Graph_VertexKey},
-     * {@code Map_of_string_to_Graph_Color}, {@code Variant_of_string_or_Demo_StructureS},
-     * {@code Tuple_of_uint8_and_string}, {@code Vec2_of_float}, {@code Mat2x3_of_double}.
+     * {@code Map_of_string_to_Graph_Color}, {@code Vec2_of_float}, {@code Mat2x3_of_double}.
+     * A tuple and a variant also say how many members follow
+     * ({@code Tuple2_of_uint8_and_string}, {@code Variant2_of_string_or_Demo_StructureS}):
+     * without it, one nested as a member other than the last reads two ways.
+     *
+     * <p>A DSM name may hold the separators ({@code A_and_N_B}), so two types can still be
+     * written alike; {@link Converter} stops on it, and the project names one of them
+     * ({@code --type-name}), which this method answers first.
      */
     private String bindingType(DSMType type) throws Exception {
+        final var named = TemplateTool.targetNames().typeName(identity(type));
+        if (named != null)
+            return named;
+
         if (type instanceof DSMTypeKey typeKey) {
             return bindingType(typeKey.elementType);
         }
@@ -801,7 +808,7 @@ final class TypeConverter {
             for (var memberType : typeTuple.types)
                 memberSuffixes.add(bindingType(memberType));
 
-            return "Tuple_of_" + String.join("_and_", memberSuffixes);
+            return "Tuple" + typeTuple.types.size() + "_of_" + String.join("_and_", memberSuffixes);
         }
 
         if (type instanceof DSMTypeOptional typeOptional)
@@ -824,7 +831,7 @@ final class TypeConverter {
             for (var memberType : typeVariant.types)
                 memberSuffixes.add(bindingType(memberType));
 
-            return "Variant_of_" + String.join("_or_", memberSuffixes);
+            return "Variant" + typeVariant.types.size() + "_of_" + String.join("_or_", memberSuffixes);
         }
 
         if (type instanceof DSMTypeReference typeReference) {

@@ -45,7 +45,7 @@ final class EntityConverter {
 
     private TemplateEnumeration convertEnumeration(DSMEnumeration enumeration) throws Exception {
         final var type = TypeConverter.cppQualified(enumeration.typeName);
-        final var typeSuffix = typeConverter.typeSuffix(enumeration.typeName);
+        final var typeSuffix = typeConverter.typeSuffix(enumeration.typeReference);
 
         return new TemplateEnumeration(enumeration, type, typeSuffix)
             .withQualified(typeConverter.bindingAnnotationInNamespace(null, enumeration.typeReference));
@@ -66,7 +66,7 @@ final class EntityConverter {
 
     private TemplateStructure convertStructure(DSMStructure structure) throws Exception {
         final var type = TypeConverter.cppQualified(structure.typeName);
-        final var typeSuffix = typeConverter.typeSuffix(structure.typeName);
+        final var typeSuffix = typeConverter.typeSuffix(structure.typeReference);
         final var isMovable = typeConverter.isStructureMovable(structure);
         TemplateStructure result = new TemplateStructure(structure, type, typeSuffix, isMovable)
             .withQualified(typeConverter.bindingAnnotationInNamespace(null, structure.typeReference));
@@ -130,7 +130,7 @@ final class EntityConverter {
 
     private TemplateConcept convertConcept(DSMConcept concept) throws Exception {
         final var type = typeConverter.typeForKey(concept.typeName);
-        final var typeSuffix = typeConverter.typeSuffixForKey(concept.typeName);
+        final var typeSuffix = typeConverter.typeSuffix(concept.typeReference);
         final var attachments = attachmentByConcept.get(concept.typeName);
         if (attachments != null)
             attachments.sort(Comparator.comparing(TemplateAttachment::getIdentifier));
@@ -149,7 +149,7 @@ final class EntityConverter {
 
     private TemplateClub convertClub(DSMClub club) throws Exception {
         final var type = typeConverter.typeForKey(club.typeName);
-        final var typeSuffix = typeConverter.typeSuffixForKey(club.typeName);
+        final var typeSuffix = typeConverter.typeSuffix(club.typeReference);
 
         if (binding.needsDerivedContainerProxies())
             functionRegistrar.registerFunctionForContainer(new DSMTypeOptional(club.typeReference));
