@@ -61,8 +61,18 @@ public final class TemplateAttachmentFunction {
     }
 
     // Type
+    /** The half of the interface's name that varies: `Mutating` or `Getting`, for a parameter's name. */
     public String getInterfaceType() {
         return dsmAttachmentFunction.isMutable ? "Mutating" : "Getting";
+    }
+
+    /** The interface the function takes, as the runtime names it: `CommitAttachmentMutating` or `AttachmentGetting`. */
+    public String getInterfaceName() {
+        return dsmAttachmentFunction.isMutable ? "CommitAttachmentMutating" : "AttachmentGetting";
+    }
+
+    public Boolean getIsMutable() {
+        return dsmAttachmentFunction.isMutable;
     }
 
     // Viper
