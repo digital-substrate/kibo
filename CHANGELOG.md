@@ -11,6 +11,14 @@ templates it renders.
 
 ## [Unreleased]
 
+### Added
+
+- **`interfaceName` and `isMutable` on an attachment function.** `interfaceName` is the
+  interface the function takes as the runtime names it, `CommitAttachmentMutating` or
+  `AttachmentGetting`, so a template writes the type without composing it; `interfaceType`
+  (`Mutating`, `Getting`) stays, for a parameter's name. Nothing generated changes until a
+  template uses them.
+
 ### Deprecated
 
 - **This line, kibo 1.** It receives fixes only, for the life of the LTS-1.2 line; new
