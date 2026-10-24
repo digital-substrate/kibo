@@ -11,6 +11,12 @@ templates it renders.
 
 ## [Unreleased]
 
+## [1.2.14] - 2026-10-24
+
+One addition to the Template Model, as in kibo 2.1.0: an attachment function names the
+interface it takes as the runtime spells it. This line is deprecated in favour of kibo 2.
+The DSM language is unchanged, and nothing generated changes until a template uses it.
+
 ### Added
 
 - **`interfaceName` and `isMutable` on an attachment function.** `interfaceName` is the
