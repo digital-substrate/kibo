@@ -11,6 +11,12 @@ templates it renders.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-24
+
+One addition to the Template Model: an attachment function names the interface it takes as
+the runtime spells it. The DSM language is unchanged, and nothing generated changes until a
+template uses it.
+
 ### Added
 
 - **`interfaceName` and `isMutable` on an attachment function.** `interfaceName` is the
